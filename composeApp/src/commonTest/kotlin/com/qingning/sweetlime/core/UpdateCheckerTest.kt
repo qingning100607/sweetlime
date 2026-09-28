@@ -91,4 +91,31 @@ class UpdateCheckerTest {
         assertTrue(UpdateChecker.FEED_URL.startsWith("https://api.github.com/repos/"))
         assertTrue(UpdateChecker.FALLBACK_FEED_URL.startsWith("https://raw.githubusercontent.com/"))
     }
+
+    // --- 主页顶部的「发现新版本」提示 ---
+
+    @Test
+    fun homeBannerShowsOnlyWhenNewer() {
+        val newer = UpdateChecker.Result.Newer("2.6.0", "2.5.3", "https://github.com/x/y/releases/tag/v2.6.0")
+        assertEquals(newer, UpdateChecker.homeBanner(newer, ""))
+        // 还没查出来 / 已是最新 / 失败 / 没配源：主页都不应该出现提示。
+        assertNull(UpdateChecker.homeBanner(null, ""))
+        assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.UpToDate("2.5.3"), ""))
+        assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.Failed("2.5.3"), ""))
+        assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.NotConfigured("2.5.3"), ""))
+    }
+
+    @Test
+    fun homeBannerRespectsDismiss() {
+        val newer = UpdateChecker.Result.Newer("2.6.0", "2.5.3")
+        // 点掉过的版本不再提示……
+        assertNull(UpdateChecker.homeBanner(newer, "2.6.0"))
+        // ……但出了更新的一版要重新提示。
+        assertEquals(newer, UpdateChecker.homeBanner(newer, "2.5.0"))
+    }
+
+    @Test
+    fun homeBannerNeedsVersionText() {
+        assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.Newer("", "2.5.3"), ""))
+    }
 }

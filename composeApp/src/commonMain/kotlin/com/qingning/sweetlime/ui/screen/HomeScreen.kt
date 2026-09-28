@@ -55,6 +55,9 @@ private const val NICKNAME_SOFT_LIMIT = 24
  *
  * 输入框下面补了一排小工具：字数统计 + 粘贴 + 一键清空；
  * 再往下（有历史时）是「最近使用」的一排胶囊，常用的样式一点就到位。
+ *
+ * 启动时查到了更新的版本，最顶上会多一条「发现新版本」提示（[newVersion] 非空时）：
+ * 点整行去发布页下载，点右边的「×」忽略这一版。
  */
 @Composable
 fun HomeScreen(
@@ -64,6 +67,12 @@ fun HomeScreen(
     onOpenGroup: (StyleGroup) -> Unit,
     recentIds: List<String> = emptyList(),
     onOpenRecent: (String) -> Unit = {},
+    /** 查到的新版本号；null = 不显示顶部提示。 */
+    newVersion: String? = null,
+    /** 点提示整行：去发布页下载。 */
+    onOpenRelease: () -> Unit = {},
+    /** 点提示右边的「×」：这一版不再提示。 */
+    onDismissUpdate: () -> Unit = {},
 ) {
     val entries = remember(input) {
         TransformRegistry.grouped.map { (group, styles) ->
@@ -88,6 +97,38 @@ fun HomeScreen(
             bottom = outerPadding.calculateBottomPadding(),
         ),
     ) {
+        // 查到更新的版本时，最顶上先挂一条提示：点整行去下载，点右边的「×」忽略这一版。
+        // 没查到 / 已是最新 / 检查失败时 newVersion 为 null，这里整段不出现，主页与之前完全一样。
+        if (newVersion != null) {
+            item(key = "home_update_banner") {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 8.dp),
+                ) {
+                    PressableRow(
+                        title = "发现新版本 $newVersion",
+                        summary = "点一下前往下载更新",
+                        onClick = onOpenRelease,
+                        endActions = {
+                            IconButton(onClick = onDismissUpdate) {
+                                Icon(
+                                    imageVector = MiuixIcons.Clear,
+                                    contentDescription = "这一版不再提示",
+                                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                )
+                            }
+                            Icon(
+                                imageVector = MiuixIcons.Basic.ArrowRight,
+                                contentDescription = null,
+                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                            )
+                        },
+                    )
+                }
+            }
+        }
         item(key = "home_input") {
             TextField(
                 value = input,

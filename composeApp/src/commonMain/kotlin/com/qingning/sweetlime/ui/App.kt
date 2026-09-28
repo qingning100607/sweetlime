@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.TransformRegistry
+import com.qingning.sweetlime.core.UpdateChecker
 import com.qingning.sweetlime.core.OpenSourceLicenses
 import com.qingning.sweetlime.core.PrivacyPolicy
 import com.qingning.sweetlime.core.copyToClipboard
@@ -126,6 +127,13 @@ fun SweetLimeApp() {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var input by rememberSaveable { mutableStateOf("") }
 
+    // 启动时静默查一次更新：只在查到「有更新的版本」时，主页顶部才会多出一条提示。
+    // 一次请求，失败 / 离线都不影响使用（UpdateChecker 自己会兜底并返回 Failed）。
+    var updateResult by remember { mutableStateOf<UpdateChecker.Result?>(null) }
+    LaunchedEffect(Unit) { updateResult = UpdateChecker.check() }
+    // 用户点过「×」的那个版本不再提示；出了更新的一版会重新提示。
+    val newVersion = UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate)
+
     // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
     fun goBack() {
@@ -203,6 +211,15 @@ fun SweetLimeApp() {
                         onOpenSearch = { backStack.add(Route.Search) },
                         recentIds = recent.ids,
                         onOpenRecent = { openStyle(it) },
+                        newVersion = newVersion?.latest,
+                        // 点提示整行：能拿到具体那一版的发布页就去那一页，拿不到就去 Releases 列表。
+                        onOpenRelease = {
+                            openUrl(newVersion?.releaseUrl ?: UpdateChecker.RELEASES_PAGE_URL)
+                        },
+                        // 点「×」：记下这个版本，之后不再提示（出了更新的一版会重新提示）。
+                        onDismissUpdate = {
+                            newVersion?.let { settings.dismissedUpdate = it.latest }
+                        },
                     )
                 }
 
@@ -333,6 +350,10 @@ private fun RootScaffold(
     onOpenSearch: () -> Unit,
     recentIds: List<String>,
     onOpenRecent: (String) -> Unit,
+    /** 查到的新版本号；null = 主页不显示顶部提示。 */
+    newVersion: String?,
+    onOpenRelease: () -> Unit,
+    onDismissUpdate: () -> Unit,
 ) {
     var topBarHeight by remember { mutableStateOf(0.dp) }
     var bottomBarHeight by remember { mutableStateOf(0.dp) }
@@ -369,6 +390,9 @@ private fun RootScaffold(
                     onOpenGroup = onOpenGroup,
                     recentIds = recentIds,
                     onOpenRecent = onOpenRecent,
+                    newVersion = newVersion,
+                    onOpenRelease = onOpenRelease,
+                    onDismissUpdate = onDismissUpdate,
                 )
                 1 -> ToolsScreen(
                     outerPadding = contentPadding,

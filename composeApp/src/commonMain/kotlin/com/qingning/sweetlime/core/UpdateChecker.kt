@@ -27,6 +27,10 @@ object UpdateChecker {
     const val FALLBACK_FEED_URL: String =
         "https://raw.githubusercontent.com/qingning100607/sweetlime/master/version.json"
 
+    /** 发布页（拿不到具体某版的地址时退到这里，永远有地方可去）。 */
+    const val RELEASES_PAGE_URL: String =
+        "https://github.com/qingning100607/sweetlime/releases"
+
     sealed interface Result {
         /** 没配地址，只报告当前版本。 */
         data class NotConfigured(val current: String) : Result
@@ -62,6 +66,19 @@ object UpdateChecker {
             Result.UpToDate(current)
         }
     }
+
+    /**
+     * 主页顶部那条「发现新版本」提示：该不该显示、显示什么。
+     *
+     * - 只有 [Result.Newer]（确实查到更高的版本）才显示；
+     * - 用户点过「×」忽略过的那个版本（[dismissedVersion] 和它相同）就不再打扰，
+     *   等出了更高的一版会重新提示；
+     * - 还没查（[result] 为 null）、已是最新、检查失败、没配更新源 —— 一律不显示。
+     */
+    fun homeBanner(result: Result?, dismissedVersion: String): Result.Newer? =
+        (result as? Result.Newer)?.takeIf {
+            it.latest.isNotBlank() && it.latest != dismissedVersion
+        }
 
     /**
      * 从响应文本里取出版本号（能取到时连发布页地址一起给出）。取不到返回 null。

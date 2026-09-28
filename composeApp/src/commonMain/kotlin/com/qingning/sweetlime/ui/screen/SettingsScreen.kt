@@ -188,8 +188,8 @@ fun SettingsScreen(
                 )
             }
 
-            // 隐私 + 兼容性提示：单独一张圆角卡，和上面的「外观」分开，也不再跟在关于信息后面。
-            SmallTitle(text = "隐私与兼容性")
+            // 兼容性提示：单独一张圆角卡，和上面的「外观」分开，也不再跟在关于信息后面。
+            SmallTitle(text = "兼容性")
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
