@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.core.content.FileProvider
 import com.qingning.sweetlime.AppContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.util.zip.ZipInputStream
+import java.io.File
 import java.io.OutputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -120,10 +122,77 @@ actual suspend fun httpGetText(url: String): String? = withContext(Dispatchers.I
     }.getOrNull()
 }
 
+actual suspend fun downloadApkToPrivateDir(
+    url: String,
+    fileName: String,
+    onProgress: (Float) -> Unit,
+): String? = withContext(Dispatchers.IO) {
+    runCatching {
+        val dir = File(AppContext.get().filesDir, "update").apply { mkdirs() }
+        val part = File(dir, "$fileName.part")
+        val dest = File(dir, fileName)
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10000
+            readTimeout = 20000
+            // GitHub 的下载地址会 302 到 objects.githubusercontent.com，得跟着走。
+            instanceFollowRedirects = true
+            requestMethod = "GET"
+            setRequestProperty("User-Agent", "SweetLime/${APP_VERSION}")
+        }
+        try {
+            if (connection.responseCode !in 200..299) return@runCatching null
+            val total = connection.contentLengthLong
+            connection.inputStream.use { input ->
+                part.outputStream().use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    var done = 0L
+                    // 只在整数百分比变化时回调：几 MB 的包能少掉上千次无谓的状态更新。
+                    var lastPercent = -2
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read <= 0) break
+                        output.write(buffer, 0, read)
+                        done += read
+                        val percent = if (total > 0) ((done * 100) / total).toInt() else -1
+                        if (percent != lastPercent) {
+                            lastPercent = percent
+                            onProgress(
+                                if (total > 0) (done.toFloat() / total).coerceIn(0f, 1f) else -1f,
+                            )
+                        }
+                    }
+                    output.flush()
+                }
+            }
+            // 只有一个完整的包才会被改名成正式文件名 —— 半截的留在 .part，不会拿去安装。
+            if (dest.exists()) dest.delete()
+            if (!part.renameTo(dest)) return@runCatching null
+            onProgress(1f)
+            dest.absolutePath
+        } finally {
+            connection.disconnect()
+        }
+    }.getOrNull()
+}
+
+actual fun installApkFile(path: String) {
+    val context = AppContext.get()
+    val file = File(path)
+    if (!file.exists()) return
+    runCatching {
+        // Android 7 起不能用 file:// 把文件交给别的应用，必须换成 content:// 并临时授权。
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(intent)
+    }
+}
+
 private class AndroidKeyValueStore(
     private val prefs: SharedPreferences,
 ) : KeyValueStore {
-
     override fun getString(key: String, defaultValue: String): String =
         prefs.getString(key, defaultValue) ?: defaultValue
 

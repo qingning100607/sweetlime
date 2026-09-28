@@ -25,6 +25,25 @@ expect fun softBlurEffect(radiusPx: Float, saturation: Float, brightness: Float)
 /** 拉一段纯文本（用于「检查更新」），失败返回 null。 */
 expect suspend fun httpGetText(url: String): String?
 
+/**
+ * 把 [url] 下载到应用私有目录（`filesDir/update/`），返回本地文件路径；失败返回 null。
+ *
+ * [onProgress] 给的是 0f..1f；服务器没给 Content-Length 时传 -1f 表示进度未知。
+ * 先写 `.part` 临时文件，下完再改名 —— 这样半截文件不会被当成下载好的包去安装。
+ */
+expect suspend fun downloadApkToPrivateDir(
+    url: String,
+    fileName: String,
+    onProgress: (Float) -> Unit,
+): String?
+
+/**
+ * 用系统安装器安装刚下载好的 APK（会弹系统的安装确认，用户点了才会真的装）。
+ *
+ * Android 8 起还需要用户给本应用「安装未知应用」权限，系统会在这一步引导。
+ */
+expect fun installApkFile(path: String)
+
 /** 极简的键值持久化抽象，避免为一件小事引入整套 DataStore。 */
 interface KeyValueStore {
     fun getString(key: String, defaultValue: String): String

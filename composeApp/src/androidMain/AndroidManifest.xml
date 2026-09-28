@@ -23,6 +23,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          应用内下载更新用：把私有目录里的 APK 以 content:// 交给系统安装器。
+          Android 7 以后不允许再用 file:// 分享文件，必须走 FileProvider。
+          只暴露 filesDir/update/ 一个目录（见 res/xml/file_paths.xml）。
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

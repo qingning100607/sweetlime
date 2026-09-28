@@ -118,4 +118,55 @@ class UpdateCheckerTest {
     fun homeBannerNeedsVersionText() {
         assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.Newer("", "2.5.3"), ""))
     }
+
+    /** 带 assets 的真实 Releases 响应片段：要能从里面捞出 APK 直链。 */
+    private val releaseJsonWithAsset = """
+        {
+          "html_url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.4",
+          "tag_name": "v2.5.4",
+          "assets": [
+            {
+              "name": "SweetLime-2.5.4.apk",
+              "browser_download_url": "https://github.com/qingning100607/sweetlime/releases/download/v2.5.4/SweetLime-2.5.4.apk"
+            }
+          ]
+        }
+    """.trimIndent()
+
+    @Test
+    fun readsApkUrlFromReleaseAssets() {
+        val feed = UpdateChecker.parseFeed(releaseJsonWithAsset)
+        assertEquals("2.5.4", feed?.version)
+        assertEquals(
+            "https://github.com/qingning100607/sweetlime/releases/download/v2.5.4/SweetLime-2.5.4.apk",
+            feed?.apkUrl,
+        )
+    }
+
+    @Test
+    fun readsApkUrlFromVersionJson() {
+        val feed = UpdateChecker.parseFeed(
+            """{"version":"2.5.4","url":"https://github.com/qingning100607/sweetlime/releases","apk":"https://github.com/qingning100607/sweetlime/releases/download/v2.5.4/SweetLime-2.5.4.apk"}""",
+        )
+        assertEquals("2.5.4", feed?.version)
+        assertTrue(feed?.apkUrl?.endsWith(".apk") == true)
+    }
+
+    @Test
+    fun noApkUrlWhenSourceHasNone() {
+        // 换成纯文本源时没有直链，界面要能退回「打开发布页」。
+        val feed = UpdateChecker.parseFeed("latest version: 2.5.4")
+        assertEquals("2.5.4", feed?.version)
+        assertNull(feed?.apkUrl)
+    }
+
+    @Test
+    fun apkUrlKeepsReleaseUrl() {
+        // 版本号、发布页、直链三者要能同时拿到（下载失败时靠 releaseUrl 兜底）。
+        val feed = UpdateChecker.parseFeed(releaseJsonWithAsset)
+        assertEquals(
+            "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.4",
+            feed?.pageUrl,
+        )
+    }
 }

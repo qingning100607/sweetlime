@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  应用内下载更新时，把私有目录里的 APK 交给系统安装器读。
+  只放开 filesDir/update/ 这一处，别的一概不给。
+-->
+<paths>
+    <files-path
+        name="update"
+        path="update/" />
+</paths>

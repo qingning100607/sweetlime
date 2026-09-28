@@ -19,6 +19,8 @@ import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.readClipboard
+import com.qingning.sweetlime.ui.UpdateDownloadState
+import com.qingning.sweetlime.ui.updateBannerText
 import com.qingning.sweetlime.ui.components.ChipButton
 import com.qingning.sweetlime.ui.components.PressableRow
 import top.yukonga.miuix.kmp.basic.Card
@@ -57,7 +59,7 @@ private const val NICKNAME_SOFT_LIMIT = 24
  * 再往下（有历史时）是「最近使用」的一排胶囊，常用的样式一点就到位。
  *
  * 启动时查到了更新的版本，最顶上会多一条「发现新版本」提示（[newVersion] 非空时）：
- * 点整行去发布页下载，点右边的「×」忽略这一版。
+ * 点整行就**在应用内直接下载安装包**（下好自动唤起系统安装器），点右边的「×」忽略这一版。
  */
 @Composable
 fun HomeScreen(
@@ -69,8 +71,10 @@ fun HomeScreen(
     onOpenRecent: (String) -> Unit = {},
     /** 查到的新版本号；null = 不显示顶部提示。 */
     newVersion: String? = null,
-    /** 点提示整行：去发布页下载。 */
-    onOpenRelease: () -> Unit = {},
+    /** 「下载 → 唤起安装器」的进度；和设置页共用同一份状态。 */
+    updateDownload: UpdateDownloadState = UpdateDownloadState.Idle,
+    /** 点提示整行：没下载就下载，下好了就打开系统安装器。 */
+    onUpdateAction: () -> Unit = {},
     /** 点提示右边的「×」：这一版不再提示。 */
     onDismissUpdate: () -> Unit = {},
 ) {
@@ -97,9 +101,11 @@ fun HomeScreen(
             bottom = outerPadding.calculateBottomPadding(),
         ),
     ) {
-        // 查到更新的版本时，最顶上先挂一条提示：点整行去下载，点右边的「×」忽略这一版。
+        // 查到更新的版本时，最顶上先挂一条提示：点整行在应用内下载 / 打开安装器，点右边的「×」忽略这一版。
         // 没查到 / 已是最新 / 检查失败时 newVersion 为 null，这里整段不出现，主页与之前完全一样。
         if (newVersion != null) {
+            // 标题和说明跟着下载状态走：发现新版本 → 正在下载 42% → 点一下打开系统安装器。
+            val banner = updateBannerText(newVersion, updateDownload)
             item(key = "home_update_banner") {
                 Card(
                     modifier = Modifier
@@ -108,9 +114,9 @@ fun HomeScreen(
                         .padding(top = 8.dp),
                 ) {
                     PressableRow(
-                        title = "发现新版本 $newVersion",
-                        summary = "点一下前往下载更新",
-                        onClick = onOpenRelease,
+                        title = banner.title,
+                        summary = banner.summary,
+                        onClick = onUpdateAction,
                         endActions = {
                             IconButton(onClick = onDismissUpdate) {
                                 Icon(

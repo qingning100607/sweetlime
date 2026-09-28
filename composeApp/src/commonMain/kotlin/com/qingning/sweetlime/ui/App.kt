@@ -52,6 +52,8 @@ import com.qingning.sweetlime.core.OpenSourceLicenses
 import com.qingning.sweetlime.core.PrivacyPolicy
 import com.qingning.sweetlime.core.copyToClipboard
 import com.qingning.sweetlime.core.createKeyValueStore
+import com.qingning.sweetlime.core.downloadApkToPrivateDir
+import com.qingning.sweetlime.core.installApkFile
 import com.qingning.sweetlime.core.openUrl
 import com.qingning.sweetlime.core.shareText
 import com.qingning.sweetlime.data.FavoritesStore
@@ -130,9 +132,68 @@ fun SweetLimeApp() {
     // 启动时静默查一次更新：只在查到「有更新的版本」时，主页顶部才会多出一条提示。
     // 一次请求，失败 / 离线都不影响使用（UpdateChecker 自己会兜底并返回 Failed）。
     var updateResult by remember { mutableStateOf<UpdateChecker.Result?>(null) }
-    LaunchedEffect(Unit) { updateResult = UpdateChecker.check() }
+    var checkingUpdate by remember { mutableStateOf(false) }
+    // 「下载 → 唤起安装器」的进度：主页横幅和设置页共用同一份，两边永远一致。
+    var downloadState by remember { mutableStateOf<UpdateDownloadState>(UpdateDownloadState.Idle) }
     // 用户点过「×」的那个版本不再提示；出了更新的一版会重新提示。
     val newVersion = UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate)
+
+    fun checkUpdate() {
+        if (checkingUpdate) return
+        checkingUpdate = true
+        scope.launch {
+            updateResult = UpdateChecker.check()
+            checkingUpdate = false
+        }
+    }
+
+    /**
+     * 主页横幅 / 设置页「检查更新」那一行，点一下的统一入口：
+     * 没查到就先查 → 查到了就在应用内下载 → 下好了交给系统安装器。
+     *
+     * 下载走应用私有目录，失败会停在 Failed（界面提示"点一下重试"），不会留下半截文件。
+     */
+    fun onUpdateAction() {
+        when (val state = downloadState) {
+            // 下载中重复点没意义，忽略。
+            is UpdateDownloadState.Downloading -> Unit
+
+            // 已经下好了：再点一下就是重新拉起系统安装器。
+            is UpdateDownloadState.Ready -> installApkFile(state.path)
+
+            else -> {
+                val newer = updateResult as? UpdateChecker.Result.Newer
+                if (newer == null) {
+                    checkUpdate()
+                } else {
+                    val url = newer.apkUrl
+                    if (url == null) {
+                        // 更新源没给安装包直链（例如临时换成了纯文本源）：退回到打开发布页。
+                        openUrl(newer.releaseUrl ?: UpdateChecker.RELEASES_PAGE_URL)
+                    } else {
+                        downloadState = UpdateDownloadState.Downloading(-1f)
+                        scope.launch {
+                            val path = downloadApkToPrivateDir(
+                                url = url,
+                                fileName = "SweetLime-${newer.latest}.apk",
+                            ) { progress ->
+                                downloadState = UpdateDownloadState.Downloading(progress)
+                            }
+                            if (path == null) {
+                                downloadState = UpdateDownloadState.Failed
+                            } else {
+                                downloadState = UpdateDownloadState.Ready(path)
+                                // 下完直接把安装器叫起来，省用户一下点击；装不装由用户决定。
+                                installApkFile(path)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) { checkUpdate() }
 
     // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
@@ -212,10 +273,8 @@ fun SweetLimeApp() {
                         recentIds = recent.ids,
                         onOpenRecent = { openStyle(it) },
                         newVersion = newVersion?.latest,
-                        // 点提示整行：能拿到具体那一版的发布页就去那一页，拿不到就去 Releases 列表。
-                        onOpenRelease = {
-                            openUrl(newVersion?.releaseUrl ?: UpdateChecker.RELEASES_PAGE_URL)
-                        },
+                        updateDownload = downloadState,
+                        onUpdateAction = { onUpdateAction() },
                         // 点「×」：记下这个版本，之后不再提示（出了更新的一版会重新提示）。
                         onDismissUpdate = {
                             newVersion?.let { settings.dismissedUpdate = it.latest }
@@ -283,6 +342,12 @@ fun SweetLimeApp() {
                         onOpenUrl = ::openUrl,
                         onOpenPrivacy = { backStack.add(Route.Privacy) },
                         onOpenLicenses = { backStack.add(Route.Licenses) },
+                        // 检查更新 / 下载安装：和主页横幅共用同一份状态，两边显示永远一致。
+                        updateResult = updateResult,
+                        checkingUpdate = checkingUpdate,
+                        updateDownload = downloadState,
+                        onCheckUpdate = { checkUpdate() },
+                        onUpdateAction = { onUpdateAction() },
                     )
                 }
 
@@ -352,7 +417,8 @@ private fun RootScaffold(
     onOpenRecent: (String) -> Unit,
     /** 查到的新版本号；null = 主页不显示顶部提示。 */
     newVersion: String?,
-    onOpenRelease: () -> Unit,
+    updateDownload: UpdateDownloadState,
+    onUpdateAction: () -> Unit,
     onDismissUpdate: () -> Unit,
 ) {
     var topBarHeight by remember { mutableStateOf(0.dp) }
@@ -391,7 +457,8 @@ private fun RootScaffold(
                     recentIds = recentIds,
                     onOpenRecent = onOpenRecent,
                     newVersion = newVersion,
-                    onOpenRelease = onOpenRelease,
+                    updateDownload = updateDownload,
+                    onUpdateAction = onUpdateAction,
                     onDismissUpdate = onDismissUpdate,
                 )
                 1 -> ToolsScreen(

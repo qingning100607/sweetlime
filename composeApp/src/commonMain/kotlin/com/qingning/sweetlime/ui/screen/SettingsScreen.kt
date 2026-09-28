@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +26,10 @@ import com.qingning.sweetlime.core.APP_VERSION
 import com.qingning.sweetlime.core.UpdateChecker
 import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.data.ThemeMode
+import com.qingning.sweetlime.ui.UpdateDownloadState
 import com.qingning.sweetlime.ui.components.PressableRow
 import com.qingning.sweetlime.ui.components.glassBar
+import com.qingning.sweetlime.ui.updateRowText
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -53,7 +54,6 @@ import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import kotlinx.coroutines.launch
 
 /** 作者 / 交流群等信息（想改成自己的直接改这几个常量即可）。 */
 private const val AUTHOR_NAME = "青柠不酸只甜"
@@ -68,7 +68,7 @@ private const val COMMUNITY_LINK =
  * 排版顺序（自上而下）：
  * 1. 外观；
  * 2. 「隐私 + 兼容性」—— 单独一张圆角卡，和上面的设置项分开，不再吊在关于信息后面；
- * 3. 「关于」—— 作者 / 交流群信息放在最底部，并且压到 3 条以内。
+ * 3. 「关于」—— 作者 / 交流群 / GitHub 仓库，挂在页面最底部。
  *
  * 顶栏也铺了一层全分辨率玻璃，往上滚动内容时会从它下面滑过去。
  */
@@ -80,14 +80,20 @@ fun SettingsScreen(
     onOpenUrl: (String) -> Unit,
     onOpenPrivacy: () -> Unit,
     onOpenLicenses: () -> Unit,
+    /** 上一次检查更新的结果；由 App 持有，和主页横幅共用。 */
+    updateResult: UpdateChecker.Result? = null,
+    /** 正在检查更新。 */
+    checkingUpdate: Boolean = false,
+    /** 「下载 → 唤起安装器」的进度；和主页横幅共用同一份。 */
+    updateDownload: UpdateDownloadState = UpdateDownloadState.Idle,
+    /** 点「检查更新」：重新去更新源查一次。 */
+    onCheckUpdate: () -> Unit = {},
+    /** 点「检查更新」/ 主页横幅的统一入口：查 → 下载 → 安装。 */
+    onUpdateAction: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showThemePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
-    // 「检查更新」的临时状态：只在设置页里活着，离开页面就丢，不需要持久化。
-    var checking by remember { mutableStateOf(false) }
-    var updateResult by remember { mutableStateOf<UpdateChecker.Result?>(null) }
-    val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val backdrop = rememberLayerBackdrop()
     val blurPx = remember(density) { with(density) { 22.dp.toPx() } }
@@ -211,34 +217,23 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
-                val newer = updateResult as? UpdateChecker.Result.Newer
-                val updateSummary = when {
-                    checking -> "正在检查…"
-                    updateResult is UpdateChecker.Result.UpToDate -> "已是最新版本 $APP_VERSION"
-                    updateResult is UpdateChecker.Result.NotConfigured -> "当前版本 $APP_VERSION（更新源未配置）"
-                    newer != null ->
-                        if (newer.releaseUrl != null) {
-                            "发现新版本 ${newer.latest}，点击前往下载"
-                        } else {
-                            "发现新版本 ${newer.latest}，到交流群获取"
-                        }
-                    updateResult is UpdateChecker.Result.Failed -> "检查失败，请稍后再试"
-                    else -> "点击检查是否有新版本"
-                }
+                // 第一次点：去查有没有新版；查到之后：在应用内下载并唤起系统安装器。
+                // 文案由 updateRowText 统一推出来，下载过程中不会突然跳回"点击检查"。
+                val updateSummary = updateRowText(
+                    result = updateResult,
+                    checking = checkingUpdate,
+                    state = updateDownload,
+                    currentVersion = APP_VERSION,
+                )
+                val hasNewer = updateResult is UpdateChecker.Result.Newer
                 PressableRow(
                     title = "检查更新",
                     summary = updateSummary,
                     onClick = {
-                        // 已经查到新版本、也拿到了发布页，就直接跳过去；否则重新检查。
-                        val releaseUrl = (updateResult as? UpdateChecker.Result.Newer)?.releaseUrl
-                        if (releaseUrl != null) {
-                            onOpenUrl(releaseUrl)
-                        } else if (!checking) {
-                            checking = true
-                            scope.launch {
-                                updateResult = UpdateChecker.check()
-                                checking = false
-                            }
+                        if (hasNewer) {
+                            onUpdateAction()
+                        } else {
+                            onCheckUpdate()
                         }
                     },
                     endActions = {
@@ -288,6 +283,21 @@ fun SettingsScreen(
                     title = "SweetLime",
                     summary = "版本 $APP_VERSION",
                 )
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    PressableRow(
+                        title = "GitHub 仓库",
+                        summary = "qingning100607/sweetlime · 点击打开源码页",
+                        onClick = { onOpenUrl(UpdateChecker.REPO_URL) },
+                        endActions = {
+                            Icon(
+                                imageVector = MiuixIcons.Basic.ArrowRight,
+                                contentDescription = "打开 GitHub 仓库",
+                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                            )
+                        },
+                    )
+                }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
                     PressableRow(
