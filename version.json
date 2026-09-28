@@ -1,5 +1,5 @@
 {
-  "version": "2.5.1",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.1",
+  "version": "2.5.2",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.2",
   "note": "应用内「检查更新」的备用源。GitHub API 对匿名请求有频率限制（共享出口 IP 时很容易撞到），这个文件走 raw CDN，没有限制。发版时由 gh_release.py 自动更新。"
 }
