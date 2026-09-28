@@ -154,6 +154,8 @@ composeApp/src/
 
 * 应用图标目前是矢量占位图（`res/drawable/ic_launcher.xml`），待替换为正式设计
 * 自适应图标（mipmap + adaptive-icon）尚未补齐
-* 更新检查（`core/UpdateChecker.kt`）尚未配置更新源地址，因此不会发起任何请求
+* 更新检查接的是本仓库的 Releases：主源 `releases/latest`，备用源 `master/version.json`
+  （GitHub 匿名 API 有频率限制，共享 IP 容易撞到，raw 没有）
+
 * 预测性返回与 Miuix 组件的手感需真机手动确认；如与 `miuix-nav` 手势冲突，需二选一
 * 压缩包只支持 zip；写回尚非事务（已有内存备份回滚）

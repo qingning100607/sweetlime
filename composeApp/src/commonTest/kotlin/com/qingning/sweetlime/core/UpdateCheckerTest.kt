@@ -63,8 +63,32 @@ class UpdateCheckerTest {
     }
 
     @Test
+    fun readsFallbackFile() {
+        // 仓库里的 version.json（走 raw，撞不到 API 限流）。
+        val parsed = UpdateChecker.parseLatest(
+            """{"version":"2.5.0","url":"https://github.com/qingning100607/sweetlime/releases/tag/v2.5.0"}""",
+        )
+        assertEquals("2.5.0", parsed?.first)
+        assertEquals(
+            "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.0",
+            parsed?.second,
+        )
+    }
+
+    @Test
+    fun ignoresRateLimitBody() {
+        // GitHub 匿名限流时返回的就是这段话，不能被当成版本号。
+        assertNull(
+            UpdateChecker.parseLatest(
+                """{"message":"API rate limit exceeded for 203.10.98.186.","documentation_url":"https://docs.github.com/rest"}""",
+            ),
+        )
+    }
+
+    @Test
     fun feedIsConfigured() {
-        // 更新源接好了，不再走「未配置」那条分支。
+        // 主源与备用源都接好了，不再走「未配置」那条分支。
         assertTrue(UpdateChecker.FEED_URL.startsWith("https://api.github.com/repos/"))
+        assertTrue(UpdateChecker.FALLBACK_FEED_URL.startsWith("https://raw.githubusercontent.com/"))
     }
 }
