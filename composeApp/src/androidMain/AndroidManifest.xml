@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- 唯一的网络用途：「检查更新」时读取一个版本号文本。没有埋点、统计、广告。 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+      应用内下载更新后要唤起系统安装器。Android 8 起必须先申请这个权限，
+      否则「安装未知应用」授权页都打不开，用户看到的就是"点了没反应"。
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <application
         android:name=".SweetLimeApplication"
         android:allowBackup="true"

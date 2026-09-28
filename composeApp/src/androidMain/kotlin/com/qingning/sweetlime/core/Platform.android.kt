@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.provider.Settings
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.core.content.FileProvider
@@ -175,11 +176,17 @@ actual suspend fun downloadApkToPrivateDir(
     }.getOrNull()
 }
 
-actual fun installApkFile(path: String) {
+actual fun installApkFile(path: String): Boolean {
     val context = AppContext.get()
     val file = File(path)
-    if (!file.exists()) return
-    runCatching {
+    if (!file.exists()) return false
+    // Android 8 起装别的应用要先有「安装未知应用」权限。
+    // 第一次点大概率就是卡在这里 —— 以前直接 startActivity，系统默默拦掉，
+    // 用户看到的就是"点了没反应"。现在缺权限就主动把授权页打开。
+    if (!context.packageManager.canRequestPackageInstalls()) {
+        return openInstallPermissionSettings()
+    }
+    val launched = runCatching {
         // Android 7 起不能用 file:// 把文件交给别的应用，必须换成 content:// 并临时授权。
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -187,8 +194,20 @@ actual fun installApkFile(path: String) {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         context.startActivity(intent)
-    }
+    }.isSuccess
+    // 有权限但没安装器能接（个别系统把 intent 拦了）：也弹授权页，别让用户点了没反应。
+    return launched || openInstallPermissionSettings()
 }
+
+/** 打开本应用的「安装未知应用」授权页；打不开返回 false。 */
+private fun openInstallPermissionSettings(): Boolean = runCatching {
+    val context = AppContext.get()
+    val intent = Intent(
+        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+        Uri.parse("package:${context.packageName}"),
+    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+}.isSuccess
 
 private class AndroidKeyValueStore(
     private val prefs: SharedPreferences,

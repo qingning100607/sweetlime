@@ -118,6 +118,9 @@ fun HomeScreen(
                         summary = banner.summary,
                         onClick = onUpdateAction,
                         endActions = {
+                            // 只留一个「×」。以前这里还并排放了一个「>」箭头，
+                            // 两个图标挤在一起会叠到横幅右边缘上，看着很别扭；
+                            // 整行本来就可点，箭头是多余的，去掉。
                             IconButton(onClick = onDismissUpdate) {
                                 Icon(
                                     imageVector = MiuixIcons.Clear,
@@ -125,11 +128,6 @@ fun HomeScreen(
                                     tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                                 )
                             }
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = null,
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
                         },
                     )
                 }

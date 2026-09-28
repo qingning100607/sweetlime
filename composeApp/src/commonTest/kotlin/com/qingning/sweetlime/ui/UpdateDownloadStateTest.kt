@@ -47,6 +47,28 @@ class UpdateDownloadStateTest {
     }
 
     @Test
+    fun bannerTellsUserToGrantInstallPermission() {
+        // 首次安装最常见的坑：没有「安装未知应用」权限，点安装像没反应。
+        // 这种情况横幅必须直说"去授权"，不能还写着"点一下打开系统安装器"。
+        val banner = updateBannerText("2.5.4", UpdateDownloadState.NeedsPermission("/tmp/x.apk"))
+        assertEquals("安装 2.5.4", banner.title)
+        assertTrue(banner.summary.contains("安装未知应用"))
+        assertTrue(banner.summary.contains("授权"))
+    }
+
+    @Test
+    fun rowTextTellsUserToGrantInstallPermission() {
+        val row = updateRowText(
+            result = UpdateChecker.Result.Newer("2.5.4", "2.5.3"),
+            checking = false,
+            state = UpdateDownloadState.NeedsPermission("/tmp/x.apk"),
+            currentVersion = "2.5.3",
+        )
+        assertTrue(row.contains("安装未知应用"))
+        assertTrue(row.contains("授权"))
+    }
+
+    @Test
     fun rowTextPrefersDownloadStateOverCheckResult() {
         // 下载中即使在设置页再点一次「检查更新」，也不该跳回「点击检查是否有新版本」。
         val newer = UpdateChecker.Result.Newer("2.5.4", "2.5.3")

@@ -40,9 +40,12 @@ expect suspend fun downloadApkToPrivateDir(
 /**
  * 用系统安装器安装刚下载好的 APK（会弹系统的安装确认，用户点了才会真的装）。
  *
- * Android 8 起还需要用户给本应用「安装未知应用」权限，系统会在这一步引导。
+ * Android 8 起必须先拿到「安装未知应用」权限。没有权限时本函数**不会**静默失败，
+ * 而是顺手把该权限的设置页打开，并返回 false —— 界面据此提示"点一下去授权"。
+ *
+ * @return true = 系统安装器已经拉起来了；false = 缺权限或没有安装器能接（已弹授权页）。
  */
-expect fun installApkFile(path: String)
+expect fun installApkFile(path: String): Boolean
 
 /** 极简的键值持久化抽象，避免为一件小事引入整套 DataStore。 */
 interface KeyValueStore {

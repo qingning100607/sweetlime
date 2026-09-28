@@ -23,6 +23,14 @@ sealed interface UpdateDownloadState {
     /** 下好了，[path] 是应用私有目录里的本地文件。 */
     data class Ready(val path: String) : UpdateDownloadState
 
+    /**
+     * 包已经下好，但系统还没给「安装未知应用」权限。
+     *
+     * 第一次装的时候基本都会走到这里（点安装就等于"点了没反应"），
+     * 所以单独标一个状态：界面明确告诉用户"点一下去授权"，而不是干等。
+     */
+    data class NeedsPermission(val path: String) : UpdateDownloadState
+
     /** 下载失败（断网 / 源没了 / 写盘失败）。 */
     data object Failed : UpdateDownloadState
 }
@@ -47,6 +55,9 @@ fun updateBannerText(version: String, state: UpdateDownloadState): UpdateBannerT
     is UpdateDownloadState.Ready ->
         UpdateBannerText("安装 $version", "已下载好，点一下打开系统安装器")
 
+    is UpdateDownloadState.NeedsPermission ->
+        UpdateBannerText("安装 $version", "需先允许「安装未知应用」，点一下授权")
+
     UpdateDownloadState.Failed ->
         UpdateBannerText("发现新版本 $version", "下载失败，点一下重试")
 
@@ -69,6 +80,7 @@ fun updateRowText(
     checking -> "正在检查…"
     state is UpdateDownloadState.Downloading -> downloadProgressLabel(state.progress)
     state is UpdateDownloadState.Ready -> "已下载好，点一下打开系统安装器"
+    state is UpdateDownloadState.NeedsPermission -> "需先允许「安装未知应用」，点一下授权"
     state is UpdateDownloadState.Failed -> "下载失败，点一下重试"
     result is UpdateChecker.Result.UpToDate -> "已是最新版本 $currentVersion"
     result is UpdateChecker.Result.NotConfigured -> "当前版本 $currentVersion（更新源未配置）"

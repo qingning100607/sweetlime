@@ -154,12 +154,23 @@ fun SweetLimeApp() {
      * 下载走应用私有目录，失败会停在 Failed（界面提示"点一下重试"），不会留下半截文件。
      */
     fun onUpdateAction() {
+        // 包已经在本地了：交给系统安装器；缺「安装未知应用」权限就标成 NeedsPermission，
+        // 界面会提示"点一下去授权"（installApkFile 内部会把授权页打开）。
+        fun startInstall(path: String) {
+            if (!installApkFile(path)) {
+                downloadState = UpdateDownloadState.NeedsPermission(path)
+            }
+        }
+
         when (val state = downloadState) {
             // 下载中重复点没意义，忽略。
             is UpdateDownloadState.Downloading -> Unit
 
             // 已经下好了：再点一下就是重新拉起系统安装器。
-            is UpdateDownloadState.Ready -> installApkFile(state.path)
+            is UpdateDownloadState.Ready -> startInstall(state.path)
+
+            // 上次点的时候没权限：再点一下要么装上，要么再去授权页。
+            is UpdateDownloadState.NeedsPermission -> startInstall(state.path)
 
             else -> {
                 val newer = updateResult as? UpdateChecker.Result.Newer
@@ -184,7 +195,8 @@ fun SweetLimeApp() {
                             } else {
                                 downloadState = UpdateDownloadState.Ready(path)
                                 // 下完直接把安装器叫起来，省用户一下点击；装不装由用户决定。
-                                installApkFile(path)
+                                // 首次装多半会缺「安装未知应用」权限，startInstall 会把它标成 NeedsPermission。
+                                startInstall(path)
                             }
                         }
                     }
