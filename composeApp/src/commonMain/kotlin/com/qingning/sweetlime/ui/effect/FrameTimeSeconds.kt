@@ -31,9 +31,21 @@ fun rememberFrameTimeSeconds(
 
         val start = withFrameNanos { it }
 
+        // 逐帧累加，而不是拿 (now - start) 直接算：
+        //
+        // 帧时钟会「停」—— 下拉通知栏、切 App、息屏，Choreographer 就不再发帧回调，
+        // 这个循环卡在 withFrameNanos 上；回来时 now 一下跳了几百毫秒到几秒，
+        // 直接相减的话流光图案会瞬间平移一大段，看起来就是「突然闪一下、像丢了帧」。
+        // 所以每帧的步长做个上限（50ms ≈ 20fps），暂停期间的时间不再算进来，
+        // 回来时接着原来的位置继续流动。
+        var accumulated = startOffset
+        var last = start
         while (playing) {
             val now = withFrameNanos { it }
-            time = startOffset + (now - start) / 1_000_000_000f
+            val step = ((now - last) / 1_000_000_000f).coerceIn(0f, 0.05f)
+            last = now
+            accumulated += step
+            time = accumulated
         }
     }
 
