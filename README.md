@@ -150,6 +150,10 @@ composeApp/src/
 * 单元测试全绿
 * 安装并启动成功，无崩溃
 
+## 许可证
+
+[MIT](LICENSE) —— 随便用、随便改、随便发，保留版权声明即可。
+
 ## 待办
 
 * 应用图标目前是矢量占位图（`res/drawable/ic_launcher.xml`），待替换为正式设计
