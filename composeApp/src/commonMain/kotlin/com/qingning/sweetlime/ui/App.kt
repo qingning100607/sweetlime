@@ -1,0 +1,595 @@
+package com.qingning.sweetlime.ui
+
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import com.qingning.sweetlime.core.StyleGroup
+import com.qingning.sweetlime.core.TransformItem
+import com.qingning.sweetlime.core.TransformRegistry
+import com.qingning.sweetlime.core.OpenSourceLicenses
+import com.qingning.sweetlime.core.PrivacyPolicy
+import com.qingning.sweetlime.core.copyToClipboard
+import com.qingning.sweetlime.core.createKeyValueStore
+import com.qingning.sweetlime.core.openUrl
+import com.qingning.sweetlime.core.shareText
+import com.qingning.sweetlime.data.FavoritesStore
+import com.qingning.sweetlime.data.RecentStore
+import com.qingning.sweetlime.data.SweetLimeSettings
+import com.qingning.sweetlime.ui.components.glassBar
+import com.qingning.sweetlime.ui.nav.Route
+import com.qingning.sweetlime.ui.screen.DetailScreen
+import com.qingning.sweetlime.ui.screen.DocScreen
+import com.qingning.sweetlime.ui.screen.FavoriteScreen
+import com.qingning.sweetlime.ui.screen.GroupScreen
+import com.qingning.sweetlime.ui.screen.HomeScreen
+import com.qingning.sweetlime.ui.screen.SearchScreen
+import com.qingning.sweetlime.ui.screen.SettingsScreen
+import com.qingning.sweetlime.ui.screen.SymbolCategoryScreen
+import com.qingning.sweetlime.ui.screen.ToolScreen
+import com.qingning.sweetlime.ui.screen.ToolsScreen
+import com.qingning.sweetlime.ui.theme.SweetLimeTheme
+import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.FloatingNavigationBar
+import top.yukonga.miuix.kmp.basic.FloatingNavigationBarItem
+import top.yukonga.miuix.kmp.basic.FloatingToolbarDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.NavigationBar
+import top.yukonga.miuix.kmp.basic.NavigationBarItem
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.drawBackdrop
+import top.yukonga.miuix.kmp.blur.effect
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.ConvertFile
+import top.yukonga.miuix.kmp.icon.extended.Favorites
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Settings
+import top.yukonga.miuix.kmp.icon.extended.Tune
+import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
+import top.yukonga.miuix.kmp.nav.core.NavDisplay
+import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
+import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
+import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
+import top.yukonga.miuix.kmp.nav.transition.NavTransition
+import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
+import top.yukonga.miuix.kmp.nav.transition.NavTransitions
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+/**
+ * 应用外壳。
+ *
+ * 页面切换交给 **miuix-nav**（Miuix 0.9.4 自带的导航运行时）：
+ * - 整个返回栈由一条 `Animatable<Float>`（animatedTop）驱动，每个页面的样子是「相对深度」的纯函数；
+ * - 默认过渡 `NavTransitions.MiuixDefault` = 整屏滑入 + 四分之一视差 + 被覆盖层轻微淡出；
+ * - 圆角裁切与压暗由 `NavDisplayEffects` 提供（默认开启），过渡只负责沿手势塑造它的曲线；
+ * - 返回手势是 1:1 跟手的预测性返回，松手要么提交（spring 收尾）要么回弹。
+ *
+ * 我们自己只做两件事：把状态（输入框、Tab、收藏、设置）提到这一层，
+ * 以及给底部导航栏铺一层玻璃。
+ */
+@Composable
+fun SweetLimeApp() {
+    val store = remember { createKeyValueStore() }
+    val settings = remember(store) { SweetLimeSettings(store) }
+    val favorites = remember(store) { FavoritesStore(store) }
+    val recent = remember(store) { RecentStore(store) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var input by rememberSaveable { mutableStateOf("") }
+
+    // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
+    val backStack = rememberNavBackStack<Route>(Route.Home)
+    fun goBack() {
+        backStack.removeLastOrNull()
+    }
+
+    fun copy(item: TransformItem) {
+        copyToClipboard(item.output)
+        scope.launch { snackbarHostState.showSnackbar("已复制「${item.styleTitle}」") }
+    }
+
+    fun copyRaw(text: String, label: String) {
+        copyToClipboard(text)
+        scope.launch { snackbarHostState.showSnackbar("已复制$label") }
+    }
+
+    /**
+     * 打开某个样式的详情页（顺便记一笔「最近使用」，搜索 / 分类 / 最近使用列表都走这里）。
+     *
+     * [text] 是要转换的原文：主页进来就是主页输入框里的内容；
+     * 搜索页进来则是**搜索框里的那行字** —— 搜什么，详情页的「原文」就是什么。
+     */
+    fun openStyle(styleId: String, text: String = input) {
+        recent.record(styleId)
+        backStack.add(Route.Item(styleId, text))
+    }
+
+    SweetLimeTheme(monet = settings.monet, themeMode = settings.themeMode) {
+        // 外面套一层 miuix 的 Scaffold：它负责提供 LocalPopupStates / LocalRootPopupStates，
+        // 并在最外层渲染 MiuixPopupHost()。设置页里「点一下弹出圆角菜单」的 OverlayListPopup
+        // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
+        // contentWindowInsets = 0：边到边由我们自己管，不要再被系统栏内边距顶一次。
+        Scaffold(
+            containerColor = MiuixTheme.colorScheme.surface,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        ) { _ ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+            ) {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { goBack() },
+                // 返回过渡：在 miuix 默认的整屏滑动之上，做成「卡片」——
+                // 被盖住的上一级页面缩小成一张小卡片、退到左边、并且变糊；
+                // 返回时反过来，那张卡片一边变清晰一边放大回全屏，
+                // 也就是返回过程中那点「景深 / 对焦」的味道。
+                transition = CardNavTransition(
+                    base = NavTransitions.MiuixDefault,
+                    maxBlurPx = with(LocalDensity.current) { 9.dp.toPx() },
+                ),
+                // 大 R 角 + 轻微压暗：过渡中两张页面（滑进来的新的、以及底下被揭开的上一级）
+                // 四角都是圆角，露出底下那层背景色，就是 HyperOS 那种「卡片」观感。
+                effects = NavDisplayEffects(
+                    enableCornerClip = true,
+                    cornerClipRadius = 28.dp,
+                    cornerClipMode = NavCornerClipMode.All,
+                    dimAmount = 0.35f,
+                    backdropColor = MiuixTheme.colorScheme.surface,
+                ),
+            ) {
+                entry<Route.Home> {
+                    RootScaffold(
+                        favorites = favorites,
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it },
+                        input = input,
+                        onInputChange = { input = it },
+                        floatingBottomBar = settings.floatingBottomBar,
+                        onCopy = ::copy,
+                        onOpenGroup = { backStack.add(Route.Group(it.name)) },
+                        onOpenTool = { backStack.add(Route.Tool(it)) },
+                        onOpenItem = { openStyle(it.styleId, it.input) },
+                        onOpenSettings = { backStack.add(Route.Settings) },
+                        onOpenSearch = { backStack.add(Route.Search) },
+                        recentIds = recent.ids,
+                        onOpenRecent = { openStyle(it) },
+                    )
+                }
+
+                entry<Route.Group>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                    val group = StyleGroup.entries.firstOrNull { it.name == route.groupId } ?: StyleGroup.LATIN
+                    GroupScreen(
+                        group = group,
+                        input = input,
+                        favorites = favorites,
+                        onBack = { goBack() },
+                        onCopy = ::copy,
+                        onToggleFavorite = { favorites.toggle(it.key) },
+                        onOpenItem = { openStyle(it.styleId, it.input) },
+                    )
+                }
+
+                entry<Route.Item>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                    val transform = TransformRegistry.byId(route.styleId)
+                    if (transform == null) {
+                        LaunchedEffect(route) { goBack() }
+                    } else {
+                        // 收藏键 = 样式 + 原文，原文在详情页里可以随时改，所以实时算。
+                        fun favoriteKey(text: String) =
+                            TransformItem(transform.id, transform.title, text, transform.transform(text)).key
+                        DetailScreen(
+                            transform = transform,
+                            initialInput = route.input,
+                            isFavorite = { favorites.contains(favoriteKey(it)) },
+                            onBack = { goBack() },
+                            onCopy = { output -> copyRaw(output, "「${transform.title}」") },
+                            onShare = { output -> shareText(output) },
+                            onToggleFavorite = { text -> favorites.toggle(favoriteKey(text)) },
+                            // 详情页里改的原文同步回主页输入框，返回后前后一致。
+                            onInputChange = { input = it },
+                        )
+                    }
+                }
+
+                entry<Route.Tool>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                    ToolScreen(
+                        toolId = route.id,
+                        onBack = { goBack() },
+                        onCopyText = ::copyRaw,
+                        onOpenSymbolCategory = { backStack.add(Route.Symbols(it)) },
+                    )
+                }
+
+                entry<Route.Symbols>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                    SymbolCategoryScreen(
+                        index = route.index,
+                        onBack = { goBack() },
+                        onCopyText = ::copyRaw,
+                    )
+                }
+
+                entry<Route.Settings>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                    SettingsScreen(
+                        settings = settings,
+                        onBack = { goBack() },
+                        onCopyText = ::copyRaw,
+                        onOpenUrl = ::openUrl,
+                        onOpenPrivacy = { backStack.add(Route.Privacy) },
+                        onOpenLicenses = { backStack.add(Route.Licenses) },
+                    )
+                }
+
+                entry<Route.Search>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                    SearchScreen(
+                        onBack = { goBack() },
+                        // 搜索页的原文 = 搜索框里那行字，直接带进详情页。
+                        onOpenStyle = { styleId, text -> openStyle(styleId, text) },
+                        onOpenGroup = { backStack.add(Route.Group(it)) },
+                        onOpenSymbols = { backStack.add(Route.Symbols(it)) },
+                        onOpenTool = { backStack.add(Route.Tool(it)) },
+                        onCopyText = ::copyRaw,
+                    )
+                }
+
+                entry<Route.Privacy>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                    DocScreen(
+                        title = PrivacyPolicy.TITLE,
+                        sections = PrivacyPolicy.SECTIONS,
+                        onBack = { goBack() },
+                    )
+                }
+
+                entry<Route.Licenses>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                    DocScreen(
+                        title = OpenSourceLicenses.TITLE,
+                        sections = OpenSourceLicenses.SECTIONS,
+                        onBack = { goBack() },
+                    )
+                }
+
+            }
+
+            SnackbarHost(
+                state = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = if (backStack.size > 1) 24.dp else 120.dp),
+            )
+            }
+        }
+    }
+}
+
+/**
+ * 底层脚手架：顶栏（大标题）+ 内容 + **压在内容之上的玻璃导航栏**。
+ *
+ * 玻璃（miuix-blur 的 LayerBackdrop）只采样「顶栏 + 内容」这一层 ——
+ * 导航栏自己是它的兄弟节点，不会被一起采样，所以不会出现「自己采样自己」的递归。
+ * 内容底部按实测栏高避让，最后一条永远完整可见。
+ */
+@Composable
+private fun RootScaffold(
+    favorites: FavoritesStore,
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    input: String,
+    onInputChange: (String) -> Unit,
+    floatingBottomBar: Boolean,
+    onCopy: (TransformItem) -> Unit,
+    onOpenGroup: (StyleGroup) -> Unit,
+    onOpenTool: (String) -> Unit,
+    onOpenItem: (TransformItem) -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenSearch: () -> Unit,
+    recentIds: List<String>,
+    onOpenRecent: (String) -> Unit,
+) {
+    var topBarHeight by remember { mutableStateOf(0.dp) }
+    var bottomBarHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+    val backdrop = rememberLayerBackdrop()
+    // HyperOS 的大标题：往上滑时大标题收起、往下滑时再展开。
+    // 它靠嵌套滚动驱动，所以下面的内容层要挂上它的 nestedScrollConnection。
+    val scrollBehavior = MiuixScrollBehavior()
+    val topBlurPx = remember(density) { with(density) { 24.dp.toPx() } }
+    val bottomBlurPx = remember(density) { with(density) { 28.dp.toPx() } }
+    // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
+    // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
+    val glassTint = MiuixTheme.colorScheme.surface
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 内容层：铺满整屏，既当玻璃的采样源，也能从顶栏 / 底栏下面滑过去。
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+        ) {
+            val contentPadding = remember(topBarHeight, bottomBarHeight) {
+                PaddingValues(
+                    top = topBarHeight,
+                    bottom = bottomBarHeight + 24.dp,
+                )
+            }
+            when (selectedTab) {
+                0 -> HomeScreen(
+                    input = input,
+                    onInputChange = onInputChange,
+                    outerPadding = contentPadding,
+                    onOpenGroup = onOpenGroup,
+                    recentIds = recentIds,
+                    onOpenRecent = onOpenRecent,
+                )
+                1 -> ToolsScreen(
+                    outerPadding = contentPadding,
+                    onOpenTool = onOpenTool,
+                )
+                else -> FavoriteScreen(
+                    favorites = favorites,
+                    outerPadding = contentPadding,
+                    onCopy = onCopy,
+                    onOpen = onOpenItem,
+                )
+            }
+        }
+
+        // 顶部玻璃栏。
+        //
+        // 这里不用 shader 的「渐进模糊」（部分机型会退化成整块均匀模糊，
+        // 于是顶栏下沿出现一条方形硬边），而是把**模糊结果本身**用一条垂直 alpha
+        // 渐变遮罩掉：顶部 100% 可见 → 越往下越淡 → 到底边刚好为 0。
+        // 不管设备支持什么，下边缘都一定是平滑消失的，不可能出现硬边。
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .onSizeChanged { topBarHeight = with(density) { it.height.toDp() } },
+        ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .glassBar(backdrop, topBlurPx, glassTint, fadeFromTop = true),
+            )
+            TopAppBar(
+                // 大标题会随内容上滑收起、下滑展开（HyperOS 那种），
+                // 收起后小标题才会出现在栏里 —— 不再是「SweetLime 一直杵在顶上」。
+                title = "SweetLime",
+                largeTitle = "SweetLime",
+                color = Color.Transparent,
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = onOpenSearch) {
+                        Icon(
+                            imageVector = MiuixIcons.Search,
+                            contentDescription = "搜索",
+                            tint = MiuixTheme.colorScheme.onSurface,
+                        )
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = MiuixIcons.Settings,
+                            contentDescription = "设置",
+                            tint = MiuixTheme.colorScheme.onSurface,
+                        )
+                    }
+                },
+            )
+        }
+
+        // 底部玻璃栏：浮在内容之上，列表从它下面滑过时被高斯模糊。
+        //
+        // 两种形态（由设置里的「悬浮底栏」切换）：
+        // - 普通：贴底整条，玻璃矩形铺满整个宽度，上沿用渐变淡出；
+        // - 悬浮：抄 KernelSU 那种浮起来的小圆角胶囊（miuix 自带的 FloatingNavigationBar），
+        //   玻璃直接画在胶囊自己身上（同形状同尺寸），不做渐隐，左右留白。
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .onSizeChanged { bottomBarHeight = with(density) { it.height.toDp() } },
+        ) {
+            if (floatingBottomBar) {
+                FloatingNavigationBar(
+                    // 胶囊自己的背景置空：圆角玻璃由下面的 glassBar 画，尺寸形状天然一致。
+                    color = Color.Transparent,
+                    modifier = Modifier.glassBar(
+                        backdrop = backdrop,
+                        blurPx = bottomBlurPx,
+                        tint = glassTint,
+                        shape = RoundedCornerShape(FloatingToolbarDefaults.CornerRadius),
+                        fadeFromTop = null,
+                        tintAlpha = 0.66f,
+                    ),
+                ) {
+                    FloatingBottomItem(selectedTab == 0, { onTabSelected(0) }, MiuixIcons.ConvertFile, "转换")
+                    FloatingBottomItem(selectedTab == 1, { onTabSelected(1) }, MiuixIcons.Tune, "工具")
+                    FloatingBottomItem(selectedTab == 2, { onTabSelected(2) }, MiuixIcons.Favorites, "收藏")
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .glassBar(backdrop, bottomBlurPx, glassTint, fadeFromTop = false),
+                )
+                NavigationBar(color = Color.Transparent) {
+                    NavigationBarItem(
+                        selected = selectedTab == 0,
+                        onClick = { onTabSelected(0) },
+                        icon = MiuixIcons.ConvertFile,
+                        label = "转换",
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick = { onTabSelected(1) },
+                        icon = MiuixIcons.Tune,
+                        label = "工具",
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 2,
+                        onClick = { onTabSelected(2) },
+                        icon = MiuixIcons.Favorites,
+                        label = "收藏",
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * 悬浮底栏里的单个入口（只有图标，跟 KernelSU 那种胶囊一致）。
+ *
+ * miuix 的 [FloatingNavigationBarItem] 按下去只会换一下图标颜色，手感几乎察觉不到，
+ * 所以在外面再包一层：按下时图标用力缩到 0.86 再带弹簧弹回（弹簧很硬、阻尼偏低，
+ * 即使是轻点一下也能看到那下回弹），真正点中时再补一次很轻的触感反馈。
+ *
+ * 这里只「观察」按下状态、不消费手势，点击仍然由里面的 item 自己处理。
+ */
+@Composable
+private fun FloatingBottomItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector,
+    label: String,
+) {
+    val haptic = LocalHapticFeedback.current
+    var pressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.86f else 1f,
+        animationSpec = spring(
+            dampingRatio = 0.55f,
+            stiffness = 2500f,
+        ),
+        label = "floatingItemScale",
+    )
+    Box(
+        modifier = Modifier
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    pressed = true
+                    waitForUpOrCancellation()
+                    pressed = false
+                }
+            }
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+    ) {
+        FloatingNavigationBarItem(
+            selected = selected,
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            },
+            icon = icon,
+            label = label,
+        )
+    }
+}
+
+/**
+ * 在任意 [NavTransition] 之上叠一层「卡片化 + 随遮挡程度变化的高斯模糊」。
+ *
+ * 相对深度 `relativeDepth`：0 = 当前最上面的页面，1 = 被它完全盖住的那一层。
+ *
+ * - **顶层页面**（d ≤ 0，正在滑入 / 正在被返回掉）：只做一点轻微的放大收尾，
+ *   不糊 —— 顶层的字必须始终是清晰的。
+ * - **被盖住的上一级**（0 < d ≤ 1）：缩小成一张小卡片、往左退一点、同时越来越糊；
+ *   返回时这段动画反着走，于是「卡片一边变清晰一边放大回全屏」，
+ *   也就是用户要的「返回过程中加一点高斯模糊」。
+ *
+ * 模糊走 `renderEffect = BlurEffect(...)`（Android 12+ 的原生高斯 RenderEffect），
+ * 在 `graphicsLayer` 里读深度，整段动画零重组；静止时（半径 < 0.5px）直接置空，
+ * 不影响平时观感与性能。
+ */
+private class CardNavTransition(
+    private val base: NavTransition,
+    private val maxBlurPx: Float,
+) : NavTransition {
+
+    /** 被盖住时缩到多小（越小卡片感越强，1f 就是完全不缩）。 */
+    private val coveredScale = 0.94f
+
+    /** 顶层页面滑入时的起始缩放（略小一点点，收尾时回到 1）。 */
+    private val enteringScale = 0.97f
+
+    override fun Modifier.transformEntry(scope: NavTransitionScope): Modifier {
+        val layered = with(base) { this@transformEntry.transformEntry(scope) }
+        return layered.graphicsLayer {
+            val d = scope.relativeDepth
+            if (d <= 0f) {
+                // 顶层：从 enteringScale 收到 1，配合滑入；不施加模糊。
+                val p = (-d).coerceIn(0f, 1f)
+                val s = enteringScale + (1f - enteringScale) * (1f - p)
+                scaleX = s
+                scaleY = s
+                renderEffect = null
+            } else {
+                // 被盖住的那一层：缩小 + 变糊。
+                val p = d.coerceIn(0f, 1f)
+                val s = 1f - (1f - coveredScale) * p
+                scaleX = s
+                scaleY = s
+                val radius = maxBlurPx * p
+                renderEffect = if (radius > 0.5f) {
+                    BlurEffect(radius, radius, TileMode.Clamp)
+                } else {
+                    null
+                }
+            }
+        }
+    }
+}
