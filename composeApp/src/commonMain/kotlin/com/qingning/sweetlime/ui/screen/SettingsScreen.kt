@@ -216,12 +216,17 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
+                val newer = updateResult as? UpdateChecker.Result.Newer
                 val updateSummary = when {
                     checking -> "正在检查…"
                     updateResult is UpdateChecker.Result.UpToDate -> "已是最新版本 $APP_VERSION"
                     updateResult is UpdateChecker.Result.NotConfigured -> "当前版本 $APP_VERSION（更新源未配置）"
-                    updateResult is UpdateChecker.Result.Newer ->
-                        "发现新版本 ${(updateResult as UpdateChecker.Result.Newer).latest}，到交流群获取"
+                    newer != null ->
+                        if (newer.releaseUrl != null) {
+                            "发现新版本 ${newer.latest}，点击前往下载"
+                        } else {
+                            "发现新版本 ${newer.latest}，到交流群获取"
+                        }
                     updateResult is UpdateChecker.Result.Failed -> "检查失败，请稍后再试"
                     else -> "点击检查是否有新版本"
                 }
@@ -229,7 +234,11 @@ fun SettingsScreen(
                     title = "检查更新",
                     summary = updateSummary,
                     onClick = {
-                        if (!checking) {
+                        // 已经查到新版本、也拿到了发布页，就直接跳过去；否则重新检查。
+                        val releaseUrl = (updateResult as? UpdateChecker.Result.Newer)?.releaseUrl
+                        if (releaseUrl != null) {
+                            onOpenUrl(releaseUrl)
+                        } else if (!checking) {
                             checking = true
                             scope.launch {
                                 updateResult = UpdateChecker.check()
