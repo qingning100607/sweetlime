@@ -33,6 +33,17 @@ import androidx.compose.ui.graphics.Color
 class FlowingLayer(
     val brush: Brush,
     val base: Color,
+    /**
+     * 帧计时（秒）的读取器。**必须在 draw 里读一次**：
+     *
+     * 着色器的 uniforms 是底层那层每帧更新的，但「页面自己刷的那一遍」如果什么 state
+     * 都不读，Compose 会认为这个 draw 不需要重画（NavDisplay 还给每个页面套了离屏图层），
+     * 于是那一遍只在第一帧执行过 —— 观感就是「主页在流动，二级页/设置页的流光却是定格的」。
+     *
+     * 读一下它，页面这一层就每帧跟着重画，和主页完全同步（上游给关于页套的是第二个
+     * BgEffectBackground 实例，它内部同样每帧读帧计时，所以本来就没有这个问题）。
+     */
+    val tick: () -> Float,
 )
 
 /**
@@ -54,6 +65,8 @@ val LocalFlowingLayer = staticCompositionLocalOf<FlowingLayer?> { null }
 fun Modifier.flowingPageLayer(): Modifier {
     val layer = LocalFlowingLayer.current ?: return this
     return drawBehind {
+        // 读一下帧计时：这一笔是「每帧都要重画」的信号，删了二级页的流光就会定格。
+        layer.tick()
         drawRect(layer.base)
         drawRect(layer.brush)
     }

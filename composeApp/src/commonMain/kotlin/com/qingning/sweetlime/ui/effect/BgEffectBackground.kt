@@ -113,7 +113,11 @@ fun BgEffectBackground(
         // 把这一帧的「流光画刷 + 底色」交给下面的内容：二级页 / 设置页拿它给自己
         // 再刷一层一模一样的流光，页面就变成「实的」了。详见 FlowingLayer.kt。
         CompositionLocalProvider(
-            LocalFlowingLayer provides if (drawEffect) FlowingLayer(painter.brush, surface) else null,
+            LocalFlowingLayer provides if (drawEffect) {
+                FlowingLayer(painter.brush, surface, animTime)
+            } else {
+                null
+            },
         ) {
             content()
         }
