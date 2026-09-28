@@ -196,11 +196,6 @@ fun SettingsScreen(
                     .padding(horizontal = 12.dp),
             ) {
                 BasicComponent(
-                    title = "隐私",
-                    summary = "全部转换都在本机完成，不联网、不上传任何内容",
-                )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                BasicComponent(
                     title = "兼容性提示",
                     summary = "花体、特殊符号等字符依赖系统字体，个别机型或 App 里可能显示成方框、问号，" +
                         "这是字体缺失导致的正常现象，换台设备或换成支持字体的 App 就能正常显示。" +
