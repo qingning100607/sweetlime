@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  圆形图标：内容与 ic_launcher 完全一致。
+  本项目 minSdk 33，所以只需要这一份 anydpi-v26 的定义，不用再放 PNG 兜底。
+
+  monochrome 层是 Android 13 起「主题图标」用的：系统会拿它的 alpha 当形状、
+  用自己的配色重新填色，所以那层必须是纯白剪影。
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
+</adaptive-icon>

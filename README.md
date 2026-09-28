@@ -54,6 +54,29 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 > compileSdk 必须是 37：Miuix 0.9.4 与 androidx.compose 1.12.1 的 AAR 元数据要求 37；
 > 同时 compose 1.12.1 要求 AGP ≥ 9.1.0，AGP 9.1.0 要求 Gradle ≥ 9.3.1。
 
+## 应用图标
+
+自适应图标（Android 8.0+ 标准三层结构），五档密度齐全：
+
+```
+res/mipmap-anydpi-v26/ic_launcher.xml   自适应图标定义（含 round 版本）
+res/mipmap-*/ic_launcher_background.png 背景层：青柠绿对角渐变
+res/mipmap-*/ic_launcher_foreground.png 前景层：白色柠檬片 + 叶子
+res/mipmap-*/ic_launcher_monochrome.png 单色层：纯白剪影，给 Android 13+ 主题图标用
+```
+
+图标是**脚本画的，可复现**，不需要设计稿：
+
+```bash
+python3 tools/make_icon.py     # 需要 Pillow
+```
+
+脚本每次生成都会校验一条最容易踩的规则：自适应图标的 108x108 画布里，
+只有中间 72x72 必然可见，圆形掩码最多裁到半径 36 —— 所以**所有不透明像素**
+**到中心的距离必须 ≤ 34**（留余量）。超了会直接打印报警，不用靠眼睛看。
+
+预览（左→右：背景层 / 前景层 / 合成效果 / 单色层）：`icon_preview.png`
+
 ## 构建
 
 ```bash
@@ -156,10 +179,7 @@ composeApp/src/
 
 ## 待办
 
-* 应用图标目前是矢量占位图（`res/drawable/ic_launcher.xml`），待替换为正式设计
-* 自适应图标（mipmap + adaptive-icon）尚未补齐
 * 更新检查接的是本仓库的 Releases：主源 `releases/latest`，备用源 `master/version.json`
   （GitHub 匿名 API 有频率限制，共享 IP 容易撞到，raw 没有）
-
 * 预测性返回与 Miuix 组件的手感需真机手动确认；如与 `miuix-nav` 手势冲突，需二选一
 * 压缩包只支持 zip；写回尚非事务（已有内存备份回滚）
