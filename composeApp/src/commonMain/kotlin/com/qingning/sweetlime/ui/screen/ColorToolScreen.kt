@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.ColorConverter
 import com.qingning.sweetlime.core.tools.ColorInfo
-import com.qingning.sweetlime.ui.components.TiltPressTextField
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
@@ -51,10 +50,11 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             .padding(horizontal = 12.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        TiltPressTextField(
+        TextField(
             value = input,
             onValueChange = { input = it },
             label = "输入颜色，例如 #FF5722",
+            useLabelAsPlaceholder = true,
             maxLines = 2,
             modifier = Modifier.fillMaxWidth(),
         )

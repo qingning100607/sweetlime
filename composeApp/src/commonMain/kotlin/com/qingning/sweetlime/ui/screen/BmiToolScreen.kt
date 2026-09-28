@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.BmiCalculator
 import com.qingning.sweetlime.core.tools.BmiLevel
-import com.qingning.sweetlime.ui.components.TiltPressTextField
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -61,17 +60,19 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TiltPressTextField(
+            TextField(
                 value = heightText,
                 onValueChange = { heightText = it },
                 label = "身高 cm",
+                useLabelAsPlaceholder = true,
                 maxLines = 1,
                 modifier = Modifier.weight(1f),
             )
-            TiltPressTextField(
+            TextField(
                 value = weightText,
                 onValueChange = { weightText = it },
                 label = "体重 kg",
+                useLabelAsPlaceholder = true,
                 maxLines = 1,
                 modifier = Modifier.weight(1f),
             )

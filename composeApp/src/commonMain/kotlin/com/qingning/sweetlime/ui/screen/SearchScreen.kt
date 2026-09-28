@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.SearchEngine
 import com.qingning.sweetlime.core.SearchHit
 import com.qingning.sweetlime.ui.components.GlassTopBarScaffold
-import com.qingning.sweetlime.ui.components.PressableRow
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
@@ -29,8 +28,6 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.ui.components.TiltPressTextField
-import com.qingning.sweetlime.ui.components.pageChunks
-import com.qingning.sweetlime.ui.components.TiltPressCard
 
 /**
  * 全局搜索（二级页）。
@@ -109,18 +106,13 @@ fun SearchScreen(
                 item(key = "section_$sectionStart") {
                     SmallTitle(text = "$label · ${sectionEnd - sectionStart}")
                 }
-                // 同一段里也可能很长：每 6 条一张卡片、卡片之间留空隙。
-                items(
-                    items = pageChunks(sectionEnd - sectionStart, per = 6),
-                    key = { "card_${sectionStart}_${it.first}" },
-                ) { range ->
-                    TiltPressCard(
+                item(key = "card_$sectionStart") {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                            .padding(horizontal = 12.dp),
                     ) {
-                        for (offset in range) {
-                            val i = sectionStart + offset
+                        for (i in sectionStart until sectionEnd) {
                             val hit = hits[i]
                             // 先取出样式（只有样式条目才有），避免在 lambda 里对 hit 做智能转换。
                             val style = hit as? SearchHit.Style
@@ -134,7 +126,7 @@ fun SearchScreen(
                                 onOpenTool = onOpenTool,
                                 onCopyText = onCopyText,
                             )
-                            if (offset != range.last) {
+                            if (i != sectionEnd - 1) {
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             }
                         }
@@ -166,7 +158,7 @@ private fun SearchRow(
     onCopyText: (String, String) -> Unit,
 ) {
     when (hit) {
-        is SearchHit.Style -> PressableRow(
+        is SearchHit.Style -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
             onClick = onOpenStyle,
@@ -179,7 +171,7 @@ private fun SearchRow(
             },
         )
 
-        is SearchHit.StyleCategory -> PressableRow(
+        is SearchHit.StyleCategory -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
             onClick = { onOpenGroup(hit.groupId) },
@@ -192,7 +184,7 @@ private fun SearchRow(
             },
         )
 
-        is SearchHit.Symbol -> PressableRow(
+        is SearchHit.Symbol -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
             onClick = { onCopyText(hit.symbol, "符号") },
@@ -205,7 +197,7 @@ private fun SearchRow(
             },
         )
 
-        is SearchHit.SymbolCategory -> PressableRow(
+        is SearchHit.SymbolCategory -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
             onClick = { onOpenSymbols(hit.index) },
@@ -218,7 +210,7 @@ private fun SearchRow(
             },
         )
 
-        is SearchHit.Tool -> PressableRow(
+        is SearchHit.Tool -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
             onClick = { onOpenTool(hit.id) },
@@ -231,7 +223,7 @@ private fun SearchRow(
             },
         )
 
-        is SearchHit.Hanzi -> PressableRow(
+        is SearchHit.Hanzi -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
             onClick = { onCopyText(hit.payload, "拼音 / 拆分") },

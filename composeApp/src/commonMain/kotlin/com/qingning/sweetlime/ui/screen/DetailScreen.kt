@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.readClipboard
-import com.qingning.sweetlime.ui.components.TiltPressTextField
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -108,13 +107,14 @@ fun DetailScreen(
         ) {
             SmallTitle(text = "原文")
             Card(modifier = Modifier.fillMaxWidth()) {
-                TiltPressTextField(
+                TextField(
                     value = text,
                     onValueChange = {
                         text = it
                         onInputChange(it)
                     },
                     label = "输入要转换的文字",
+                    useLabelAsPlaceholder = true,
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                 )

@@ -30,7 +30,6 @@ import com.qingning.sweetlime.data.ThemeMode
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.UpdateDownloadState
-import com.qingning.sweetlime.ui.components.PressableRow
 import com.qingning.sweetlime.ui.components.glassBar
 import com.qingning.sweetlime.ui.updateRowText
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -123,7 +122,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(topBarHeight))
 
             SmallTitle(text = "外观")
-            TiltPressCard(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
@@ -136,7 +135,7 @@ fun SettingsScreen(
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    PressableRow(
+                    BasicComponent(
                         title = "深色模式",
                         onClick = { showThemePopup = true },
                         endActions = {
@@ -213,7 +212,7 @@ fun SettingsScreen(
                 if (settings.flowingBackground) {
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        PressableRow(
+                        BasicComponent(
                             title = "流光风格",
                             summary = "「跟随系统」按 HyperOS 大版本自动选，也可以锁定 OS 2 / OS 3",
                             onClick = { showFlowStylePopup = true },
@@ -305,7 +304,7 @@ fun SettingsScreen(
                     currentVersion = APP_VERSION,
                 )
                 val hasNewer = updateResult is UpdateChecker.Result.Newer
-                PressableRow(
+                BasicComponent(
                     title = "检查更新",
                     summary = updateSummary,
                     onClick = {
@@ -324,7 +323,7 @@ fun SettingsScreen(
                     },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                PressableRow(
+                BasicComponent(
                     title = "隐私政策",
                     summary = "本机处理，不联网、不上传任何内容",
                     onClick = onOpenPrivacy,
@@ -337,7 +336,7 @@ fun SettingsScreen(
                     },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                PressableRow(
+                BasicComponent(
                     title = "开源许可",
                     summary = "用到的开源项目与许可证",
                     onClick = onOpenLicenses,
@@ -364,7 +363,7 @@ fun SettingsScreen(
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    PressableRow(
+                    BasicComponent(
                         title = "GitHub 仓库",
                         summary = "qingning100607/sweetlime · 点击打开源码页",
                         onClick = { onOpenUrl(UpdateChecker.REPO_URL) },
@@ -379,7 +378,7 @@ fun SettingsScreen(
                 }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    PressableRow(
+                    BasicComponent(
                         title = "作者",
                         summary = "$AUTHOR_NAME · QQ $AUTHOR_QQ · 点击复制",
                         onClick = { onCopyText(AUTHOR_QQ, "作者 QQ") },
@@ -394,7 +393,7 @@ fun SettingsScreen(
                 }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    PressableRow(
+                    BasicComponent(
                         title = "交流群",
                         summary = "QQ 群 $COMMUNITY_GROUP · 点击一键加群",
                         onClick = { onOpenUrl(COMMUNITY_LINK) },

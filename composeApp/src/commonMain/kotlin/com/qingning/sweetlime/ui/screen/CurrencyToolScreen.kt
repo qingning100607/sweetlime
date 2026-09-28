@@ -21,8 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.CurrencyApi
 import com.qingning.sweetlime.core.tools.CurrencyRates
-import com.qingning.sweetlime.ui.components.PressableRow
-import com.qingning.sweetlime.ui.components.TiltPressTextField
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -40,7 +39,6 @@ import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs
 import kotlin.math.round
-import com.qingning.sweetlime.ui.components.TiltPressCard
 
 
 @Composable
@@ -75,15 +73,16 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             .padding(horizontal = 12.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        TiltPressTextField(
+        TextField(
             value = amountText,
             onValueChange = { amountText = it },
             label = "金额",
+            useLabelAsPlaceholder = true,
             maxLines = 1,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(8.dp))
-        TiltPressCard(modifier = Modifier.fillMaxWidth()) {
+        Card(modifier = Modifier.fillMaxWidth()) {
             CurrencyPickRow(
                 title = "从",
                 code = fromCode,
@@ -116,7 +115,7 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             modifier = Modifier.padding(horizontal = 4.dp),
         )
         SmallTitle(text = "换算结果")
-        TiltPressCard(modifier = Modifier.fillMaxWidth()) {
+        Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val message = when {
                     !finished -> "正在获取汇率…"
@@ -169,7 +168,7 @@ private fun CurrencyPickRow(
     onPick: (String) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
-        PressableRow(
+        BasicComponent(
             title = title,
             summary = CurrencyApi.displayName(code),
             onClick = onExpand,

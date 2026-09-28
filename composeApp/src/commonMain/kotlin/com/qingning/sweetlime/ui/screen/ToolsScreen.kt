@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.TOOL_ENTRIES
-import com.qingning.sweetlime.ui.components.PressableRow
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
@@ -50,7 +49,7 @@ fun ToolsScreen(
                     .padding(horizontal = 12.dp),
             ) {
                 TOOL_ENTRIES.forEachIndexed { index, tool ->
-                    PressableRow(
+                    BasicComponent(
                         title = tool.title,
                         summary = tool.summary,
                         onClick = { onOpenTool(tool.id) },

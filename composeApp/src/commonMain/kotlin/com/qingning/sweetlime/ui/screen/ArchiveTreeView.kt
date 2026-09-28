@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.ArchiveEntry
-import com.qingning.sweetlime.ui.components.PressableRow
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -82,7 +82,7 @@ internal fun ArchiveDirectoryPane(
             }
         }
         items(items = rows, key = { it.path }) { row ->
-            PressableRow(
+            BasicComponent(
                 title = buildString {
                     if (row.isDirectory) {
                         append(if (row.path in expanded) "▾ " else "▸ ")

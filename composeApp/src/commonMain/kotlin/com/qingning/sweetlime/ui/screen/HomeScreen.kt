@@ -22,15 +22,14 @@ import com.qingning.sweetlime.core.readClipboard
 import com.qingning.sweetlime.ui.UpdateDownloadState
 import com.qingning.sweetlime.ui.updateBannerText
 import com.qingning.sweetlime.ui.components.ChipButton
-import com.qingning.sweetlime.ui.components.PressableRow
 import com.qingning.sweetlime.ui.components.TiltPressTextField
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Clear
@@ -118,7 +117,7 @@ fun HomeScreen(
                         .padding(horizontal = 12.dp)
                         .padding(top = 8.dp),
                 ) {
-                    PressableRow(
+                    BasicComponent(
                         title = banner.title,
                         summary = banner.summary,
                         onClick = onUpdateAction,
@@ -139,6 +138,8 @@ fun HomeScreen(
             }
         }
         item(key = "home_input") {
+            // 主页这个输入框（用户口中的「主页搜索框」）保留按角沉下去的手感，
+            // 跟搜索页的搜索框一致；其余地方都是 miuix 原生高亮。
             TiltPressTextField(
                 value = input,
                 onValueChange = onInputChange,
@@ -221,7 +222,7 @@ fun HomeScreen(
                     .padding(horizontal = 12.dp),
             ) {
                 entries.forEachIndexed { index, entry ->
-                    PressableRow(
+                    BasicComponent(
                         title = entry.group.label,
                         summary = when {
                             input.isBlank() -> "${entry.count} 种样式"
