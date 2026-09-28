@@ -91,6 +91,23 @@ class BgEffectPainter(
         runtimeShader.setFloatUniform("uColors", colors)
     }
 
+    /** 配色插值的预分配缓冲：每帧插一次，不新建数组。 */
+    private val colorBuffer = FloatArray(16)
+
+    /**
+     * 把 start → end 按 [fraction] 插值成这一帧的配色并推给着色器。
+     *
+     * 上游是在绘制回调里 `FloatArray(16) { ... }` 现造的 —— 每秒 60 次小数组分配，
+     * 单看不贵，但在「着色器 + 高斯模糊」本来就吃满一帧的时候，这点 GC 抖动正好
+     * 容易把某一帧顶过 16.6ms。这里改成复用同一个缓冲。
+     */
+    fun updateColors(start: FloatArray, end: FloatArray, fraction: Float) {
+        for (i in 0 until 16) {
+            colorBuffer[i] = start[i] + (end[i] - start[i]) * fraction
+        }
+        runtimeShader.setFloatUniform("uColors", colorBuffer)
+    }
+
     fun updatePresetIfNeeded(logoHeight: Float, height: Float, width: Float, isDark: Boolean) {
         if (presetApplied && isDarkCached == isDark) return
         updateBound(logoHeight, height, width)

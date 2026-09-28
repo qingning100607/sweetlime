@@ -57,6 +57,7 @@ import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.ui.components.TiltPressCard
 
 /** 作者 / 交流群等信息（想改成自己的直接改这几个常量即可）。 */
 private const val AUTHOR_NAME = "青柠不酸只甜"
@@ -122,7 +123,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(topBarHeight))
 
             SmallTitle(text = "外观")
-            Card(
+            TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
@@ -274,7 +275,7 @@ fun SettingsScreen(
 
             // 兼容性提示：单独一张圆角卡，和上面的「外观」分开，也不再跟在关于信息后面。
             SmallTitle(text = "兼容性")
-            Card(
+            TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
@@ -290,7 +291,7 @@ fun SettingsScreen(
 
             // 更新与协议：检查更新 + 隐私政策 + 开源许可。
             SmallTitle(text = "更新与协议")
-            Card(
+            TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
@@ -352,7 +353,7 @@ fun SettingsScreen(
 
             // 关于：作者 / 交流群信息压到 3 条以内，并且放到页面最底部。
             SmallTitle(text = "关于")
-            Card(
+            TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),

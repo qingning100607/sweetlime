@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,9 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.ui.components.TiltPressTextField
+import com.qingning.sweetlime.ui.components.pageChunks
+import com.qingning.sweetlime.ui.components.TiltPressCard
 
 /**
  * 全局搜索（二级页）。
@@ -60,11 +64,10 @@ fun SearchScreen(
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "search_field") {
-                TextField(
+                TiltPressTextField(
                     value = query,
                     onValueChange = { query = it },
                     label = "输入文字，同时搜索样式 / 符号",
-                    useLabelAsPlaceholder = true,
                     maxLines = 3,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -106,13 +109,18 @@ fun SearchScreen(
                 item(key = "section_$sectionStart") {
                     SmallTitle(text = "$label · ${sectionEnd - sectionStart}")
                 }
-                item(key = "card_$sectionStart") {
-                    Card(
+                // 同一段里也可能很长：每 6 条一张卡片、卡片之间留空隙。
+                items(
+                    items = pageChunks(sectionEnd - sectionStart, per = 6),
+                    key = { "card_${sectionStart}_${it.first}" },
+                ) { range ->
+                    TiltPressCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
                     ) {
-                        for (i in sectionStart until sectionEnd) {
+                        for (offset in range) {
+                            val i = sectionStart + offset
                             val hit = hits[i]
                             // 先取出样式（只有样式条目才有），避免在 lambda 里对 hit 做智能转换。
                             val style = hit as? SearchHit.Style
@@ -126,7 +134,7 @@ fun SearchScreen(
                                 onOpenTool = onOpenTool,
                                 onCopyText = onCopyText,
                             )
-                            if (i != sectionEnd - 1) {
+                            if (offset != range.last) {
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             }
                         }
@@ -243,7 +251,10 @@ private fun HintCard(text: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp),
+            // 顶部要留出空隙：搜索框（尤其是带 Tilt 的输入框）和这张小字卡片
+            // 原本是贴在一起的，看着像同一块。
+            .padding(horizontal = 12.dp)
+            .padding(top = 10.dp),
     ) {
         Text(
             text = text,

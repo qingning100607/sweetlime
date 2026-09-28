@@ -102,22 +102,25 @@ fun BgEffectBackground(
                 }
                 val start = getColors(base)
                 val end = getColors(base + 1)
-                val currentColors = FloatArray(16) { i -> start[i] + (end[i] - start[i]) * fraction }
                 painter.updateResolution(size.width, size.height)
                 painter.updatePresetIfNeeded(drawHeight, size.height, size.width, isDark)
-                painter.updateColors(currentColors)
+                // 配色插值在 painter 内部的预分配缓冲里做，避免每帧新建 FloatArray。
+                painter.updateColors(start, end, fraction)
                 painter.updateAnimTime(animTime())
                 drawRect(painter.brush, alpha = alpha())
             }
         }
         // 把这一帧的「流光画刷 + 底色」交给下面的内容：二级页 / 设置页拿它给自己
         // 再刷一层一模一样的流光，页面就变成「实的」了。详见 FlowingLayer.kt。
+        //
+        // 这里必须 remember：否则本组件每重组一次都会造一个新的 FlowingLayer，
+        // CompositionLocal 的值随之变化 —— 所有读 LocalFlowingLayer 的页面
+        // （每个二级页的 flowingPageLayer()）就跟着整棵重组一次，白给的掉帧。
+        val flowingLayer = remember(drawEffect, painter, surface) {
+            if (drawEffect) FlowingLayer(painter.brush, surface, animTime) else null
+        }
         CompositionLocalProvider(
-            LocalFlowingLayer provides if (drawEffect) {
-                FlowingLayer(painter.brush, surface, animTime)
-            } else {
-                null
-            },
+            LocalFlowingLayer provides flowingLayer,
         ) {
             content()
         }

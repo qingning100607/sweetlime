@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -32,6 +33,9 @@ import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.Favorites
 import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.ui.components.TiltPressCard
+import com.qingning.sweetlime.ui.components.PressableRow
+import com.qingning.sweetlime.ui.components.pageChunks
 
 /**
  * 某个分类的二级页：竖排列出该分类下的全部样式。
@@ -103,14 +107,20 @@ fun GroupScreen(
             item(key = "group_count") {
                 SmallTitle(text = "共 ${items.size} 种样式 · 点条目看详情")
             }
-            item(key = "group_items") {
-                Card(
+            // 长目录切块：每 6 条一张卡片、卡片之间留空隙。
+            // 整张巨大卡片一起倾倒太突兀，切小块后只有手指那一片会动，稳得多。
+            items(
+                items = pageChunks(items.size, per = 6),
+                key = { "group_chunk_${it.first}" },
+            ) { range ->
+                TiltPressCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
-                    items.forEachIndexed { index, item ->
-                        BasicComponent(
+                    for (index in range) {
+                        val item = items[index]
+                        PressableRow(
                             title = item.styleTitle,
                             summary = item.output.replace('\n', ' '),
                             onClick = { onOpenItem(item) },
@@ -135,7 +145,7 @@ fun GroupScreen(
                                 }
                             },
                         )
-                        if (index != items.lastIndex) {
+                        if (index != range.last) {
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }

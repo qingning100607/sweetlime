@@ -23,6 +23,7 @@ import com.qingning.sweetlime.ui.UpdateDownloadState
 import com.qingning.sweetlime.ui.updateBannerText
 import com.qingning.sweetlime.ui.components.ChipButton
 import com.qingning.sweetlime.ui.components.PressableRow
+import com.qingning.sweetlime.ui.components.TiltPressTextField
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
@@ -138,11 +139,10 @@ fun HomeScreen(
             }
         }
         item(key = "home_input") {
-            TextField(
+            TiltPressTextField(
                 value = input,
                 onValueChange = onInputChange,
                 label = "输入要转换的文字",
-                useLabelAsPlaceholder = true,
                 maxLines = 3,
                 modifier = Modifier
                     .fillMaxWidth()

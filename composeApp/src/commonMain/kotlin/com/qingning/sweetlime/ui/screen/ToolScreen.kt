@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -41,6 +42,10 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.basic.Check
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.ui.components.PressableRow
+import com.qingning.sweetlime.ui.components.TiltPressCard
+import com.qingning.sweetlime.ui.components.TiltPressTextField
+import com.qingning.sweetlime.ui.components.pageChunks
 
 internal fun toolTitle(id: String): String =
     TOOL_ENTRIES.firstOrNull { it.id == id }?.title ?: "工具"
@@ -121,14 +126,20 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
-        item(key = "symbol_list") {
-            Card(
+        // 45 个分类全塞一张卡片太长：每 6 条一块、块间留空隙，
+        // 按下时只有手指那一片会倾倒，不会整张巨卡一起翻。
+        items(
+            items = pageChunks(categories.size, per = 6),
+            key = { "symbol_chunk_${it.first}" },
+        ) { range ->
+            TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
             ) {
-                categories.forEachIndexed { index, category ->
-                    BasicComponent(
+                for (index in range) {
+                    val category = categories[index]
+                    PressableRow(
                         title = category.title,
                         summary = "${category.symbols.size} 个符号",
                         onClick = { onOpen(index) },
@@ -140,7 +151,7 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
                             )
                         },
                     )
-                    if (index != categories.lastIndex) {
+                    if (index != range.last) {
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
@@ -170,11 +181,10 @@ internal fun ConverterToolScreen(
             .padding(horizontal = 12.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        TextField(
+        TiltPressTextField(
             value = input,
             onValueChange = { input = it },
             label = placeholder,
-            useLabelAsPlaceholder = true,
             maxLines = 4,
             modifier = Modifier.fillMaxWidth(),
         )

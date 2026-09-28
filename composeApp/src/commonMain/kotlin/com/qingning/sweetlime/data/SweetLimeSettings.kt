@@ -25,10 +25,12 @@ class SweetLimeSettings(private val store: KeyValueStore) {
     // 主页「发现新版本」提示被点掉的那个版本号：同一个版本不再打扰，
     // 等出了更新的一版会重新提示（空串 = 没有点掉过任何版本）。
     private var dismissedUpdateState by mutableStateOf(store.getString(KEY_DISMISSED_UPDATE, ""))
-    // 流光背景：默认关闭（保持原来的纯色背景），想要的自己去设置里开。
-    private var flowingBgState by mutableStateOf(store.getBoolean(KEY_FLOWING_BG, false))
+    // 流光背景：**默认打开** —— 首次安装就是这个观感，不喜欢的自己去设置里关。
+    private var flowingBgState by mutableStateOf(store.getBoolean(KEY_FLOWING_BG, true))
     // 流光风格：0=跟随系统（按 HyperOS 大版本）、1=OS2、2=OS3。见 HyperOsStyle。
-    private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.AUTO))
+    // 默认直接选 **OS3**（配色在三组色板间流动的那一代），不跟随系统 ——
+    // 这样不管机器上是哪个 HyperOS 版本，首装看到的都是最新的那套观感。
+    private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.OS3))
 
     var monet: Boolean
         get() = monetState

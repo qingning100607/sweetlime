@@ -63,9 +63,11 @@ fun Modifier.glassBar(
                         1.0f to Color.Transparent,
                     )
                 } else {
+                    // 底栏：只在最上面一小截渐隐（原来的 0.55 太长，几乎半条栏都是透的），
+                    // 剩下的部分保持「实心磨砂」。
                     Brush.verticalGradient(
                         0.0f to Color.Transparent,
-                        0.55f to Color.Black,
+                        0.35f to Color.Black,
                         1.0f to Color.Black,
                     )
                 }

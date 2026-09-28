@@ -606,7 +606,15 @@ private fun RootScaffold(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .glassBar(backdrop, bottomBlurPx, glassTint, fadeFromTop = false),
+                        // 底栏要的是「看得见的一层磨砂玻璃」，不是几乎全透的薄雾：
+                        // 不透明度主要由 tint 提供（0.32 → 0.62），顶部的渐隐只留一小截让内容溶解。
+                        .glassBar(
+                            backdrop = backdrop,
+                            blurPx = bottomBlurPx,
+                            tint = glassTint,
+                            fadeFromTop = false,
+                            tintAlpha = 0.62f,
+                        ),
                 )
                 NavigationBar(color = Color.Transparent) {
                     NavigationBarItem(

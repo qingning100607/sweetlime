@@ -19,17 +19,9 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SinkFeedback
 
 /**
- * HyperOS / KernelSU 那种「按下去」的触感。
+ * 按下时整行蒙一层极淡前景色的高亮（浅色模式压暗、深色模式提亮）。
  *
- * 两个叠加的效果，保证一定能看出来：
- * 1. **下沉**：手指按住时整行缩到 0.94 再带弹簧弹回 —— 直接用 miuix 自带的
- *    [SinkFeedback]（就是 HyperOS 原生的那种 sink 手感），通过 [LocalIndication]
- *    交给 [BasicComponent] 内部的 clickable，按下 / 抬起 / 滑出取消都由它自己正确处理；
- * 2. **高亮**：同时整行蒙一层极淡的前景色（浅色模式压暗、深色模式提亮），
- *    在绘制阶段读动画值，不触发重组。
- *
- * 注意：效果只在**按住期间**存在。轻点一下（几十毫秒）几乎看不到 —— 按住不放才明显，
- * 这就是 HyperOS 本身的行为。
+ * 只保留「高亮」这一件事：行的下沉/倾斜由外层负责 —— 见 [PressableRow] 的说明。
  */
 @Composable
 fun Modifier.pressHighlight(
@@ -56,8 +48,19 @@ fun Modifier.pressHighlight(
 }
 
 /**
- * 带「按下下沉」触感的列表行 —— 外观与 [BasicComponent] 完全一致，
- * 只是把按下状态接到 [SinkFeedback] + [pressHighlight] 上。
+ * 带按压反馈的列表行 —— 外观与 [BasicComponent] 完全一致。
+ *
+ * 反馈分两种形态，取决于外面套的是什么：
+ *
+ * 1. **套在 [TiltPressCard] 里**（列表页的所有卡片）：行自动接手卡片那条按压源，
+ *    手指按在哪一行，**整张圆角卡片**就朝按压的那个角沉下去（R 角压下去，
+ *    和 lyricon 首页顶部那张激活卡一致）；行自己只留 [pressHighlight] 的高亮，
+ *    不再独立缩小，免得和卡片的倾斜两层动画打架。
+ * 2. **没有外层卡片**（散落的分隔行）：行自己用 miuix 的 [SinkFeedback] 缩到 0.90
+ *    再弹回 —— 就是 HyperOS 原生的那种 sink 手感。
+ *
+ * 注意：效果只在**按住期间**存在。轻点一下（几十毫秒）几乎看不到，
+ * 按住不放才明显，这就是 HyperOS 本身的行为。
  */
 @Composable
 fun PressableRow(
@@ -67,15 +70,22 @@ fun PressableRow(
     summary: String? = null,
     endActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val source = remember { MutableInteractionSource() }
-    // 下沉得更深一点（0.90）+ 更硬更快的弹簧，按下去才「看得见」。
-    val sink = remember {
-        SinkFeedback(
-            sinkAmount = 0.90f,
-            animationSpec = spring(dampingRatio = 0.6f, stiffness = 1500f),
-        )
+    // 外层是 TiltPressCard 就用它的源：按下会同时驱动「卡片倾斜」和「本行高亮」。
+    val sharedSource = LocalCardPressSource.current
+    val source = sharedSource ?: remember { MutableInteractionSource() }
+    val sink = remember(sharedSource) {
+        if (sharedSource != null) {
+            null
+        } else {
+            // 下沉得更深一点（0.90）+ 更硬更快的弹簧，按下去才「看得见」。
+            SinkFeedback(
+                sinkAmount = 0.90f,
+                animationSpec = spring(dampingRatio = 0.6f, stiffness = 1500f),
+            )
+        }
     }
-    CompositionLocalProvider(LocalIndication provides sink) {
+
+    val row: @Composable () -> Unit = {
         BasicComponent(
             title = title,
             summary = summary,
@@ -84,5 +94,9 @@ fun PressableRow(
             interactionSource = source,
             modifier = modifier.pressHighlight(source),
         )
+    }
+
+    CompositionLocalProvider(LocalIndication provides (sink ?: NoIndication)) {
+        row()
     }
 }
