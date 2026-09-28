@@ -1,6 +1,9 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -54,9 +57,13 @@ fun ToolScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MiuixTheme.colorScheme.surface),
+            .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
+        // 顶栏这一条也铺一层同样的流光：顶栏自己不铺底，铺的就是整页那层实流光。
+        Box(modifier = Modifier.fillMaxWidth().flowingPageLayer()) {
         SmallTopAppBar(
+            // 顶栏自己不铺底：二级页的背景已经是「实流光」了，铺底会把顶部那块盖成纯白。
+            color = Color.Transparent,
             title = toolTitle(toolId),
             navigationIcon = {
                 IconButton(onClick = onBack) {
@@ -68,6 +75,7 @@ fun ToolScreen(
                 }
             },
         )
+        }
         when (toolId) {
             "symbol" -> SymbolCategoryList(onOpen = onOpenSymbolCategory)
             "pinyin" -> ConverterToolScreen(

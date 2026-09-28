@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.components
 
+import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +19,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
@@ -46,11 +48,13 @@ fun GlassTopBarScaffold(
     val backdrop = rememberLayerBackdrop()
     val blurPx = remember(density) { with(density) { 24.dp.toPx() } }
     val tint = MiuixTheme.colorScheme.surface
+    // 流光模式下顶栏不做玻璃，让底层流光透上来（对齐上游 lyricon 的 hazeState = null）。
+    val flowing = LocalFlowingBackground.current
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(tint),
+            .background(tint).flowingPageLayer(),
     ) {
         Box(
             modifier = Modifier
@@ -69,7 +73,17 @@ fun GlassTopBarScaffold(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .glassBar(backdrop, blurPx, tint, fadeFromTop = true),
+                    // 流光模式下顶栏不做玻璃（上游 lyricon 就是把 haze 模糊整个关掉的：
+                    // 顶栏保持全透明，让底层流光直接透上来），只有非流光模式才铺这层玻璃。
+                    // 注意这里不是「什么都不画」：顶栏这一条要自己铺一层同样的流光，
+                    // 否则顶部会出现一条没有流光的白条（页面自己的流光层被顶栏挡掉了）。
+                    .then(
+                        if (flowing) {
+                            Modifier.flowingPageLayer()
+                        } else {
+                            Modifier.glassBar(backdrop, blurPx, tint, fadeFromTop = true)
+                        },
+                    ),
             )
             SmallTopAppBar(
                 title = title,

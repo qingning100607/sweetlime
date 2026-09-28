@@ -101,12 +101,16 @@ fun HomeScreen(
             bottom = outerPadding.calculateBottomPadding(),
         ),
     ) {
-        // 查到更新的版本时，最顶上先挂一条提示：点整行在应用内下载 / 打开安装器，点右边的「×」忽略这一版。
-        // 没查到 / 已是最新 / 检查失败时 newVersion 为 null，这里整段不出现，主页与之前完全一样。
-        if (newVersion != null) {
-            // 标题和说明跟着下载状态走：发现新版本 → 正在下载 42% → 点一下打开系统安装器。
-            val banner = updateBannerText(newVersion, updateDownload)
-            item(key = "home_update_banner") {
+        // 顶部提示占一个「一直存在」的空位：查到更新就把它填成一条卡片，没查到就是空的。
+        //
+        // 这个空位不能省。更新检查是启动之后才回来的，如果那一刻才把这段 item 插到列表最前面，
+        // LazyColumn 会把「当时的第一项」（输入框）按 key 钉在原地，于是整个列表被自动下推
+        // 整整一条横幅的高度，横幅就被顶进顶栏、和「SweetLime」大标题叠在一起（实测反馈的那个问题）。
+        // 位置固定成「一直存在」之后，横幅出现只是这一格长高，列表的滚动位置不会被挪动。
+        item(key = "home_update_banner") {
+            if (newVersion != null) {
+                // 标题和说明跟着下载状态走：发现新版本 → 正在下载 42% → 点一下打开系统安装器。
+                val banner = updateBannerText(newVersion, updateDownload)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()

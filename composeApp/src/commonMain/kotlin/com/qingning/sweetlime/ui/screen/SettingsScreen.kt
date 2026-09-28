@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,8 @@ import com.qingning.sweetlime.core.APP_VERSION
 import com.qingning.sweetlime.core.UpdateChecker
 import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.data.ThemeMode
+import com.qingning.sweetlime.ui.effect.HyperOsStyle
+import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.UpdateDownloadState
 import com.qingning.sweetlime.ui.components.PressableRow
 import com.qingning.sweetlime.ui.components.glassBar
@@ -93,16 +96,20 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     var showThemePopup by remember { mutableStateOf(false) }
+    var showFlowStylePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     val backdrop = rememberLayerBackdrop()
     val blurPx = remember(density) { with(density) { 22.dp.toPx() } }
     val glassTint = MiuixTheme.colorScheme.surface
+    // 流光模式下顶栏不做玻璃：整页已经是「实流光」，再铺一层玻璃会在顶部留一块
+    // 发白的横条（上游 lyricon 在流光时就是把 haze 整个关掉的）。
+    val flowing = LocalFlowingBackground.current
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MiuixTheme.colorScheme.surface),
+            .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
         Column(
             modifier = Modifier
@@ -192,6 +199,77 @@ fun SettingsScreen(
                     checked = settings.floatingBottomBar,
                     onCheckedChange = { settings.floatingBottomBar = it },
                 )
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                // 流光背景：整屏一层着色器动效。默认关，且需 Android 13+，
+                // 机型不支持时 BgEffectBackground 会自动退化成纯底色。
+                SwitchPreference(
+                    title = "流光背景",
+                    summary = "整屏铺一层缓慢流动的彩色光晕（HyperOS 那种观感）",
+                    checked = settings.flowingBackground,
+                    onCheckedChange = { settings.flowingBackground = it },
+                )
+                // 流光风格：跟随系统 / OS2 / OS3。开关关着的时候不显示（没有流光就无所谓风格）。
+                if (settings.flowingBackground) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        PressableRow(
+                            title = "流光风格",
+                            summary = "「跟随系统」按 HyperOS 大版本自动选，也可以锁定 OS 2 / OS 3",
+                            onClick = { showFlowStylePopup = true },
+                            endActions = {
+                                Text(
+                                    text = flowStyleLabel(settings.flowingStyle),
+                                    style = MiuixTheme.textStyles.body2,
+                                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(
+                                    imageVector = MiuixIcons.Basic.ArrowUpDown,
+                                    contentDescription = null,
+                                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                )
+                            },
+                        )
+                        OverlayListPopup(
+                            show = showFlowStylePopup,
+                            alignment = PopupPositionProvider.Align.End,
+                            onDismissRequest = { showFlowStylePopup = false },
+                        ) {
+                            ListPopupColumn {
+                                DropdownImpl(
+                                    text = "跟随系统",
+                                    optionSize = 3,
+                                    isSelected = settings.flowingStyle == HyperOsStyle.AUTO,
+                                    index = 0,
+                                    onSelectedIndexChange = {
+                                        settings.flowingStyle = HyperOsStyle.AUTO
+                                        showFlowStylePopup = false
+                                    },
+                                )
+                                DropdownImpl(
+                                    text = "OS 2",
+                                    optionSize = 3,
+                                    isSelected = settings.flowingStyle == HyperOsStyle.OS2,
+                                    index = 1,
+                                    onSelectedIndexChange = {
+                                        settings.flowingStyle = HyperOsStyle.OS2
+                                        showFlowStylePopup = false
+                                    },
+                                )
+                                DropdownImpl(
+                                    text = "OS 3",
+                                    optionSize = 3,
+                                    isSelected = settings.flowingStyle == HyperOsStyle.OS3,
+                                    index = 2,
+                                    onSelectedIndexChange = {
+                                        settings.flowingStyle = HyperOsStyle.OS3
+                                        showFlowStylePopup = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             // 兼容性提示：单独一张圆角卡，和上面的「外观」分开，也不再跟在关于信息后面。
@@ -342,7 +420,14 @@ fun SettingsScreen(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .glassBar(backdrop, blurPx, glassTint, fadeFromTop = true),
+                    // 流光模式下不铺玻璃：顶部那一条直接露出页面自己的实流光。
+                    .then(
+                        if (flowing) {
+                            Modifier
+                        } else {
+                            Modifier.glassBar(backdrop, blurPx, glassTint, fadeFromTop = true)
+                        },
+                    ),
             )
             SmallTopAppBar(
                 title = "设置",
@@ -364,5 +449,12 @@ fun SettingsScreen(
 private fun themeLabel(mode: Int): String = when (mode) {
     ThemeMode.LIGHT -> "浅色"
     ThemeMode.DARK -> "深色"
+    else -> "跟随系统"
+}
+
+/** 「流光风格」当前值：跟随系统 / OS 2 / OS 3。 */
+private fun flowStyleLabel(style: Int): String = when (style) {
+    HyperOsStyle.OS2 -> "OS 2"
+    HyperOsStyle.OS3 -> "OS 3"
     else -> "跟随系统"
 }

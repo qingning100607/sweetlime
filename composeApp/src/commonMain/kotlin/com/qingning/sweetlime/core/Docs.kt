@@ -43,36 +43,73 @@ object PrivacyPolicy {
     )
 }
 
-/** 开源许可。 */
+/**
+ * 开源许可。
+ *
+ * 这里的**正文一律用英文**：Apache-2.0 这类许可证要求署名连同许可条款一起保留，
+ * 用中文转述容易被再分发方当成「改动了许可条款」。界面上的入口标题（设置页那一行）
+ * 仍然是中文，本页的标题也一并给英文，和正文保持一致。
+ */
 object OpenSourceLicenses {
-    const val TITLE: String = "开源许可"
+    const val TITLE: String = "Open Source Licenses"
 
     val SECTIONS: List<Doc> = listOf(
         Doc(
             "Kotlin & Compose Multiplatform",
-            "Copyright JetBrains s.r.o. 与 The Android Open Source Project\n" +
+            "Copyright JetBrains s.r.o. and The Android Open Source Project\n" +
                 "License: Apache License 2.0",
         ),
         Doc(
-            "compose-miuix-ui（miuix）",
+            "compose-miuix-ui (miuix)",
             "Copyright compose-miuix-ui contributors\nLicense: Apache License 2.0",
+        ),
+        Doc(
+            "lyricon",
+            "Copyright 2026 Proify, Tomakino\n" +
+                "License: Apache License 2.0\n" +
+                "https://github.com/kifranei/lyricon\n\n" +
+                "The \"Flowing Background\" option in Settings uses its AGSL shaders and\n" +
+                "color presets (app/src/main/kotlin/io/github/proify/lyricon/app/compose/effect/).\n" +
+                "Files taken from that project: OS2BgFrag.kt, OS3BgFrag.kt, BgEffectConfig.kt,\n" +
+                "BgEffectPainter.kt, FrameTimeSeconds.kt, BgEffectBackground.kt,\n" +
+                "HyperOsDetector.kt (ported as HyperOsStyle.kt).\n\n" +
+                "Modified, as declared under section 4(b) of the Apache License 2.0:\n" +
+                "- preference handling was removed; the enabled flag and the shader style are\n" +
+                "  now passed in as parameters from the settings screen;\n" +
+                "- HyperOsStyle.kt keeps only the HyperOS major-version lookup and the\n" +
+                "  follow-system / OS 2 / OS 3 resolution, accesses android.os.* via\n" +
+                "  reflection so it can live in commonMain, and drops the upstream\n" +
+                "  \"draw nothing on HyperOS 1\" branch (the switch is binary here);\n" +
+                "- package renamed to com.qingning.sweetlime.ui.effect;\n" +
+                "- com.qingning.sweetlime.ui.effect.FlowingSurface.kt and\n" +
+                "  com.qingning.sweetlime.ui.effect.FlowingLayer.kt are new work added by this\n" +
+                "  project and are not part of the original repository. FlowingSurface.kt\n" +
+                "  overrides the surfaceContainer family with the same alphas as upstream\n" +
+                "  (AppComposable.kt) and hides the divider; FlowingLayer.kt lets a page paint\n" +
+                "  the very same flow layer as its own opaque background, reusing the single\n" +
+                "  shader brush of BgEffectBackground (the upstream About screen does the same\n" +
+                "  with a second BgEffectBackground instance; here one instance is shared).",
         ),
         Doc(
             "AndroidX",
             "Copyright The Android Open Source Project\nLicense: Apache License 2.0",
         ),
         Doc(
-            "数据来源",
-            "样式码表、44 类特殊符号、汉字拼音、拆字数据由公开网络资料整理汇编，" +
-                "仅供学习与交流使用。如果其中包含你的作品且不希望被收录，" +
-                "请联系作者，会尽快移除。",
+            "Data Sources",
+            "Style code tables, 44 categories of special characters, Chinese Pinyin and\n" +
+                "character-decomposition data were compiled from publicly available sources\n" +
+                "and are provided for learning and reference only. If your work is included\n" +
+                "here and you would prefer it not to be, please contact the author and it\n" +
+                "will be removed as soon as possible.",
         ),
         Doc(
-            "Apache License 2.0 摘要",
-            "在遵守以下条件的前提下，允许自由使用、修改和分发：" +
-                "保留版权声明与许可声明；标明修改过的文件；" +
-                "不得使用原作者名号为衍生作品背书。软件按「原样」提供，" +
-                "不附带任何明示或默示的担保。",
+            "Apache License 2.0 (Summary)",
+            "You may freely use, modify and distribute this software provided that you:\n" +
+                "- retain the copyright and license notices;\n" +
+                "- state which files you modified;\n" +
+                "- do not use the original authors' names to endorse your derivative work.\n" +
+                "This is a summary only; the software is provided \"AS IS\", without\n" +
+                "warranties or conditions of any kind, and the full license text governs.",
         ),
     )
 }

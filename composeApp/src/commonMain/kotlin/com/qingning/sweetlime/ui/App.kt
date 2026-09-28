@@ -60,6 +60,10 @@ import com.qingning.sweetlime.data.FavoritesStore
 import com.qingning.sweetlime.data.RecentStore
 import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.ui.components.glassBar
+import com.qingning.sweetlime.ui.effect.BgEffectBackground
+import com.qingning.sweetlime.ui.effect.FlowingSurface
+import com.qingning.sweetlime.ui.effect.HyperOsStyle
+import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.nav.Route
 import com.qingning.sweetlime.ui.screen.DetailScreen
 import com.qingning.sweetlime.ui.screen.DocScreen
@@ -240,13 +244,30 @@ fun SweetLimeApp() {
         // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
         // contentWindowInsets = 0：边到边由我们自己管，不要再被系统栏内边距顶一次。
         Scaffold(
-            containerColor = MiuixTheme.colorScheme.surface,
+            // 底色交给最底下的「流光背景」自己铺 —— 它永远会先画一层主题底色，
+            // 开了流光再叠着色器；这一层保持透明，不然会把流光整个盖住。
+            containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
         ) { _ ->
             Box(
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
+            // 最底层：主题底色 +（设置里开启时）HyperOS 那种流光着色器。
+            // 放在 NavDisplay 之前，所以永远在所有内容之下；
+            // 机型不支持 RuntimeShader 时自动退化成纯底色，不会崩。
+            BgEffectBackground(
+                enabled = settings.flowingBackground,
+                // 跟随系统 / OS2 / OS3：见 HyperOsStyle。手动选了就无视 HyperOS 大版本。
+                isOs3 = HyperOsStyle.resolveIsOs3(settings.flowingStyle),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+            // 页面容器：开了「流光背景」时，把 Miuix 的几档容器色换成半透明，让卡片
+            // 浮在流光上；每个二级页再拿**同一帧的同一支画刷**给自己刷一层实流光当底
+            // （见 FlowingLayer.kt / flowingPageLayer()），
+            // 所以二级页 / 设置页的背景就是「和主页一模一样的实流光」，完全不透。
+            // 不开则完全原样（连一层 MiuixTheme 都不套），观感和以前一模一样。
+            FlowingSurface(enabled = settings.flowingBackground) {
             NavDisplay(
                 backStack = backStack,
                 onBack = { goBack() },
@@ -264,8 +285,19 @@ fun SweetLimeApp() {
                     enableCornerClip = true,
                     cornerClipRadius = 28.dp,
                     cornerClipMode = NavCornerClipMode.All,
-                    dimAmount = 0.35f,
-                    backdropColor = MiuixTheme.colorScheme.surface,
+                    // 开着流光时不要压暗：这层压暗是画在「页面之下、流光之上」的，
+                    // 二级页/设置页本身是透明的（对齐上游 lyricon：页面不铺自己的底色），
+                    // 于是这层 0.35 的黑纱直接盖在流光上 —— 页面背景就变成一片灰，
+                    // 实测左边距从 (242,242,247) 掉到 (141,142,162)，正好是 0.65 倍。
+                    // 上游没有这层压暗，所以那边二级页的流光是亮的。
+                    dimAmount = if (settings.flowingBackground) 0f else 0.35f,
+                    // 这层是「页面圆角外露出来的底色」。开着流光时必须透明，
+                    // 否则它会把最底下那层流光整个盖住（页圆角也就露不出流光了）。
+                    backdropColor = if (settings.flowingBackground) {
+                        Color.Transparent
+                    } else {
+                        MiuixTheme.colorScheme.surface
+                    },
                 ),
             ) {
                 entry<Route.Home> {
@@ -400,6 +432,8 @@ fun SweetLimeApp() {
                     .padding(bottom = if (backStack.size > 1) 24.dp else 120.dp),
             )
             }
+            }
+            }
         }
     }
 }
@@ -444,7 +478,10 @@ private fun RootScaffold(
     val bottomBlurPx = remember(density) { with(density) { 28.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
+    // 但流光模式下不铺这层玻璃（对齐上游 lyricon 的 hazeState = null）：顶栏保持透明，
+    // 让底层流光直接透上来。
     val glassTint = MiuixTheme.colorScheme.surface
+    val flowing = LocalFlowingBackground.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         // 内容层：铺满整屏，既当玻璃的采样源，也能从顶栏 / 底栏下面滑过去。
@@ -501,7 +538,14 @@ private fun RootScaffold(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .glassBar(backdrop, topBlurPx, glassTint, fadeFromTop = true),
+                    // 流光模式下不铺玻璃：顶栏保持透明，流光直接透上来（对齐上游的 hazeState = null）。
+                    .then(
+                        if (flowing) {
+                            Modifier
+                        } else {
+                            Modifier.glassBar(backdrop, topBlurPx, glassTint, fadeFromTop = true)
+                        },
+                    ),
             )
             TopAppBar(
                 // 大标题会随内容上滑收起、下滑展开（HyperOS 那种），
