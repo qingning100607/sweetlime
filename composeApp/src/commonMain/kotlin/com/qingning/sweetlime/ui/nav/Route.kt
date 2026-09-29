@@ -44,6 +44,10 @@ sealed interface Route : NavKey {
     @Serializable
     data object Privacy : Route
 
+    /** 关于（Logo / 版本 / 仓库 / 作者 / 致谢）。 */
+    @Serializable
+    data object About : Route
+
     /** 开源许可。 */
     @Serializable
     data object Licenses : Route

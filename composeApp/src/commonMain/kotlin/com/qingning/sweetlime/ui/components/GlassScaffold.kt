@@ -75,11 +75,16 @@ fun GlassTopBarScaffold(
                     .matchParentSize()
                     // 流光模式下顶栏不做玻璃（上游 lyricon 就是把 haze 模糊整个关掉的：
                     // 顶栏保持全透明，让底层流光直接透上来），只有非流光模式才铺这层玻璃。
-                    // 注意这里不是「什么都不画」：顶栏这一条要自己铺一层同样的流光，
-                    // 否则顶部会出现一条没有流光的白条（页面自己的流光层被顶栏挡掉了）。
+                    // 注意流光时这里**什么都不画**：整屏的实流光已经由外层 Box 铺好了，
+                    // 顶栏这一条本身就在它上面，直接透上来即可（详见下面的注释）。
                     .then(
                         if (flowing) {
-                            Modifier.flowingPageLayer()
+                            // 整页的流光已经由外层 Box 铺满了（顶栏这一条也在它下面），
+                            // 这里千万不要再画一层：flowingPageLayer 的画刷是按「整屏」
+                            // 取样出来的，塞进顶栏这一小条里只会取到画刷偏亮的那一段，
+                            // 顶栏就变成一条发白的横条（上滑时尤其明显）。
+                            // 所以流光模式下这里什么都不画，让外层那层实流光直接透上来。
+                            Modifier
                         } else {
                             Modifier.glassBar(backdrop, blurPx, tint, fadeFromTop = true)
                         },

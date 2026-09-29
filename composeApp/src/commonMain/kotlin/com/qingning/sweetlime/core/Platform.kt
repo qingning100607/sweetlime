@@ -2,6 +2,7 @@ package com.qingning.sweetlime.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.graphics.painter.Painter
 
 /** 把文本写入系统剪贴板。 */
 expect fun copyToClipboard(text: String)
@@ -143,6 +144,15 @@ expect suspend fun writeBackPickedFile(handle: String, bytes: ByteArray): Boolea
  * 文件名编码沿用条目里记的 [ArchiveEntry.charset]；失败返回 false。
  */
 expect suspend fun writeZipBackPickedFile(handle: String, entries: List<ArchiveEntry>): Boolean
+
+/**
+ * 应用图标里那颗「青柠」—— 从 `ic_launcher_foreground` 里抠出来的透明 PNG。
+ *
+ * 「关于」页顶部要拿它当 Logo：浅色下配图标那套绿色渐变、深色下配深色底，
+ * 也就是「用目前的软件图标，但换成暗色模式」。
+ */
+@Composable
+expect fun rememberLimeLogo(): Painter
 
 /** 猜这段字节最可能是哪种文本编码（UTF-8 / UTF-8-BOM / UTF-16LE / UTF-16BE / GB18030）。 */
 expect fun detectTextCharset(bytes: ByteArray): String

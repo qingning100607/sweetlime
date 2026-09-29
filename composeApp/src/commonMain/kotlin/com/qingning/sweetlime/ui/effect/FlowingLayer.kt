@@ -60,14 +60,21 @@ val LocalFlowingLayer = staticCompositionLocalOf<FlowingLayer?> { null }
  *
  * 画在 `background(...)` 之后、内容之前：先把主题底色压上（保证不透），
  * 再叠同一帧的流光。
+ *
+ * @param alpha 这层流光的可见度，**默认 1（完全不透明）**。传 `{ ... }` 而不是直接传值时，
+ *   读取会被推迟到 draw 里，滚动时就不会因为每一帧的进度变化而整棵重组。
+ *   关于页就是靠它做「上滑 → 流光整体淡出 → 露出底色」这个效果的（对齐上游 lyricon
+ *   的 `BgEffectBackground(alpha = { 1f - scrollProgress })`）。
  */
 @Composable
-fun Modifier.flowingPageLayer(): Modifier {
+fun Modifier.flowingPageLayer(alpha: () -> Float = { 1f }): Modifier {
     val layer = LocalFlowingLayer.current ?: return this
     return drawBehind {
         // 读一下帧计时：这一笔是「每帧都要重画」的信号，删了二级页的流光就会定格。
         layer.tick()
-        drawRect(layer.base)
-        drawRect(layer.brush)
+        val a = alpha().coerceIn(0f, 1f)
+        if (a <= 0f) return@drawBehind
+        drawRect(layer.base, alpha = a)
+        drawRect(layer.brush, alpha = a)
     }
 }

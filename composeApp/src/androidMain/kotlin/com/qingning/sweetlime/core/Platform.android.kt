@@ -9,8 +9,11 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.core.content.FileProvider
 import com.qingning.sweetlime.AppContext
+import com.qingning.sweetlime.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
@@ -36,6 +39,9 @@ import androidx.activity.result.contract.ActivityResultContract
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+@Composable
+actual fun rememberLimeLogo(): Painter = painterResource(R.drawable.lime)
+
 actual fun copyToClipboard(text: String) {
     val manager = AppContext.get().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     manager.setPrimaryClip(ClipData.newPlainText("SweetLime", text))

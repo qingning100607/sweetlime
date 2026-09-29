@@ -65,6 +65,7 @@ import com.qingning.sweetlime.ui.effect.FlowingSurface
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.nav.Route
+import com.qingning.sweetlime.ui.screen.AboutScreen
 import com.qingning.sweetlime.ui.screen.DetailScreen
 import com.qingning.sweetlime.ui.screen.DocScreen
 import com.qingning.sweetlime.ui.screen.FavoriteScreen
@@ -386,6 +387,7 @@ fun SweetLimeApp() {
                         onOpenUrl = ::openUrl,
                         onOpenPrivacy = { backStack.add(Route.Privacy) },
                         onOpenLicenses = { backStack.add(Route.Licenses) },
+                        onOpenAbout = { backStack.add(Route.About) },
                         // 检查更新 / 下载安装：和主页横幅共用同一份状态，两边显示永远一致。
                         updateResult = updateResult,
                         checkingUpdate = checkingUpdate,
@@ -412,6 +414,15 @@ fun SweetLimeApp() {
                         title = PrivacyPolicy.TITLE,
                         sections = PrivacyPolicy.SECTIONS,
                         onBack = { goBack() },
+                    )
+                }
+
+                entry<Route.About>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                    AboutScreen(
+                        onBack = { goBack() },
+                        onOpenUrl = ::openUrl,
+                        onCopyText = ::copyRaw,
+                        onOpenLicenses = { backStack.add(Route.Licenses) },
                     )
                 }
 

@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -49,21 +50,20 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.basic.ArrowUpDown
 import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.Copy
+import top.yukonga.miuix.kmp.icon.extended.Help
+import top.yukonga.miuix.kmp.icon.extended.Hide
+import top.yukonga.miuix.kmp.icon.extended.Image
 import top.yukonga.miuix.kmp.icon.extended.Info
-import top.yukonga.miuix.kmp.icon.extended.Notes
+import top.yukonga.miuix.kmp.icon.extended.Layers
+import top.yukonga.miuix.kmp.icon.extended.Lock
 import top.yukonga.miuix.kmp.icon.extended.Refresh
+import top.yukonga.miuix.kmp.icon.extended.Sidebar
+import top.yukonga.miuix.kmp.icon.extended.Theme
+import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.ui.components.TiltPressCard
-
-/** 作者 / 交流群等信息（想改成自己的直接改这几个常量即可）。 */
-private const val AUTHOR_NAME = "青柠不酸只甜"
-private const val AUTHOR_QQ = "2892546640"
-private const val COMMUNITY_GROUP = "948634109"
-private const val COMMUNITY_LINK =
-    "https://qun.qq.com/universal-share/share?ac=1&authKey=sMa6YUzkpV1kbRJ0YnvjD64JYC1umKbUQrz1gegRCY%2BOI8k4i%2BIAr4%2BMxUnB1H%2F%2B&busi_data=eyJncm91cENvZGUiOiI5NDg2MzQxMDkiLCJ0b2tlbiI6IlR0YTVCMkoxZmlpamk4QlIrMUdkdnpiTTkxd2pCUWVHR1dGcGRjR2hpWDJQMUxGZElaak9EclV6VldKU1Y5ZEIiLCJ1aW4iOiIyODkyNTQ2NjQwIn0%3D&data=hoiaXBFDEHpITCqTeUfXNAPFTgh3eruetmVD5xefVPOgjsKXMQD69-GUT2jJ3FroOeaVRForPWXhUcw6oVmchA&svctype=4&tempid=h5_group_info"
 
 /**
  * 设置页（二级页，由顶栏右上角入口进入）。
@@ -83,6 +83,8 @@ fun SettingsScreen(
     onOpenUrl: (String) -> Unit,
     onOpenPrivacy: () -> Unit,
     onOpenLicenses: () -> Unit,
+    /** 打开独立的「关于」页（仓库 / 作者 / 交流群 / 致谢）。 */
+    onOpenAbout: () -> Unit = {},
     /** 上一次检查更新的结果；由 App 持有，和主页横幅共用。 */
     updateResult: UpdateChecker.Result? = null,
     /** 正在检查更新。 */
@@ -132,12 +134,14 @@ fun SettingsScreen(
                     summary = "跟随壁纸生成配色（Monet）",
                     checked = settings.monet,
                     onCheckedChange = { settings.monet = it },
+                    startAction = { RowStartIcon(MiuixIcons.Theme) },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
                         title = "深色模式",
                         onClick = { showThemePopup = true },
+                        startAction = { RowStartIcon(MiuixIcons.Hide) },
                         endActions = {
                             Text(
                                 text = themeLabel(settings.themeMode),
@@ -195,18 +199,18 @@ fun SettingsScreen(
                 // 悬浮底栏：直接照搬 KernelSU 那种浮在底部的小圆角胶囊。
                 SwitchPreference(
                     title = "悬浮底栏",
-                    summary = "底部导航栏浮起来，变成一个小圆角胶囊",
                     checked = settings.floatingBottomBar,
                     onCheckedChange = { settings.floatingBottomBar = it },
+                    startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // 流光背景：整屏一层着色器动效。默认关，且需 Android 13+，
                 // 机型不支持时 BgEffectBackground 会自动退化成纯底色。
                 SwitchPreference(
                     title = "流光背景",
-                    summary = "整屏铺一层缓慢流动的彩色光晕（HyperOS 那种观感）",
                     checked = settings.flowingBackground,
                     onCheckedChange = { settings.flowingBackground = it },
+                    startAction = { RowStartIcon(MiuixIcons.Layers) },
                 )
                 // 流光风格：跟随系统 / OS2 / OS3。开关关着的时候不显示（没有流光就无所谓风格）。
                 if (settings.flowingBackground) {
@@ -214,8 +218,8 @@ fun SettingsScreen(
                     Box(modifier = Modifier.fillMaxWidth()) {
                         BasicComponent(
                             title = "流光风格",
-                            summary = "「跟随系统」按 HyperOS 大版本自动选，也可以锁定 OS 2 / OS 3",
                             onClick = { showFlowStylePopup = true },
+                            startAction = { RowStartIcon(MiuixIcons.Image) },
                             endActions = {
                                 Text(
                                     text = flowStyleLabel(settings.flowingStyle),
@@ -281,6 +285,7 @@ fun SettingsScreen(
             ) {
                 BasicComponent(
                     title = "兼容性提示",
+                    startAction = { RowStartIcon(MiuixIcons.Help) },
                     summary = "花体、特殊符号等字符依赖系统字体，个别机型或 App 里可能显示成方框、问号，" +
                         "这是字体缺失导致的正常现象，换台设备或换成支持字体的 App 就能正常显示。" +
                         "另外不同平台（微信 / QQ / 游戏等）的昵称规则不一样，个别符号可能被过滤或截断，" +
@@ -307,6 +312,7 @@ fun SettingsScreen(
                 BasicComponent(
                     title = "检查更新",
                     summary = updateSummary,
+                    startAction = { RowStartIcon(MiuixIcons.Update) },
                     onClick = {
                         if (hasNewer) {
                             onUpdateAction()
@@ -325,8 +331,8 @@ fun SettingsScreen(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 BasicComponent(
                     title = "隐私政策",
-                    summary = "本机处理，不联网、不上传任何内容",
                     onClick = onOpenPrivacy,
+                    startAction = { RowStartIcon(MiuixIcons.Lock) },
                     endActions = {
                         Icon(
                             imageVector = MiuixIcons.Info,
@@ -336,21 +342,12 @@ fun SettingsScreen(
                     },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                BasicComponent(
-                    title = "开源许可",
-                    summary = "用到的开源项目与许可证",
-                    onClick = onOpenLicenses,
-                    endActions = {
-                        Icon(
-                            imageVector = MiuixIcons.Notes,
-                            contentDescription = "打开开源许可",
-                            tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                        )
-                    },
-                )
+                // 「开源许可」挪到「关于」页里去了（那边和仓库、作者放在一起），
+                // 设置页不再重复一份。
             }
 
-            // 关于：作者 / 交流群信息压到 3 条以内，并且放到页面最底部。
+            // 关于：作者 / 交流群 / 仓库等信息全部收进独立的「关于」页（仿上游 lyricon），
+            // 设置页这里只留一行入口，不再把四条信息摊在列表里。
             SmallTitle(text = "关于")
             TiltPressCard(
                 modifier = Modifier
@@ -358,54 +355,17 @@ fun SettingsScreen(
                     .padding(horizontal = 12.dp),
             ) {
                 BasicComponent(
-                    title = "SweetLime",
-                    summary = "版本 $APP_VERSION",
+                    title = "关于 SweetLime",
+                    onClick = onOpenAbout,
+                    startAction = { RowStartIcon(MiuixIcons.Info) },
+                    endActions = {
+                        Icon(
+                            imageVector = MiuixIcons.Basic.ArrowRight,
+                            contentDescription = "打开关于页",
+                            tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                        )
+                    },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    BasicComponent(
-                        title = "GitHub 仓库",
-                        summary = "qingning100607/sweetlime · 点击打开源码页",
-                        onClick = { onOpenUrl(UpdateChecker.REPO_URL) },
-                        endActions = {
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = "打开 GitHub 仓库",
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                        },
-                    )
-                }
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    BasicComponent(
-                        title = "作者",
-                        summary = "$AUTHOR_NAME · QQ $AUTHOR_QQ · 点击复制",
-                        onClick = { onCopyText(AUTHOR_QQ, "作者 QQ") },
-                        endActions = {
-                            Icon(
-                                imageVector = MiuixIcons.Copy,
-                                contentDescription = "复制作者 QQ",
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                        },
-                    )
-                }
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    BasicComponent(
-                        title = "交流群",
-                        summary = "QQ 群 $COMMUNITY_GROUP · 点击一键加群",
-                        onClick = { onOpenUrl(COMMUNITY_LINK) },
-                        endActions = {
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = "打开加群链接",
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                        },
-                    )
-                }
             }
             Spacer(modifier = Modifier.height(48.dp))
         }
@@ -444,6 +404,16 @@ fun SettingsScreen(
             )
         }
     }
+}
+
+/** 设置项左侧的小图标：和这一行的标题文字**同一个颜色**（onBackground），免得深浅不一。 */
+@Composable
+private fun RowStartIcon(icon: ImageVector) {
+    Icon(
+        imageVector = icon,
+        contentDescription = null,
+        tint = MiuixTheme.colorScheme.onBackground,
+    )
 }
 
 private fun themeLabel(mode: Int): String = when (mode) {
