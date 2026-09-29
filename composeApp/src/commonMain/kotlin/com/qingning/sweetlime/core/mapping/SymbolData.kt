@@ -1,7 +1,18 @@
 package com.qingning.sweetlime.core.mapping
 
-/** 一个符号分类：标题 + 该分类下的全部符号。 */
-internal class SymbolCategory(val title: String, val symbols: List<String>)
+import com.qingning.sweetlime.core.i18n.tr
+
+/**
+ * 一个符号分类：标题 + 该分类下的全部符号。
+ *
+ * [titleKey] 存的是**简体原文**（词表 key），[title] 在读的时候才翻译 ——
+ * [SYMBOL_CATEGORIES] 是顶层 val，构造只发生一次，若在这里就调 tr() 把结果存下来，
+ * 分类名会被定死成「第一次加载时」的语言，切语言后再也不变
+ * （「特效符号」样式标题、[com.qingning.sweetlime.core.StyleGroup] 都踩过同一个坑）。
+ */
+internal class SymbolCategory(private val titleKey: String, val symbols: List<String>) {
+    val title: String get() = tr(titleKey)
+}
 
 /*
  * 特殊符号大全（对齐「特殊符号」页的 44 个分类，共 2797 个符号）。
