@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +41,7 @@ fun ToolsScreen(
         ),
     ) {
         item(key = "tool_title") {
-            SmallTitle(text = "工具箱 · 点一条进入")
+            SmallTitle(text = tr("工具箱 · 点一条进入"))
         }
         item(key = "tool_list") {
             Card(

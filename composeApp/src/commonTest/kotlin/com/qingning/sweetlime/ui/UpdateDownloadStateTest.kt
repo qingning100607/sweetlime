@@ -3,6 +3,7 @@ package com.qingning.sweetlime.ui
 import com.qingning.sweetlime.core.UpdateChecker
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -44,6 +45,11 @@ class UpdateDownloadStateTest {
         val failed = updateBannerText("2.5.4", UpdateDownloadState.Failed)
         assertEquals("发现新版本 2.5.4", failed.title)
         assertTrue(failed.summary.contains("重试"))
+        // 失败时还得补一行网络提示（GitHub 国内直连不稳），其它状态不给这行。
+        assertTrue(failed.hint!!.contains("GitHub"))
+        assertNull(idle.hint)
+        assertNull(downloading.hint)
+        assertNull(ready.hint)
     }
 
     @Test

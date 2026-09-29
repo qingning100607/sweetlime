@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
@@ -56,7 +58,7 @@ fun SymbolCategoryScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = MiuixIcons.Back,
-                        contentDescription = "返回",
+                        contentDescription = tr("返回"),
                         tint = MiuixTheme.colorScheme.onBackground,
                     )
                 }
@@ -64,7 +66,7 @@ fun SymbolCategoryScreen(
         )
         }
         Text(
-            text = "共 ${category.symbols.size} 个符号 · 点一下即复制",
+            text = trf("共 {} 个符号 · 点一下即复制", category.symbols.size),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),

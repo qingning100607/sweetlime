@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +51,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
         null -> MiuixTheme.colorScheme.onSurfaceContainerVariant
     }
     val summary = report?.let {
-        "BMI ${it.bmiText}｜${it.level.label}\n健康体重范围：${it.healthyRangeText}"
+        trf("BMI {}｜{}\n健康体重范围：{}", it.bmiText, it.level.label, it.healthyRangeText)
     }.orEmpty()
 
     Column(
@@ -63,7 +65,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
             TextField(
                 value = heightText,
                 onValueChange = { heightText = it },
-                label = "身高 cm",
+                label = tr("身高 cm"),
                 useLabelAsPlaceholder = true,
                 maxLines = 1,
                 modifier = Modifier.weight(1f),
@@ -71,7 +73,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
             TextField(
                 value = weightText,
                 onValueChange = { weightText = it },
-                label = "体重 kg",
+                label = tr("体重 kg"),
                 useLabelAsPlaceholder = true,
                 maxLines = 1,
                 modifier = Modifier.weight(1f),
@@ -79,20 +81,20 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "分级采用中国成人标准：偏瘦 < 18.5，正常 18.5–23.9，超重 24–27.9，肥胖 ≥ 28。",
+            text = tr("分级采用中国成人标准：偏瘦 < 18.5，正常 18.5–23.9，超重 24–27.9，肥胖 ≥ 28。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 4.dp),
         )
-        SmallTitle(text = "计算结果")
+        SmallTitle(text = tr("计算结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 if (report == null) {
                     Text(
                         text = if (heightText.isBlank() || weightText.isBlank()) {
-                            "（填上身高和体重，这里会实时出结果）"
+                            tr("（填上身高和体重，这里会实时出结果）")
                         } else {
-                            "数字看起来不太对，检查一下身高（50–260cm）和体重（0–500kg）。"
+                            tr("数字看起来不太对，检查一下身高（50–260cm）和体重（0–500kg）。")
                         },
                         style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
@@ -114,7 +116,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "健康体重范围：${report.healthyRangeText}",
+                        text = trf("健康体重范围：{}", report.healthyRangeText),
                         style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceContainer,
                     )
@@ -129,7 +131,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
         }
         Spacer(modifier = Modifier.height(12.dp))
         TextButton(
-            text = "复制结果",
+            text = tr("复制结果"),
             onClick = { if (summary.isNotEmpty()) onCopyText(summary, "BMI") },
             enabled = summary.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),

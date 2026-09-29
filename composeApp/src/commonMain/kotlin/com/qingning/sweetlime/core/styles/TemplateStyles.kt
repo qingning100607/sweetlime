@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core.styles
 
+import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 
@@ -31,43 +32,45 @@ internal class TemplateStyle(
 }
 
 /** 特效符号（对齐「特效网名」32 种）。 */
-internal val symbolStyles: List<TextTransform> = listOf(
-    TemplateStyle("tx_1", "删除线", StyleGroup.SYMBOL, "", "̶", "̶"),
-    TemplateStyle("tx_2", "上划线", StyleGroup.SYMBOL, "", "̄", "̄"),
-    TemplateStyle("tx_3", "下划线", StyleGroup.SYMBOL, "", "꯭", "꯭"),
-    TemplateStyle("tx_4", "一根毛1", StyleGroup.SYMBOL, "", "", " ༽"),
-    TemplateStyle("tx_5", "一根毛2", StyleGroup.SYMBOL, "", "", " ༼"),
-    TemplateStyle("tx_6", "菱形文", StyleGroup.SYMBOL, "", "⃟", "⃟"),
-    TemplateStyle("tx_7", "禁止字", StyleGroup.SYMBOL, "", "⃠", "⃠"),
-    TemplateStyle("tx_8", "三角形文字", StyleGroup.SYMBOL, "", "⃤", "⃤"),
-    TemplateStyle("tx_9", "爱心文1", StyleGroup.SYMBOL, "", "ꦿ᭄", "ꦿ᭄"),
-    TemplateStyle("tx_10", "爱心文2", StyleGroup.SYMBOL, "", "໌້ᮨ", "໌້ᮨ"),
-    TemplateStyle("tx_11", "花藤字1", StyleGroup.SYMBOL, "ζั͡", "ั͡", "ั͡✾ ั"),
-    TemplateStyle("tx_12", "花藤字2", StyleGroup.SYMBOL, "ζั͡ ", "ζั͡ ", "ζั͡✿"),
-    TemplateStyle("tx_13", "花藤字3", StyleGroup.SYMBOL, "ζั͡ ", "ζั͡ ", "ζั͡❀"),
-    TemplateStyle("tx_14", "雪花文", StyleGroup.SYMBOL, "", "⃰", "⃰"),
-    TemplateStyle("tx_15", "笑脸文", StyleGroup.SYMBOL, "", "̆̈", "̆̈"),
-    TemplateStyle("tx_16", "菊花文1", StyleGroup.SYMBOL, "", "҉", "҉"),
-    TemplateStyle("tx_17", "菊花文2", StyleGroup.SYMBOL, "", "҈", "҈"),
-    TemplateStyle("tx_18", "菊花文3", StyleGroup.SYMBOL, "", "꙰", "꙰"),
-    TemplateStyle("tx_19", "菊花文4", StyleGroup.SYMBOL, "", "꙲", "꙲"),
-    TemplateStyle("tx_20", "波浪纹", StyleGroup.SYMBOL, "", "͜", "͜"),
-    TemplateStyle("tx_21", "飞鸟文1", StyleGroup.SYMBOL, "", "ོ", "ོ"),
-    TemplateStyle("tx_22", "飞鸟文2", StyleGroup.SYMBOL, "", "ཽ", "ཽ"),
-    TemplateStyle("tx_23", "蝴蝶文", StyleGroup.SYMBOL, "", "ིྀ", "ིྀ"),
-    TemplateStyle("tx_24", "发卡文", StyleGroup.SYMBOL, "", "݉", "݉"),
-    TemplateStyle("tx_25", "萌芽文", StyleGroup.SYMBOL, "", "็้", "็้"),
-    TemplateStyle("tx_26", "单横线", StyleGroup.SYMBOL, "", "̶", "̶"),
-    TemplateStyle("tx_27", "双横线", StyleGroup.SYMBOL, "", "͇", "͇"),
-    TemplateStyle("tx_28", "斜线", StyleGroup.SYMBOL, "", "̷", "̷"),
-    TemplateStyle("tx_29", "尾巴文", StyleGroup.SYMBOL, "", "༘", "༘"),
-    TemplateStyle("tx_30", "冒烟文1", StyleGroup.SYMBOL, "", "ྂ", "ྂ"),
-    TemplateStyle("tx_31", "冒烟文2", StyleGroup.SYMBOL, "", "้้้้้้", "้้้้้้"),
-    TemplateStyle("tx_32", "冒烟文3", StyleGroup.SYMBOL, "", "ۣۣۣۣۣۣۣ", "ۣۣۣۣۣۣۣ"),
+internal val symbolStyles: List<TextTransform>
+    get() = listOf(
+    TemplateStyle("tx_1", tr("删除线"), StyleGroup.SYMBOL, "", "̶", "̶"),
+    TemplateStyle("tx_2", tr("上划线"), StyleGroup.SYMBOL, "", "̄", "̄"),
+    TemplateStyle("tx_3", tr("下划线"), StyleGroup.SYMBOL, "", "꯭", "꯭"),
+    TemplateStyle("tx_4", tr("一根毛1"), StyleGroup.SYMBOL, "", "", " ༽"),
+    TemplateStyle("tx_5", tr("一根毛2"), StyleGroup.SYMBOL, "", "", " ༼"),
+    TemplateStyle("tx_6", tr("菱形文"), StyleGroup.SYMBOL, "", "⃟", "⃟"),
+    TemplateStyle("tx_7", tr("禁止字"), StyleGroup.SYMBOL, "", "⃠", "⃠"),
+    TemplateStyle("tx_8", tr("三角形文字"), StyleGroup.SYMBOL, "", "⃤", "⃤"),
+    TemplateStyle("tx_9", tr("爱心文1"), StyleGroup.SYMBOL, "", "ꦿ᭄", "ꦿ᭄"),
+    TemplateStyle("tx_10", tr("爱心文2"), StyleGroup.SYMBOL, "", "໌້ᮨ", "໌້ᮨ"),
+    TemplateStyle("tx_11", tr("花藤字1"), StyleGroup.SYMBOL, "ζั͡", "ั͡", "ั͡✾ ั"),
+    TemplateStyle("tx_12", tr("花藤字2"), StyleGroup.SYMBOL, "ζั͡ ", "ζั͡ ", "ζั͡✿"),
+    TemplateStyle("tx_13", tr("花藤字3"), StyleGroup.SYMBOL, "ζั͡ ", "ζั͡ ", "ζั͡❀"),
+    TemplateStyle("tx_14", tr("雪花文"), StyleGroup.SYMBOL, "", "⃰", "⃰"),
+    TemplateStyle("tx_15", tr("笑脸文"), StyleGroup.SYMBOL, "", "̆̈", "̆̈"),
+    TemplateStyle("tx_16", tr("菊花文1"), StyleGroup.SYMBOL, "", "҉", "҉"),
+    TemplateStyle("tx_17", tr("菊花文2"), StyleGroup.SYMBOL, "", "҈", "҈"),
+    TemplateStyle("tx_18", tr("菊花文3"), StyleGroup.SYMBOL, "", "꙰", "꙰"),
+    TemplateStyle("tx_19", tr("菊花文4"), StyleGroup.SYMBOL, "", "꙲", "꙲"),
+    TemplateStyle("tx_20", tr("波浪纹"), StyleGroup.SYMBOL, "", "͜", "͜"),
+    TemplateStyle("tx_21", tr("飞鸟文1"), StyleGroup.SYMBOL, "", "ོ", "ོ"),
+    TemplateStyle("tx_22", tr("飞鸟文2"), StyleGroup.SYMBOL, "", "ཽ", "ཽ"),
+    TemplateStyle("tx_23", tr("蝴蝶文"), StyleGroup.SYMBOL, "", "ིྀ", "ིྀ"),
+    TemplateStyle("tx_24", tr("发卡文"), StyleGroup.SYMBOL, "", "݉", "݉"),
+    TemplateStyle("tx_25", tr("萌芽文"), StyleGroup.SYMBOL, "", "็้", "็้"),
+    TemplateStyle("tx_26", tr("单横线"), StyleGroup.SYMBOL, "", "̶", "̶"),
+    TemplateStyle("tx_27", tr("双横线"), StyleGroup.SYMBOL, "", "͇", "͇"),
+    TemplateStyle("tx_28", tr("斜线"), StyleGroup.SYMBOL, "", "̷", "̷"),
+    TemplateStyle("tx_29", tr("尾巴文"), StyleGroup.SYMBOL, "", "༘", "༘"),
+    TemplateStyle("tx_30", tr("冒烟文1"), StyleGroup.SYMBOL, "", "ྂ", "ྂ"),
+    TemplateStyle("tx_31", tr("冒烟文2"), StyleGroup.SYMBOL, "", "้้้้้้", "้้้้้้"),
+    TemplateStyle("tx_32", tr("冒烟文3"), StyleGroup.SYMBOL, "", "ۣۣۣۣۣۣۣ", "ۣۣۣۣۣۣۣ"),
 )
 
 /** 花样网名（对齐「花样网名」72 种）。 */
-internal val huayangStyles: List<TextTransform> = listOf(
+internal val huayangStyles: List<TextTransform>
+    get() = listOf(
     TemplateStyle("hy_1", "ネф̶ イω ᥬᥬ", StyleGroup.HUAYANG, "ネф̶ イω ᥬᥬ", "", ""),
     TemplateStyle("hy_2", "ᨏ҉ᨏ ོ", StyleGroup.HUAYANG, "ᨏ҉", "", "ᨏ ོ"),
     TemplateStyle("hy_3", "ꦿ໊ོﻬ°", StyleGroup.HUAYANG, "", "", "ꦿ໊ོﻬ°"),
@@ -143,7 +146,8 @@ internal val huayangStyles: List<TextTransform> = listOf(
 )
 
 /** 翅膀装饰（对齐「翅膀网名」36 种）。 */
-internal val wingStyles: List<TextTransform> = listOf(
+internal val wingStyles: List<TextTransform>
+    get() = listOf(
     TemplateStyle("cb_1", "꧁꧂", StyleGroup.WING, "꧁", "", "꧂"),
     TemplateStyle("cb_2", "꧁༺༻꧂", StyleGroup.WING, "꧁༺", "", "༻꧂"),
     TemplateStyle("cb_3", "꧁༺๑๑༻꧂", StyleGroup.WING, "꧁༺๑", "", "๑༻꧂"),
@@ -183,8 +187,9 @@ internal val wingStyles: List<TextTransform> = listOf(
 )
 
 /** 花藤字（对齐「花藤字」3 种）。 */
-internal val vineStyles: List<TextTransform> = listOf(
-    TemplateStyle("ht_1", "花藤字1", StyleGroup.VINE, "ζั͡", "ั͡", "ั͡✾ ั"),
-    TemplateStyle("ht_2", "花藤字2", StyleGroup.VINE, "ζั͡ ", "ζั͡ ", "ζั͡✿"),
-    TemplateStyle("ht_3", "花藤字3", StyleGroup.VINE, "ζั͡ ", "ζั͡ ", "ζั͡❀"),
+internal val vineStyles: List<TextTransform>
+    get() = listOf(
+    TemplateStyle("ht_1", tr("花藤字1"), StyleGroup.VINE, "ζั͡", "ั͡", "ั͡✾ ั"),
+    TemplateStyle("ht_2", tr("花藤字2"), StyleGroup.VINE, "ζั͡ ", "ζั͡ ", "ζั͡✿"),
+    TemplateStyle("ht_3", tr("花藤字3"), StyleGroup.VINE, "ζั͡ ", "ζั͡ ", "ζั͡❀"),
 )

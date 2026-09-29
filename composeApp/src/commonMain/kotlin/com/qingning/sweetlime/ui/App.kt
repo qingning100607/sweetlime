@@ -1,5 +1,10 @@
 package com.qingning.sweetlime.ui
 
+import com.qingning.sweetlime.core.i18n.AppLanguage
+import com.qingning.sweetlime.core.i18n.AppLocale
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -129,6 +134,10 @@ fun SweetLimeApp() {
     val settings = remember(store) { SweetLimeSettings(store) }
     val favorites = remember(store) { FavoritesStore(store) }
     val recent = remember(store) { RecentStore(store) }
+    // 界面语言：在组合期订阅设置里的 code，再用 SideEffect 落到全局 AppLocale 上。
+    // 这样改语言 = 改一个 State，整个界面按新语言重组，不用重启 Activity。
+    val languageCode = settings.language
+    SideEffect { AppLocale.apply(AppLanguage.fromCode(languageCode)) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
@@ -220,12 +229,12 @@ fun SweetLimeApp() {
 
     fun copy(item: TransformItem) {
         copyToClipboard(item.output)
-        scope.launch { snackbarHostState.showSnackbar("已复制「${item.styleTitle}」") }
+        scope.launch { snackbarHostState.showSnackbar(trf("已复制「{}」", item.styleTitle)) }
     }
 
     fun copyRaw(text: String, label: String) {
         copyToClipboard(text)
-        scope.launch { snackbarHostState.showSnackbar("已复制$label") }
+        scope.launch { snackbarHostState.showSnackbar(trf("已复制{}", label)) }
     }
 
     /**
@@ -569,14 +578,14 @@ private fun RootScaffold(
                     IconButton(onClick = onOpenSearch) {
                         Icon(
                             imageVector = MiuixIcons.Search,
-                            contentDescription = "搜索",
+                            contentDescription = tr("搜索"),
                             tint = MiuixTheme.colorScheme.onSurface,
                         )
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = MiuixIcons.Settings,
-                            contentDescription = "设置",
+                            contentDescription = tr("设置"),
                             tint = MiuixTheme.colorScheme.onSurface,
                         )
                     }
@@ -609,9 +618,9 @@ private fun RootScaffold(
                         tintAlpha = 0.66f,
                     ),
                 ) {
-                    FloatingBottomItem(selectedTab == 0, { onTabSelected(0) }, MiuixIcons.ConvertFile, "转换")
-                    FloatingBottomItem(selectedTab == 1, { onTabSelected(1) }, MiuixIcons.Tune, "工具")
-                    FloatingBottomItem(selectedTab == 2, { onTabSelected(2) }, MiuixIcons.Favorites, "收藏")
+                    FloatingBottomItem(selectedTab == 0, { onTabSelected(0) }, MiuixIcons.ConvertFile, tr("转换"))
+                    FloatingBottomItem(selectedTab == 1, { onTabSelected(1) }, MiuixIcons.Tune, tr("工具"))
+                    FloatingBottomItem(selectedTab == 2, { onTabSelected(2) }, MiuixIcons.Favorites, tr("收藏"))
                 }
             } else {
                 Box(
@@ -632,19 +641,19 @@ private fun RootScaffold(
                         selected = selectedTab == 0,
                         onClick = { onTabSelected(0) },
                         icon = MiuixIcons.ConvertFile,
-                        label = "转换",
+                        label = tr("转换"),
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { onTabSelected(1) },
                         icon = MiuixIcons.Tune,
-                        label = "工具",
+                        label = tr("工具"),
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { onTabSelected(2) },
                         icon = MiuixIcons.Favorites,
-                        label = "收藏",
+                        label = tr("收藏"),
                     )
                 }
             }

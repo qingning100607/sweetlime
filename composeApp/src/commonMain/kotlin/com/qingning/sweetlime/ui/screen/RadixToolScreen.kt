@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,13 +33,13 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 internal fun RadixToolScreen(onCopyText: (String, String) -> Unit) {
     var fromBase by rememberSaveable { mutableStateOf(10) }
     ConverterToolScreen(
-        placeholder = "输入要转换的数，例如：255",
-        hint = "支持 2–36 进制、任意位数，结果一次给全（二 / 八 / 十 / 十六进制）。",
-        resultLabel = "转换结果",
+        placeholder = tr("输入要转换的数，例如：255"),
+        hint = tr("支持 2–36 进制、任意位数，结果一次给全（二 / 八 / 十 / 十六进制）。"),
+        resultLabel = tr("转换结果"),
         convert = { text ->
             val rows = RadixConverter.convertToCommon(text, fromBase)
             if (rows == null) {
-                "不是合法的${RadixConverter.baseLabel(fromBase)}数字"
+                trf("不是合法的{}数字", RadixConverter.baseLabel(fromBase))
             } else {
                 rows.joinToString("\n") { (label, value) -> "$label：$value" }
             }
@@ -52,7 +54,7 @@ internal fun RadixToolScreen(onCopyText: (String, String) -> Unit) {
 private fun BaseSelector(selected: Int, onSelect: (Int) -> Unit) {
     Column {
         Text(
-            text = "源进制",
+            text = tr("源进制"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),

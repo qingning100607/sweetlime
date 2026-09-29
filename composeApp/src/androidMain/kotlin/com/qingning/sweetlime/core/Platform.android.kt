@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core
 
+import com.qingning.sweetlime.core.i18n.tr
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -41,6 +42,8 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 @Composable
 actual fun rememberLimeLogo(): Painter = painterResource(R.drawable.lime)
+@Composable
+actual fun rememberLanguageIcon(): Painter = painterResource(R.drawable.ic_language)
 
 actual fun copyToClipboard(text: String) {
     val manager = AppContext.get().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -61,7 +64,7 @@ actual fun shareText(text: String) {
         putExtra(Intent.EXTRA_TEXT, text)
     }
     // 单独放一个新 task：从 Application context 起 Activity 必须带这个 flag。
-    val chooser = Intent.createChooser(intent, "分享到").apply {
+    val chooser = Intent.createChooser(intent, tr("分享到")).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     runCatching { context.startActivity(chooser) }
@@ -272,7 +275,7 @@ actual fun rememberFilePicker(onResult: (PickedFile?) -> Unit): () -> Unit {
 
 /** 从 content:// 里把一个文件读成字节；过大或任何环节出错都返回 null。 */
 private fun readPickedFile(context: Context, uri: Uri): PickedFile? = try {
-    val name = queryDisplayName(context, uri) ?: "已导入文件"
+    val name = queryDisplayName(context, uri) ?: tr("已导入文件")
     val limit = MAX_PICK_MEGABYTES * 1024L * 1024L
     val declaredSize = querySize(context, uri)
     if (declaredSize != null && declaredSize > limit) {

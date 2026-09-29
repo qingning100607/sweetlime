@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.core.tools
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 /**
  * 进制转换（2–36 进制，任意长度）。
  *
@@ -75,16 +77,16 @@ object RadixConverter {
             result.add(baseLabel(base) to out)
         }
         val hex = convert(value, fromBase, 16) ?: return null
-        result.add("十六进制（大写）" to hex.uppercase())
+        result.add(tr("十六进制（大写）") to hex.uppercase())
         return result
     }
 
     /** 下拉里显示的名字。 */
     fun baseLabel(base: Int): String = when (base) {
-        2 -> "二进制"
-        8 -> "八进制"
-        10 -> "十进制"
-        16 -> "十六进制"
-        else -> "$base 进制"
+        2 -> tr("二进制")
+        8 -> tr("八进制")
+        10 -> tr("十进制")
+        16 -> tr("十六进制")
+        else -> trf("{} 进制", base)
     }
 }

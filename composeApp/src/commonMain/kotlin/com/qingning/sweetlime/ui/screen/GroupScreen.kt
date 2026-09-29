@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
@@ -74,7 +76,7 @@ fun GroupScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = MiuixIcons.Back,
-                        contentDescription = "返回",
+                        contentDescription = tr("返回"),
                         tint = MiuixTheme.colorScheme.onBackground,
                     )
                 }
@@ -88,7 +90,7 @@ fun GroupScreen(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
-                    text = "先在主页输入文字，再进来看这个分类的效果。",
+                    text = tr("先在主页输入文字，再进来看这个分类的效果。"),
                     style = MiuixTheme.textStyles.body2,
                     color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     modifier = Modifier.padding(16.dp),
@@ -101,7 +103,7 @@ fun GroupScreen(
             contentPadding = PaddingValues(bottom = 48.dp),
         ) {
             item(key = "group_count") {
-                SmallTitle(text = "共 ${items.size} 种样式 · 点条目看详情")
+                SmallTitle(text = trf("共 {} 种样式 · 点条目看详情", items.size))
             }
             item(key = "group_items") {
                 Card(
@@ -118,7 +120,7 @@ fun GroupScreen(
                                 IconButton(onClick = { onCopy(item) }) {
                                     Icon(
                                         imageVector = MiuixIcons.Copy,
-                                        contentDescription = "复制",
+                                        contentDescription = tr("复制"),
                                         tint = MiuixTheme.colorScheme.onBackground,
                                     )
                                 }
@@ -129,7 +131,7 @@ fun GroupScreen(
                                         } else {
                                             MiuixIcons.Favorites
                                         },
-                                        contentDescription = if (favorites.contains(item.key)) "取消收藏" else "收藏",
+                                        contentDescription = if (favorites.contains(item.key)) tr("取消收藏") else tr("收藏"),
                                         tint = MiuixTheme.colorScheme.onBackground,
                                     )
                                 }

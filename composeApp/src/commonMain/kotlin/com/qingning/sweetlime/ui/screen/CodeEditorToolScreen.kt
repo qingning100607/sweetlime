@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -181,13 +183,13 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
         appendNext = false
         when {
             picked == null -> {
-                message = "没选到文件（或者它超过 $MAX_PICK_MEGABYTES MB）。"
+                message = trf("没选到文件（或者它超过 {} MB）。", MAX_PICK_MEGABYTES)
             }
 
             looksLikeArchive(picked) -> {
                 val list = unzipEntries(picked.bytes)
                 if (list.isNullOrEmpty()) {
-                    message = "「${picked.name}」不是能读的 zip，或者解压后超过 $MAX_UNZIP_MEGABYTES MB。"
+                    message = trf("「{}」不是能读的 zip，或者解压后超过 {} MB。", picked.name, MAX_UNZIP_MEGABYTES)
                 } else {
                     message = null
                     archiveName = picked.name
@@ -255,7 +257,7 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
             text = buildString {
                 currentOpenedPath?.let { append("$it · ") }
                     ?: fileName?.let { append("$it · ") }
-                append("$lineCount 行 · ${text.length} 字符")
+                append(trf("{} 行 · {} 字符", lineCount, text.length))
             },
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
@@ -273,18 +275,18 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
         Spacer(modifier = Modifier.height(6.dp))
         if (currentArchive != null && currentOpenedPath != null) {
             TextButton(
-                text = "返回目录 · $currentArchive",
+                text = trf("返回目录 · {}", currentArchive),
                 onClick = { browsing = true },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(6.dp))
             TextButton(
-                text = "保存到压缩包",
+                text = tr("保存到压缩包"),
                 onClick = {
                     val path = currentOpenedPath
                     val handle = archiveHandle
                     if (handle == null) {
-                        message = "这个压缩包的来源拿不到写入句柄，存不回去。"
+                        message = tr("这个压缩包的来源拿不到写入句柄，存不回去。")
                     } else {
                         scope.launch {
                             val updated = entries.map { entry ->
@@ -302,9 +304,9 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
                             }
                             if (writeZipBackPickedFile(handle, updated)) {
                                 entries = updated
-                                message = "已保存回 $currentArchive"
+                                message = trf("已保存回 {}", currentArchive)
                             } else {
-                                message = "这个位置不让写（可能是只读目录），原内容已尽量还原，换个包再试。"
+                                message = tr("这个位置不让写（可能是只读目录），原内容已尽量还原，换个包再试。")
                             }
                         }
                     }
@@ -316,17 +318,17 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
         }
         if (fileHandle != null && currentOpenedPath == null) {
             TextButton(
-                text = "保存回原文件",
+                text = tr("保存回原文件"),
                 onClick = {
                     val handle = fileHandle
                     if (handle == null) {
-                        message = "这个文件的来源拿不到写入句柄，存不回去。"
+                        message = tr("这个文件的来源拿不到写入句柄，存不回去。")
                     } else {
                         scope.launch {
                             if (writeBackPickedFile(handle, encodeTextToBytes(text, openedCharset ?: "UTF-8"))) {
-                                message = "已保存回 " + (fileName ?: "原文件")
+                                message = tr("已保存回 ") + (fileName ?: tr("原文件"))
                             } else {
-                                message = "这个位置不让写（可能是只读目录），换个文件再试。"
+                                message = tr("这个位置不让写（可能是只读目录），换个文件再试。")
                             }
                         }
                     }
@@ -360,33 +362,33 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
             matchCount = matchCount,
             onReplaceNext = {
                 if (findText.isEmpty()) {
-                    message = "先写上要查找的内容。"
+                    message = tr("先写上要查找的内容。")
                 } else {
                     val at = indexOfFrom(text, findText, nextIndex)
                     if (at < 0) {
-                        message = "没找到「$findText」。"
+                        message = trf("没找到「{}」。", findText)
                     } else {
                         text = text.substring(0, at) + replaceText +
                             text.substring(at + findText.length)
                         nextIndex = at + replaceText.length
-                        message = "已替换 1 处。"
+                        message = tr("已替换 1 处。")
                     }
                 }
             },
             onReplaceAll = {
                 if (matchCount == 0) {
-                    message = "没找到「$findText」。"
+                    message = trf("没找到「{}」。", findText)
                 } else {
                     text = text.replace(findText, replaceText)
                     nextIndex = 0
-                    message = "已替换 $matchCount 处。"
+                    message = trf("已替换 {} 处。", matchCount)
                 }
             },
         )
         Text(
-            text = "高亮覆盖常见语言的注释 / 字符串 / 数字 / 关键词，只影响观感、不改内容。" +
-                "导入 zip 会自动解压铺成目录，点里面的文件就地打开；普通文件改完能存回原文件，包内文件改完能存回原压缩包。" +
-                "输入时会自动补右括号、换行保留缩进。",
+            text = tr("高亮覆盖常见语言的注释 / 字符串 / 数字 / 关键词，只影响观感、不改内容。") +
+                tr("导入 zip 会自动解压铺成目录，点里面的文件就地打开；普通文件改完能存回原文件，包内文件改完能存回原压缩包。") +
+                tr("输入时会自动补右括号、换行保留缩进。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 4.dp),
@@ -394,14 +396,14 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
         Spacer(modifier = Modifier.height(12.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             TextButton(
-                text = "导入文件",
+                text = tr("导入文件"),
                 onClick = { pickFile() },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColorsPrimary(),
             )
             Spacer(modifier = Modifier.width(12.dp))
             TextButton(
-                text = "追加导入",
+                text = tr("追加导入"),
                 onClick = {
                     appendNext = true
                     pickFile()
@@ -412,7 +414,7 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             TextButton(
-                text = "清空",
+                text = tr("清空"),
                 onClick = {
                     text = ""
                     fileName = null
@@ -423,8 +425,8 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
             )
             Spacer(modifier = Modifier.width(12.dp))
             TextButton(
-                text = "复制全部",
-                onClick = { if (text.isNotEmpty()) onCopyText(text, "代码") },
+                text = tr("复制全部"),
+                onClick = { if (text.isNotEmpty()) onCopyText(text, tr("代码")) },
                 enabled = text.isNotEmpty(),
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColorsPrimary(),

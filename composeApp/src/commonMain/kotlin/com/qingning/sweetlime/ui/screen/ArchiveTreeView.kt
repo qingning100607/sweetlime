@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -64,21 +66,21 @@ internal fun ArchiveDirectoryPane(
             Column {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$archiveName · ${entries.count { !it.isDirectory }} 个文件",
+                    text = trf("{} · {} 个文件", archiveName, entries.count { !it.isDirectory }),
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(
-                    text = "退出目录",
+                    text = tr("退出目录"),
                     onClick = onExit,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                SmallTitle(text = "目录 · 点文件夹展开，点文件打开")
+                SmallTitle(text = tr("目录 · 点文件夹展开，点文件打开"))
             }
         }
         items(items = rows, key = { it.path }) { row ->
@@ -92,7 +94,7 @@ internal fun ArchiveDirectoryPane(
                         append(row.name)
                     }
                 },
-                summary = if (row.isDirectory) "目录" else formatSize(row.size),
+                summary = if (row.isDirectory) tr("目录") else formatSize(row.size),
                 onClick = {
                     if (row.isDirectory) {
                         onToggleDirectory(row.path)

@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.components
 
+import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -97,7 +98,7 @@ fun GlassTopBarScaffold(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = MiuixIcons.Back,
-                            contentDescription = "返回",
+                            contentDescription = tr("返回"),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
                     }

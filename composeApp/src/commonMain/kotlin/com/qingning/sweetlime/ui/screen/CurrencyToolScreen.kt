@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -76,7 +77,7 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
         TextField(
             value = amountText,
             onValueChange = { amountText = it },
-            label = "金额",
+            label = tr("金额"),
             useLabelAsPlaceholder = true,
             maxLines = 1,
             modifier = Modifier.fillMaxWidth(),
@@ -84,7 +85,7 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
         Card(modifier = Modifier.fillMaxWidth()) {
             CurrencyPickRow(
-                title = "从",
+                title = tr("从"),
                 code = fromCode,
                 expanded = showFrom,
                 onExpand = { showFrom = true },
@@ -96,7 +97,7 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             )
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
             CurrencyPickRow(
-                title = "到",
+                title = tr("到"),
                 code = toCode,
                 expanded = showTo,
                 onExpand = { showTo = true },
@@ -109,19 +110,19 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "汇率来自 exchangerate-api，换货币不用重新请求。",
+            text = tr("汇率来自 exchangerate-api，换货币不用重新请求。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 4.dp),
         )
-        SmallTitle(text = "换算结果")
+        SmallTitle(text = tr("换算结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val message = when {
-                    !finished -> "正在获取汇率…"
-                    rates == null -> "获取汇率失败，请检查网络后重进本页。"
-                    amount == null -> "（输入金额后这里会显示结果）"
-                    converted == null -> "该货币暂时没有汇率数据。"
+                    !finished -> tr("正在获取汇率…")
+                    rates == null -> tr("获取汇率失败，请检查网络后重进本页。")
+                    amount == null -> tr("（输入金额后这里会显示结果）")
+                    converted == null -> tr("该货币暂时没有汇率数据。")
                     else -> null
                 }
                 if (message != null) {
@@ -148,8 +149,8 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
         }
         Spacer(modifier = Modifier.height(12.dp))
         TextButton(
-            text = "复制结果",
-            onClick = { if (summary.isNotEmpty()) onCopyText(summary, "汇率换算") },
+            text = tr("复制结果"),
+            onClick = { if (summary.isNotEmpty()) onCopyText(summary, tr("汇率换算")) },
             enabled = summary.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.textButtonColorsPrimary(),

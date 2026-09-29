@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -23,34 +24,34 @@ internal fun UrlToolScreen(onCopyText: (String, String) -> Unit) {
     var encodeMode by rememberSaveable { mutableStateOf(true) }
     ConverterToolScreen(
         placeholder = if (encodeMode) {
-            "输入要编码的文字或链接，例如：你好 世界"
+            tr("输入要编码的文字或链接，例如：你好 世界")
         } else {
-            "粘贴 URL 编码后的内容，例如：%E4%BD%A0%E5%A5%BD"
+            tr("粘贴 URL 编码后的内容，例如：%E4%BD%A0%E5%A5%BD")
         },
         hint = if (encodeMode) {
-            "按 URL 组件编码（同 encodeURIComponent）：中文、空格、& = ? / 等都会写成 %XX，空格是 %20。"
+            tr("按 URL 组件编码（同 encodeURIComponent）：中文、空格、& = ? / 等都会写成 %XX，空格是 %20。")
         } else {
-            "把 %XX 按 UTF-8 还原成字符，并把 + 当作空格（从网址参数里复制出来的值基本都是这样）。"
+            tr("把 %XX 按 UTF-8 还原成字符，并把 + 当作空格（从网址参数里复制出来的值基本都是这样）。")
         },
-        resultLabel = if (encodeMode) "编码结果" else "解码结果",
+        resultLabel = if (encodeMode) tr("编码结果") else tr("解码结果"),
         convert = { text ->
             if (encodeMode) {
                 UrlCodec.encode(text)
             } else {
-                UrlCodec.decode(text) ?: "不是合法的 URL 编码：% 后面要跟两位十六进制"
+                UrlCodec.decode(text) ?: tr("不是合法的 URL 编码：% 后面要跟两位十六进制")
             }
         },
         onCopyText = onCopyText,
         extra = {
             Card(modifier = Modifier.fillMaxWidth()) {
                 ModeRow(
-                    title = "编码（文字 → URL）",
+                    title = tr("编码（文字 → URL）"),
                     selected = encodeMode,
                     onClick = { encodeMode = true },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ModeRow(
-                    title = "解码（URL → 文字）",
+                    title = tr("解码（URL → 文字）"),
                     selected = !encodeMode,
                     onClick = { encodeMode = false },
                 )

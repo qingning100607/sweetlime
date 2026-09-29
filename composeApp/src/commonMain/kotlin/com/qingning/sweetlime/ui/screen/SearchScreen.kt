@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,7 +57,7 @@ fun SearchScreen(
     // 关键词与原文是同一份内容 —— 这就是「搜什么，转什么」。
     val hits = remember(q) { SearchEngine.search(q, q) }
 
-    GlassTopBarScaffold(title = "搜索", onBack = onBack, modifier = modifier) { topPadding ->
+    GlassTopBarScaffold(title = tr("搜索"), onBack = onBack, modifier = modifier) { topPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
@@ -64,7 +66,7 @@ fun SearchScreen(
                 TiltPressTextField(
                     value = query,
                     onValueChange = { query = it },
-                    label = "输入文字，同时搜索样式 / 符号",
+                    label = tr("输入文字，同时搜索样式 / 符号"),
                     maxLines = 3,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -75,9 +77,9 @@ fun SearchScreen(
             if (q.isEmpty()) {
                 item(key = "search_hint") {
                     HintCard(
-                        "输入的这行字既是搜索词，也是要转换的原文。\n" +
-                            "可以搜：样式名（花体 / 圆圈 / 箭头）、英文名（circled）、" +
-                            "分类名（特效符号 / 空白字符）、符号本身，或单个汉字查拼音拆分。",
+                        tr("输入的这行字既是搜索词，也是要转换的原文。\n") +
+                            tr("可以搜：样式名（花体 / 圆圈 / 箭头）、英文名（circled）、") +
+                            tr("分类名（特效符号 / 空白字符）、符号本身，或单个汉字查拼音拆分。"),
                     )
                 }
                 return@LazyColumn
@@ -85,13 +87,13 @@ fun SearchScreen(
 
             if (hits.isEmpty()) {
                 item(key = "search_empty") {
-                    HintCard("没有找到和「$q」相关的内容。")
+                    HintCard(trf("没有找到和「{}」相关的内容。", q))
                 }
                 return@LazyColumn
             }
 
             item(key = "search_count") {
-                SmallTitle(text = "「$q」找到 ${hits.size} 条")
+                SmallTitle(text = trf("「{}」找到 {} 条", q, hits.size))
             }
 
             // 按类型分段渲染：每换一类，先插一个小标题，再插一张卡片装这一段的条目。
@@ -140,12 +142,12 @@ fun SearchScreen(
 
 /** 一类的标题（用于把结果分段）。 */
 private fun SearchHit.sectionLabel(): String = when (this) {
-    is SearchHit.Hanzi -> "汉字"
-    is SearchHit.Style -> "样式"
-    is SearchHit.StyleCategory -> "样式分类"
-    is SearchHit.Symbol -> "符号"
-    is SearchHit.SymbolCategory -> "符号分类"
-    is SearchHit.Tool -> "工具"
+    is SearchHit.Hanzi -> tr("汉字")
+    is SearchHit.Style -> tr("样式")
+    is SearchHit.StyleCategory -> tr("样式分类")
+    is SearchHit.Symbol -> tr("符号")
+    is SearchHit.SymbolCategory -> tr("符号分类")
+    is SearchHit.Tool -> tr("工具")
 }
 
 @Composable
@@ -187,11 +189,11 @@ private fun SearchRow(
         is SearchHit.Symbol -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
-            onClick = { onCopyText(hit.symbol, "符号") },
+            onClick = { onCopyText(hit.symbol, tr("符号")) },
             endActions = {
                 Icon(
                     imageVector = MiuixIcons.Copy,
-                    contentDescription = "复制符号",
+                    contentDescription = tr("复制符号"),
                     tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                 )
             },
@@ -226,11 +228,11 @@ private fun SearchRow(
         is SearchHit.Hanzi -> BasicComponent(
             title = hit.title,
             summary = hit.summary,
-            onClick = { onCopyText(hit.payload, "拼音 / 拆分") },
+            onClick = { onCopyText(hit.payload, tr("拼音 / 拆分")) },
             endActions = {
                 Icon(
                     imageVector = MiuixIcons.Copy,
-                    contentDescription = "复制拼音",
+                    contentDescription = tr("复制拼音"),
                     tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                 )
             },

@@ -1,7 +1,14 @@
 package com.qingning.sweetlime.core
 
-/** 样式分组，决定在界面上如何归类展示（顺序即分类 Tab 的先后）。 */
-enum class StyleGroup(val label: String) {
+import com.qingning.sweetlime.core.i18n.tr
+
+/**
+ * 样式分组，决定在界面上如何归类展示（顺序即分类 Tab 的先后）。
+ *
+ * [key] 是简体原文（同时也是词表里的 key），[label] 按当前语言现算——
+ * 所以这里不能用构造参数直接存 label，否则枚举初始化时就把语言定死了。
+ */
+enum class StyleGroup(private val key: String) {
     LATIN("英文花体"),
     SUPSUB("上下标"),
     COLOR("彩色字母"),
@@ -12,6 +19,9 @@ enum class StyleGroup(val label: String) {
     VINE("花藤字"),
     BIRD("飞鸟文"),
     BLANK("空白字符"),
+    ;
+
+    val label: String get() = tr(key)
 }
 
 /**

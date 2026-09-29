@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,14 +46,14 @@ fun FavoriteScreen(
                 .fillMaxSize()
                 .padding(top = outerPadding.calculateTopPadding()),
         ) {
-            SmallTitle(text = "收藏")
+            SmallTitle(text = tr("收藏"))
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
                 Text(
-                    text = "还没有收藏。在分类页点条目右侧的心形按钮即可收藏。",
+                    text = tr("还没有收藏。在分类页点条目右侧的心形按钮即可收藏。"),
                     style = MiuixTheme.textStyles.body2,
                     color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     modifier = Modifier.padding(16.dp),
@@ -69,7 +71,7 @@ fun FavoriteScreen(
         ),
     ) {
         item(key = "favorite_title") {
-            SmallTitle(text = "已收藏 ${items.size} 条")
+            SmallTitle(text = trf("已收藏 {} 条", items.size))
         }
         item(key = "favorite_card") {
             Card(
@@ -108,14 +110,14 @@ private fun FavoriteRow(
             IconButton(onClick = onCopy) {
                 Icon(
                     imageVector = MiuixIcons.Copy,
-                    contentDescription = "复制",
+                    contentDescription = tr("复制"),
                     tint = MiuixTheme.colorScheme.onBackground,
                 )
             }
             IconButton(onClick = onRemove) {
                 Icon(
                     imageVector = MiuixIcons.Delete,
-                    contentDescription = "移除",
+                    contentDescription = tr("移除"),
                     tint = MiuixTheme.colorScheme.onBackground,
                 )
             }

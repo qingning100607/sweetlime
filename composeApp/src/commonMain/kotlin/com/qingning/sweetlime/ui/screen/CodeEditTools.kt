@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -144,7 +146,7 @@ internal fun FindReplaceSection(
     modifier: Modifier = Modifier,
 ) {
     TextButton(
-        text = if (open) "收起查找" else "查找替换",
+        text = if (open) tr("收起查找") else tr("查找替换"),
         onClick = onToggleOpen,
         modifier = modifier.fillMaxWidth(),
     )
@@ -154,7 +156,7 @@ internal fun FindReplaceSection(
             TextField(
                 value = findText,
                 onValueChange = onFindTextChange,
-                label = "查找",
+                label = tr("查找"),
                 useLabelAsPlaceholder = true,
                 maxLines = 1,
                 modifier = Modifier.fillMaxWidth(),
@@ -163,7 +165,7 @@ internal fun FindReplaceSection(
             TextField(
                 value = replaceText,
                 onValueChange = onReplaceTextChange,
-                label = "替换成",
+                label = tr("替换成"),
                 useLabelAsPlaceholder = true,
                 maxLines = 1,
                 modifier = Modifier.fillMaxWidth(),
@@ -171,9 +173,9 @@ internal fun FindReplaceSection(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = when {
-                    findText.isEmpty() -> "先写上要查找的内容。"
-                    matchCount == 0 -> "没找到「$findText」。"
-                    else -> "找到 $matchCount 处。"
+                    findText.isEmpty() -> tr("先写上要查找的内容。")
+                    matchCount == 0 -> trf("没找到「{}」。", findText)
+                    else -> trf("找到 {} 处。", matchCount)
                 },
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
@@ -181,14 +183,14 @@ internal fun FindReplaceSection(
             Spacer(modifier = Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
                 TextButton(
-                    text = "替换下一个",
+                    text = tr("替换下一个"),
                     onClick = onReplaceNext,
                     enabled = matchCount > 0,
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 TextButton(
-                    text = "全部替换",
+                    text = tr("全部替换"),
                     onClick = onReplaceAll,
                     enabled = matchCount > 0,
                     modifier = Modifier.weight(1f),

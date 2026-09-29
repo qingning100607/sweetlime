@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,20 +54,20 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
         TextField(
             value = input,
             onValueChange = { input = it },
-            label = "输入颜色，例如 #FF5722",
+            label = tr("输入颜色，例如 #FF5722"),
             useLabelAsPlaceholder = true,
             maxLines = 2,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "认得出 #RGB / #RRGGBB / #AARRGGBB、rgb()、rgba()、hsl()；" +
-                "八位十六进制按 AARRGGBB 解析。",
+            text = tr("认得出 #RGB / #RRGGBB / #AARRGGBB、rgb()、rgba()、hsl()；") +
+                tr("八位十六进制按 AARRGGBB 解析。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 4.dp),
         )
-        SmallTitle(text = "颜色预览")
+        SmallTitle(text = tr("颜色预览"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Box(
@@ -86,9 +87,9 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (input.isBlank()) {
-                            "（输入后这里会显示色块）"
+                            tr("（输入后这里会显示色块）")
                         } else {
-                            "认不出这个颜色，换个写法试试。"
+                            tr("认不出这个颜色，换个写法试试。")
                         },
                         style = MiuixTheme.textStyles.body2,
                         color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
@@ -97,7 +98,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             }
         }
         if (info != null) {
-            SmallTitle(text = "各种写法")
+            SmallTitle(text = tr("各种写法"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     lines.forEachIndexed { index, line ->
@@ -111,8 +112,8 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
         }
         Spacer(modifier = Modifier.height(12.dp))
         TextButton(
-            text = "复制全部",
-            onClick = { if (report.isNotEmpty()) onCopyText(report, "颜色代码") },
+            text = tr("复制全部"),
+            onClick = { if (report.isNotEmpty()) onCopyText(report, tr("颜色代码")) },
             enabled = report.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.textButtonColorsPrimary(),
@@ -123,13 +124,13 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
 
 private fun colorLines(info: ColorInfo): List<Pair<String, String>> = listOf(
     "HEX" to info.hex,
-    "HEX 带透明度" to info.hexAlpha,
+    tr("HEX 带透明度") to info.hexAlpha,
     "RGB" to info.rgb,
     "RGBA" to info.rgba,
     "ARGB（Compose）" to info.argb,
     "HSL" to info.hsl,
     "HSV" to info.hsv,
-    "透明度" to "${info.alphaPercent}%",
+    tr("透明度") to "${info.alphaPercent}%",
 )
 
 @Composable

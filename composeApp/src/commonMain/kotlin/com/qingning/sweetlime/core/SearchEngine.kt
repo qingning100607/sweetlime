@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.core
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.core.mapping.CHAI_MAP
 import com.qingning.sweetlime.core.mapping.PINYIN_MAP
 import com.qingning.sweetlime.core.mapping.SYMBOL_CATEGORIES
@@ -112,15 +114,15 @@ object SearchEngine {
             val chai = CHAI_MAP[ch]
             if (pinyin != null || chai != null) {
                 val parts = buildList {
-                    pinyin?.let { add("拼音 $it") }
-                    chai?.let { add("拆分 $it") }
+                    pinyin?.let { add(trf("拼音 {}", it)) }
+                    chai?.let { add(trf("拆分 {}", it)) }
                 }
                 hanzi.add(
                     SearchHit.Hanzi(
                         char = ch,
                         payload = parts.joinToString("\n"),
                         title = "$ch",
-                        summary = parts.joinToString(" · ") + "（点一下复制）",
+                        summary = parts.joinToString(" · ") + tr("（点一下复制）"),
                     ),
                 )
             }
@@ -142,7 +144,7 @@ object SearchEngine {
                     summary = when {
                         preview.isNotEmpty() -> preview
                         input.isBlank() -> style.group.label
-                        else -> "这段文字在这里没有效果"
+                        else -> tr("这段文字在这里没有效果")
                     },
                 ),
             )
@@ -154,7 +156,7 @@ object SearchEngine {
                 SearchHit.StyleCategory(
                     groupId = group.name,
                     title = group.label,
-                    summary = "分类 · 点进去看这一类下的全部样式",
+                    summary = tr("分类 · 点进去看这一类下的全部样式"),
                 ),
             )
         }
@@ -166,7 +168,7 @@ object SearchEngine {
                     SearchHit.SymbolCategory(
                         index = index,
                         title = category.title,
-                        summary = "分类 · ${category.symbols.size} 个符号，点进去慢慢挑",
+                        summary = trf("分类 · {} 个符号，点进去慢慢挑", category.symbols.size),
                     ),
                 )
                 continue
@@ -178,7 +180,7 @@ object SearchEngine {
                         category = category.title,
                         symbol = symbol,
                         title = symbol,
-                        summary = "${category.title} · 点一下复制",
+                        summary = trf("{} · 点一下复制", category.title),
                     ),
                 )
                 if (symbols.size >= MAX_SYMBOLS) break@outer
@@ -197,7 +199,7 @@ object SearchEngine {
                 SearchHit.Tool(
                     id = tool.id,
                     title = tool.title,
-                    summary = "工具 · ${tool.summary}",
+                    summary = trf("工具 · {}", tool.summary),
                 ),
             )
         }

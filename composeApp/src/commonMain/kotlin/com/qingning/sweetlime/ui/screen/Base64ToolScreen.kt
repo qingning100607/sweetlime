@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -18,31 +19,31 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 internal fun Base64ToolScreen(onCopyText: (String, String) -> Unit) {
     var encodeMode by rememberSaveable { mutableStateOf(true) }
     ConverterToolScreen(
-        placeholder = if (encodeMode) "输入要编码的文字，例如：你好世界" else "粘贴 Base64，例如：5L2g5aW9",
+        placeholder = if (encodeMode) tr("输入要编码的文字，例如：你好世界") else tr("粘贴 Base64，例如：5L2g5aW9"),
         hint = if (encodeMode) {
-            "按 UTF-8 编码，输出标准 Base64（不足三位会补 =）。"
+            tr("按 UTF-8 编码，输出标准 Base64（不足三位会补 =）。")
         } else {
-            "忽略空格与换行，兼容 URL-safe 的 - 和 _，末尾的 = 也可以省略。"
+            tr("忽略空格与换行，兼容 URL-safe 的 - 和 _，末尾的 = 也可以省略。")
         },
-        resultLabel = if (encodeMode) "编码结果" else "解码结果",
+        resultLabel = if (encodeMode) tr("编码结果") else tr("解码结果"),
         convert = { text ->
             if (encodeMode) {
                 Base64Codec.encode(text)
             } else {
-                Base64Codec.decode(text) ?: "不是合法的 Base64，请检查输入"
+                Base64Codec.decode(text) ?: tr("不是合法的 Base64，请检查输入")
             }
         },
         onCopyText = onCopyText,
         extra = {
             Card(modifier = Modifier.fillMaxWidth()) {
                 ModeRow(
-                    title = "编码（文字 → Base64）",
+                    title = tr("编码（文字 → Base64）"),
                     selected = encodeMode,
                     onClick = { encodeMode = true },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ModeRow(
-                    title = "解码（Base64 → 文字）",
+                    title = tr("解码（Base64 → 文字）"),
                     selected = !encodeMode,
                     onClick = { encodeMode = false },
                 )

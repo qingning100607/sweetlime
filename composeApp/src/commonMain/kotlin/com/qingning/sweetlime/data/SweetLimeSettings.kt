@@ -31,6 +31,8 @@ class SweetLimeSettings(private val store: KeyValueStore) {
     // 默认直接选 **OS3**（配色在三组色板间流动的那一代），不跟随系统 ——
     // 这样不管机器上是哪个 HyperOS 版本，首装看到的都是最新的那套观感。
     private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.OS3))
+    // 界面语言：zh=简体 / en=英文 / tw=繁体。存 code，认不出来回落简体。
+    private var languageState by mutableStateOf(store.getString(KEY_LANGUAGE, "zh"))
 
     var monet: Boolean
         get() = monetState
@@ -82,6 +84,19 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putInt(KEY_FLOWING_STYLE, value)
         }
 
+    /**
+     * 界面语言（code 见 [com.qingning.sweetlime.core.i18n.AppLanguage]）。
+     *
+     * 只存 code；真正生效靠 App 里把 [com.qingning.sweetlime.core.i18n.AppLocale]
+     * 同步过来，然后整个界面按新语言重组，不用重启。
+     */
+    var language: String
+        get() = languageState
+        set(value) {
+            languageState = value
+            store.putString(KEY_LANGUAGE, value)
+        }
+
     private companion object {
         const val KEY_MONET = "theme_monet"
         const val KEY_THEME_MODE = "theme_mode"
@@ -89,5 +104,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
         const val KEY_DISMISSED_UPDATE = "dismissed_update_version"
         const val KEY_FLOWING_BG = "flowing_background"
         const val KEY_FLOWING_STYLE = "flowing_background_style"
+        const val KEY_LANGUAGE = "language"
     }
 }

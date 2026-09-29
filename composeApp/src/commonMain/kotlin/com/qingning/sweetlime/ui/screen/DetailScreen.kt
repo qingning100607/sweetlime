@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
@@ -91,7 +93,7 @@ fun DetailScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = MiuixIcons.Back,
-                        contentDescription = "返回",
+                        contentDescription = tr("返回"),
                         tint = MiuixTheme.colorScheme.onBackground,
                     )
                 }
@@ -105,7 +107,7 @@ fun DetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp),
         ) {
-            SmallTitle(text = "原文")
+            SmallTitle(text = tr("原文"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 TextField(
                     value = text,
@@ -113,7 +115,7 @@ fun DetailScreen(
                         text = it
                         onInputChange(it)
                     },
-                    label = "输入要转换的文字",
+                    label = tr("输入要转换的文字"),
                     useLabelAsPlaceholder = true,
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
@@ -126,7 +128,7 @@ fun DetailScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "${text.length} 字",
+                        text = trf("{} 字", text.length),
                         style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     )
@@ -141,7 +143,7 @@ fun DetailScreen(
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Paste,
-                            contentDescription = "粘贴",
+                            contentDescription = tr("粘贴"),
                             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                         )
                     }
@@ -154,7 +156,7 @@ fun DetailScreen(
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Clear,
-                                contentDescription = "清空",
+                                contentDescription = tr("清空"),
                                 tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                             )
                         }
@@ -162,13 +164,13 @@ fun DetailScreen(
                 }
             }
 
-            SmallTitle(text = "效果")
+            SmallTitle(text = tr("效果"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = when {
-                        text.isEmpty() -> "上面输入文字，这里就是转换后的效果。"
+                        text.isEmpty() -> tr("上面输入文字，这里就是转换后的效果。")
                         hasEffect -> output
-                        else -> "这段文字在这个样式里没有变化。"
+                        else -> tr("这段文字在这个样式里没有变化。")
                     },
                     style = MiuixTheme.textStyles.title2,
                     color = if (hasEffect) {
@@ -187,18 +189,18 @@ fun DetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 TextButton(
-                    text = "复制",
+                    text = tr("复制"),
                     onClick = { onCopy(output) },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary(),
                 )
                 TextButton(
-                    text = "分享",
+                    text = tr("分享"),
                     onClick = { onShare(output) },
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(
-                    text = if (favorite) "取消收藏" else "收藏",
+                    text = if (favorite) tr("取消收藏") else tr("收藏"),
                     onClick = { onToggleFavorite(text) },
                     modifier = Modifier.weight(1f),
                 )

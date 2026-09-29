@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -126,33 +128,33 @@ fun AboutScreen(
             }
 
             item(key = "about_project") {
-                SmallTitle(text = "关于项目")
+                SmallTitle(text = tr("关于项目"))
                 TiltPressCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
                 ) {
                     BasicComponent(
-                        title = "GitHub 仓库",
-                        summary = "qingning100607/sweetlime · 点击打开源码页",
+                        title = tr("GitHub 仓库"),
+                        summary = tr("qingning100607/sweetlime · 点击打开源码页"),
                         onClick = { onOpenUrl(REPO_URL) },
                         endActions = {
                             Icon(
                                 imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = "打开 GitHub 仓库",
+                                contentDescription = tr("打开 GitHub 仓库"),
                                 tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                             )
                         },
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     BasicComponent(
-                        title = "开源许可",
-                        summary = "用到的开源项目与许可证",
+                        title = tr("开源许可"),
+                        summary = tr("用到的开源项目与许可证"),
                         onClick = onOpenLicenses,
                         endActions = {
                             Icon(
                                 imageVector = MiuixIcons.Notes,
-                                contentDescription = "打开开源许可",
+                                contentDescription = tr("打开开源许可"),
                                 tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                             )
                         },
@@ -161,33 +163,33 @@ fun AboutScreen(
             }
 
             item(key = "about_author") {
-                SmallTitle(text = "关于作者")
+                SmallTitle(text = tr("关于作者"))
                 TiltPressCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
                 ) {
                     BasicComponent(
-                        title = "作者",
-                        summary = "$AUTHOR_NAME · QQ $AUTHOR_QQ · 点击复制",
-                        onClick = { onCopyText(AUTHOR_QQ, "作者 QQ") },
+                        title = tr("作者"),
+                        summary = trf("{} · QQ {} · 点击复制", AUTHOR_NAME, AUTHOR_QQ),
+                        onClick = { onCopyText(AUTHOR_QQ, tr("作者 QQ")) },
                         endActions = {
                             Icon(
                                 imageVector = MiuixIcons.Copy,
-                                contentDescription = "复制作者 QQ",
+                                contentDescription = tr("复制作者 QQ"),
                                 tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                             )
                         },
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     BasicComponent(
-                        title = "交流群",
-                        summary = "QQ 群 $COMMUNITY_GROUP · 点击一键加群",
+                        title = tr("交流群"),
+                        summary = trf("QQ 群 {} · 点击一键加群", COMMUNITY_GROUP),
                         onClick = { onOpenUrl(COMMUNITY_LINK) },
                         endActions = {
                             Icon(
                                 imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = "打开加群链接",
+                                contentDescription = tr("打开加群链接"),
                                 tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                             )
                         },
@@ -196,7 +198,7 @@ fun AboutScreen(
             }
 
             item(key = "about_thanks") {
-                SmallTitle(text = "致谢")
+                SmallTitle(text = tr("致谢"))
                 TiltPressCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -234,13 +236,13 @@ fun AboutScreen(
                     ),
             )
             SmallTopAppBar(
-                title = "关于",
+                title = tr("关于"),
                 color = Color.Transparent,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = MiuixIcons.Back,
-                            contentDescription = "返回",
+                            contentDescription = tr("返回"),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
                     }

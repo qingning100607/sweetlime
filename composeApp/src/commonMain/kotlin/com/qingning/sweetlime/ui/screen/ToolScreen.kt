@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
@@ -43,7 +45,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal fun toolTitle(id: String): String =
-    TOOL_ENTRIES.firstOrNull { it.id == id }?.title ?: "工具"
+    TOOL_ENTRIES.firstOrNull { it.id == id }?.title ?: tr("工具")
 
 /** 单个工具的二级页：目录见 [TOOL_ENTRIES]，每个 id 对应一个页面。 */
 @Composable
@@ -69,7 +71,7 @@ fun ToolScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = MiuixIcons.Back,
-                        contentDescription = "返回",
+                        contentDescription = tr("返回"),
                         tint = MiuixTheme.colorScheme.onBackground,
                     )
                 }
@@ -79,16 +81,16 @@ fun ToolScreen(
         when (toolId) {
             "symbol" -> SymbolCategoryList(onOpen = onOpenSymbolCategory)
             "pinyin" -> ConverterToolScreen(
-                placeholder = "输入汉字，例如：你好世界",
-                hint = "查不到的字（标点、英文、数字）会原样保留。多音字取字典里靠前的那一个读音。",
-                resultLabel = "拼音结果",
+                placeholder = tr("输入汉字，例如：你好世界"),
+                hint = tr("查不到的字（标点、英文、数字）会原样保留。多音字取字典里靠前的那一个读音。"),
+                resultLabel = tr("拼音结果"),
                 convert = { hanziToPinyin(it) },
                 onCopyText = onCopyText,
             )
             "chai" -> ConverterToolScreen(
-                placeholder = "输入汉字，例如：卧项功",
-                hint = "只能拆左右 / 上下结构的字；表里没有的字会原样保留。",
-                resultLabel = "拆分结果",
+                placeholder = tr("输入汉字，例如：卧项功"),
+                hint = tr("只能拆左右 / 上下结构的字；表里没有的字会原样保留。"),
+                resultLabel = tr("拆分结果"),
                 convert = { hanziToChai(it) },
                 onCopyText = onCopyText,
             )
@@ -116,7 +118,7 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     ) {
         item(key = "symbol_hint") {
             Text(
-                text = "共 ${categories.size} 个分类 · 点一个查看全部符号",
+                text = trf("共 {} 个分类 · 点一个查看全部符号", categories.size),
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -131,7 +133,7 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
                 categories.forEachIndexed { index, category ->
                     BasicComponent(
                         title = category.title,
-                        summary = "${category.symbols.size} 个符号",
+                        summary = trf("{} 个符号", category.symbols.size),
                         onClick = { onOpen(index) },
                         endActions = {
                             Icon(
@@ -193,7 +195,7 @@ internal fun ConverterToolScreen(
         SmallTitle(text = resultLabel)
         Card(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = result.ifEmpty { "（输入后这里会实时显示结果）" },
+                text = result.ifEmpty { tr("（输入后这里会实时显示结果）") },
                 style = MiuixTheme.textStyles.title2,
                 color = if (result.isEmpty()) {
                     MiuixTheme.colorScheme.onSurfaceContainerVariant
@@ -205,7 +207,7 @@ internal fun ConverterToolScreen(
         }
         Spacer(modifier = Modifier.height(12.dp))
         TextButton(
-            text = "复制结果",
+            text = tr("复制结果"),
             onClick = { if (result.isNotEmpty()) onCopyText(result, resultLabel) },
             enabled = result.isNotEmpty(),
             modifier = Modifier.fillMaxWidth(),
@@ -222,28 +224,28 @@ internal fun ConverterToolScreen(
 private fun DaxieToolScreen(onCopyText: (String, String) -> Unit) {
     var toUpperMode by rememberSaveable { mutableStateOf(true) }
     ConverterToolScreen(
-        placeholder = if (toUpperMode) "输入小写金额，例如：1234.5" else "输入大写金额，例如：人民币壹仟贰佰叁拾肆元伍角",
+        placeholder = if (toUpperMode) tr("输入小写金额，例如：1234.5") else tr("输入大写金额，例如：人民币壹仟贰佰叁拾肆元伍角"),
         hint = if (toUpperMode) {
-            "支持到 99999999999.99（约一千亿元），角分自动补「整」。"
+            tr("支持到 99999999999.99（约一千亿元），角分自动补「整」。")
         } else {
-            "支持「元 / 圆」「拾佰仟万亿」，结果保留两位小数。"
+            tr("支持「元 / 圆」「拾佰仟万亿」，结果保留两位小数。")
         },
-        resultLabel = if (toUpperMode) "大写金额" else "小写金额",
+        resultLabel = if (toUpperMode) tr("大写金额") else tr("小写金额"),
         convert = { text ->
             val out = if (toUpperMode) DaxieConverter.toUpper(text) else DaxieConverter.toLower(text)
-            out ?: "格式不正确，请检查输入"
+            out ?: tr("格式不正确，请检查输入")
         },
         onCopyText = onCopyText,
         extra = {
             Card(modifier = Modifier.fillMaxWidth()) {
                 ModeRow(
-                    title = "小写转大写",
+                    title = tr("小写转大写"),
                     selected = toUpperMode,
                     onClick = { toUpperMode = true },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ModeRow(
-                    title = "大写转小写",
+                    title = tr("大写转小写"),
                     selected = !toUpperMode,
                     onClick = { toUpperMode = false },
                 )
@@ -266,7 +268,7 @@ internal fun ModeRow(
             if (selected) {
                 Icon(
                     imageVector = MiuixIcons.Basic.Check,
-                    contentDescription = "已选择",
+                    contentDescription = tr("已选择"),
                     tint = MiuixTheme.colorScheme.primary,
                 )
             }

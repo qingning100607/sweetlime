@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core.tools
 
+import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.httpGetText
 
 /** 一份汇率表：1 [base] = rates[X] 个 X。 */
@@ -32,19 +33,20 @@ object CurrencyApi {
     private const val ENDPOINT = "https://open.er-api.com/v6/latest/"
 
     /** 常见货币（中文名 → 代码），也是下拉里的展示顺序。 */
-    val COMMON: List<Pair<String, String>> = listOf(
-        "人民币" to "CNY",
-        "美元" to "USD",
-        "欧元" to "EUR",
-        "英镑" to "GBP",
-        "日元" to "JPY",
-        "港币" to "HKD",
-        "韩元" to "KRW",
-        "新台币" to "TWD",
-        "新加坡元" to "SGD",
-        "澳元" to "AUD",
-        "加元" to "CAD",
-        "泰铢" to "THB",
+    val COMMON: List<Pair<String, String>>
+    get() = listOf(
+        tr("人民币") to "CNY",
+        tr("美元") to "USD",
+        tr("欧元") to "EUR",
+        tr("英镑") to "GBP",
+        tr("日元") to "JPY",
+        tr("港币") to "HKD",
+        tr("韩元") to "KRW",
+        tr("新台币") to "TWD",
+        tr("新加坡元") to "SGD",
+        tr("澳元") to "AUD",
+        tr("加元") to "CAD",
+        tr("泰铢") to "THB",
     )
 
     fun displayName(code: String): String =

@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core.tools
 
+import com.qingning.sweetlime.core.i18n.tr
 import kotlin.math.roundToInt
 
 /**
@@ -9,10 +10,10 @@ import kotlin.math.roundToInt
  * 而 WHO 用的是 25 / 30。中文界面下用国内标准更贴合直觉。
  */
 enum class BmiLevel(val label: String, val range: String) {
-    THIN("偏瘦", "低于 18.5"),
-    NORMAL("正常", "18.5 – 23.9"),
-    OVERWEIGHT("超重", "24.0 – 27.9"),
-    OBESE("肥胖", "28.0 及以上"),
+    THIN(tr("偏瘦"), tr("低于 18.5")),
+    NORMAL(tr("正常"), "18.5 – 23.9"),
+    OVERWEIGHT(tr("超重"), "24.0 – 27.9"),
+    OBESE(tr("肥胖"), tr("28.0 及以上")),
 }
 
 /** 一次 BMI 计算的全部结果。 */
@@ -35,10 +36,10 @@ class BmiReport(
     /** 一句人话。 */
     val advice: String
         get() = when (level) {
-            BmiLevel.THIN -> "体重偏低，注意补充营养，别盲目节食。"
-            BmiLevel.NORMAL -> "体重在健康范围，保持规律作息与运动就好。"
-            BmiLevel.OVERWEIGHT -> "略微超重，适当控制饮食、增加运动量。"
-            BmiLevel.OBESE -> "已达到肥胖，建议调整饮食结构，必要时咨询专业人士。"
+            BmiLevel.THIN -> tr("体重偏低，注意补充营养，别盲目节食。")
+            BmiLevel.NORMAL -> tr("体重在健康范围，保持规律作息与运动就好。")
+            BmiLevel.OVERWEIGHT -> tr("略微超重，适当控制饮食、增加运动量。")
+            BmiLevel.OBESE -> tr("已达到肥胖，建议调整饮食结构，必要时咨询专业人士。")
         }
 }
 

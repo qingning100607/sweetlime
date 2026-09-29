@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core.styles
 
+import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.mapping.codePointToString
@@ -114,39 +115,40 @@ private fun reverseCodePoints(text: String): String {
     }
 }
 
-internal val latinStyles: List<TextTransform> = listOf(
+internal val latinStyles: List<TextTransform>
+    get() = listOf(
     // Mathematical Bold
-    mathStyle("latin_bold", "粗体", 0x1D400, 0x1D41A, 0x1D7CE),
+    mathStyle("latin_bold", tr("粗体"), 0x1D400, 0x1D41A, 0x1D7CE),
     // Mathematical Italic（小写 h 是空洞，用 ℎ U+210E）
     mathStyle(
-        "latin_italic", "斜体", 0x1D434, 0x1D44E,
+        "latin_italic", tr("斜体"), 0x1D434, 0x1D44E,
         exceptions = mapOf('h' to "\u210E"),
     ),
-    mathStyle("latin_bold_italic", "粗斜体", 0x1D468, 0x1D482, 0x1D7CE),
+    mathStyle("latin_bold_italic", tr("粗斜体"), 0x1D468, 0x1D482, 0x1D7CE),
     mathStyle(
-        "latin_script", "手写体", 0x1D49C, 0x1D4B6,
+        "latin_script", tr("手写体"), 0x1D49C, 0x1D4B6,
         exceptions = SCRIPT_EXCEPTIONS,
     ),
-    mathStyle("latin_bold_script", "粗手写体", 0x1D4D0, 0x1D4EA),
+    mathStyle("latin_bold_script", tr("粗手写体"), 0x1D4D0, 0x1D4EA),
     mathStyle(
-        "latin_fraktur", "哥特体", 0x1D504, 0x1D51E,
+        "latin_fraktur", tr("哥特体"), 0x1D504, 0x1D51E,
         exceptions = FRAKTUR_EXCEPTIONS,
     ),
     mathStyle(
-        "latin_double_struck", "双线体", 0x1D538, 0x1D552, 0x1D7D8,
+        "latin_double_struck", tr("双线体"), 0x1D538, 0x1D552, 0x1D7D8,
         exceptions = DOUBLE_STRUCK_EXCEPTIONS,
     ),
-    transform("latin_circled", "圆圈体", StyleGroup.LATIN) { input ->
+    transform("latin_circled", tr("圆圈体"), StyleGroup.LATIN) { input ->
         mapEach(input) { circledTransform(it) }
     },
-    transform("latin_small_caps", "小型大写", StyleGroup.LATIN) { input ->
+    transform("latin_small_caps", tr("小型大写"), StyleGroup.LATIN) { input ->
         mapEach(input) { SMALL_CAPS[it]?.toString() }
     },
-    mathStyle("latin_monospace", "等宽体", 0x1D670, 0x1D68A, 0x1D7F6),
-    transform("latin_bold_circled", "粗圆圈", StyleGroup.LATIN) { input ->
+    mathStyle("latin_monospace", tr("等宽体"), 0x1D670, 0x1D68A, 0x1D7F6),
+    transform("latin_bold_circled", tr("粗圆圈"), StyleGroup.LATIN) { input ->
         mapEach(input) { boldCircledTransform(it) }
     },
-    transform("latin_upside_down", "倒置字", StyleGroup.LATIN) { input ->
+    transform("latin_upside_down", tr("倒置字"), StyleGroup.LATIN) { input ->
         input.split('\n').joinToString("\n") { line ->
             val reversed = reverseCodePoints(line)
             buildString(reversed.length) {

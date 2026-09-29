@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -128,12 +130,24 @@ fun HomeScreen(
                             IconButton(onClick = onDismissUpdate) {
                                 Icon(
                                     imageVector = MiuixIcons.Clear,
-                                    contentDescription = "这一版不再提示",
+                                    contentDescription = tr("这一版不再提示"),
                                     tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                                 )
                             }
                         },
                     )
+                    // 下载失败时，小字下面再补一行「怎么办」：更新源在 GitHub，
+                    // 国内直连经常抽风，与其让用户反复点「重试」不如直接给条明路。
+                    if (banner.hint != null) {
+                        Text(
+                            text = banner.hint,
+                            style = MiuixTheme.textStyles.body2,
+                            color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                        )
+                    }
                 }
             }
         }
@@ -143,7 +157,7 @@ fun HomeScreen(
             TiltPressTextField(
                 value = input,
                 onValueChange = onInputChange,
-                label = "输入要转换的文字",
+                label = tr("输入要转换的文字"),
                 maxLines = 3,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -161,9 +175,9 @@ fun HomeScreen(
             ) {
                 Text(
                     text = if (input.length > NICKNAME_SOFT_LIMIT) {
-                        "${input.length} 字 · 偏长，部分平台会截断"
+                        trf("{} 字 · 偏长，部分平台会截断", input.length)
                     } else {
-                        "${input.length} 字"
+                        trf("{} 字", input.length)
                     },
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
@@ -172,7 +186,7 @@ fun HomeScreen(
                 IconButton(onClick = { readClipboard()?.let(onInputChange) }) {
                     Icon(
                         imageVector = MiuixIcons.Paste,
-                        contentDescription = "粘贴",
+                        contentDescription = tr("粘贴"),
                         tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     )
                 }
@@ -180,7 +194,7 @@ fun HomeScreen(
                     IconButton(onClick = { onInputChange("") }) {
                         Icon(
                             imageVector = MiuixIcons.Clear,
-                            contentDescription = "清空",
+                            contentDescription = tr("清空"),
                             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                         )
                     }
@@ -190,7 +204,7 @@ fun HomeScreen(
         // 最近使用：有历史才显示，横向一排胶囊，点一下直接进对应样式详情。
         if (recentStyles.isNotEmpty()) {
             item(key = "home_recent_title") {
-                SmallTitle(text = "最近使用")
+                SmallTitle(text = tr("最近使用"))
             }
             item(key = "home_recent_list") {
                 LazyRow(
@@ -225,9 +239,9 @@ fun HomeScreen(
                     BasicComponent(
                         title = entry.group.label,
                         summary = when {
-                            input.isBlank() -> "${entry.count} 种样式"
+                            input.isBlank() -> trf("{} 种样式", entry.count)
                             entry.preview.isNotEmpty() -> entry.preview.replace('\n', ' ')
-                            else -> "这段文字在这里没有效果"
+                            else -> tr("这段文字在这里没有效果")
                         },
                         onClick = { onOpenGroup(entry.group) },
                         endActions = {

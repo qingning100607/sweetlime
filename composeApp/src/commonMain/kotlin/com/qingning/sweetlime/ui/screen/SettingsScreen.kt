@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,11 +21,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.APP_VERSION
+import com.qingning.sweetlime.core.rememberLanguageIcon
 import com.qingning.sweetlime.core.UpdateChecker
 import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.data.ThemeMode
@@ -33,6 +36,8 @@ import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.UpdateDownloadState
 import com.qingning.sweetlime.ui.components.glassBar
 import com.qingning.sweetlime.ui.updateRowText
+import com.qingning.sweetlime.core.i18n.AppLanguage
+import com.qingning.sweetlime.core.i18n.AppLocale
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -70,8 +75,10 @@ import com.qingning.sweetlime.ui.components.TiltPressCard
  *
  * 排版顺序（自上而下）：
  * 1. 外观；
- * 2. 「隐私 + 兼容性」—— 单独一张圆角卡，和上面的设置项分开，不再吊在关于信息后面；
- * 3. 「关于」—— 作者 / 交流群 / GitHub 仓库，挂在页面最底部。
+ * 2. 语言；
+ * 3. 兼容性提示；
+ * 4. 更新与协议；
+ * 5. 关于。
  *
  * 顶栏也铺了一层全分辨率玻璃，往上滚动内容时会从它下面滑过去。
  */
@@ -99,6 +106,7 @@ fun SettingsScreen(
 ) {
     var showThemePopup by remember { mutableStateOf(false) }
     var showFlowStylePopup by remember { mutableStateOf(false) }
+    var showLanguagePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     val backdrop = rememberLayerBackdrop()
@@ -123,15 +131,15 @@ fun SettingsScreen(
             // 空出顶栏高度，内容从玻璃下面开始；滚动时它从玻璃下面穿过去。
             Spacer(modifier = Modifier.height(topBarHeight))
 
-            SmallTitle(text = "外观")
+            SmallTitle(text = tr("外观"))
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
                 SwitchPreference(
-                    title = "动态取色",
-                    summary = "跟随壁纸生成配色（Monet）",
+                    title = tr("动态取色"),
+                    summary = tr("跟随壁纸生成配色（Monet）"),
                     checked = settings.monet,
                     onCheckedChange = { settings.monet = it },
                     startAction = { RowStartIcon(MiuixIcons.Theme) },
@@ -139,7 +147,7 @@ fun SettingsScreen(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
-                        title = "深色模式",
+                        title = tr("深色模式"),
                         onClick = { showThemePopup = true },
                         startAction = { RowStartIcon(MiuixIcons.Hide) },
                         endActions = {
@@ -163,7 +171,7 @@ fun SettingsScreen(
                     ) {
                         ListPopupColumn {
                             DropdownImpl(
-                                text = "跟随系统",
+                                text = tr("跟随系统"),
                                 optionSize = 3,
                                 isSelected = settings.themeMode == ThemeMode.SYSTEM,
                                 index = 0,
@@ -173,7 +181,7 @@ fun SettingsScreen(
                                 },
                             )
                             DropdownImpl(
-                                text = "浅色",
+                                text = tr("浅色"),
                                 optionSize = 3,
                                 isSelected = settings.themeMode == ThemeMode.LIGHT,
                                 index = 1,
@@ -183,7 +191,7 @@ fun SettingsScreen(
                                 },
                             )
                             DropdownImpl(
-                                text = "深色",
+                                text = tr("深色"),
                                 optionSize = 3,
                                 isSelected = settings.themeMode == ThemeMode.DARK,
                                 index = 2,
@@ -198,7 +206,7 @@ fun SettingsScreen(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // 悬浮底栏：直接照搬 KernelSU 那种浮在底部的小圆角胶囊。
                 SwitchPreference(
-                    title = "悬浮底栏",
+                    title = tr("悬浮底栏"),
                     checked = settings.floatingBottomBar,
                     onCheckedChange = { settings.floatingBottomBar = it },
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
@@ -207,7 +215,7 @@ fun SettingsScreen(
                 // 流光背景：整屏一层着色器动效。默认关，且需 Android 13+，
                 // 机型不支持时 BgEffectBackground 会自动退化成纯底色。
                 SwitchPreference(
-                    title = "流光背景",
+                    title = tr("流光背景"),
                     checked = settings.flowingBackground,
                     onCheckedChange = { settings.flowingBackground = it },
                     startAction = { RowStartIcon(MiuixIcons.Layers) },
@@ -217,7 +225,7 @@ fun SettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         BasicComponent(
-                            title = "流光风格",
+                            title = tr("流光风格"),
                             onClick = { showFlowStylePopup = true },
                             startAction = { RowStartIcon(MiuixIcons.Image) },
                             endActions = {
@@ -241,7 +249,7 @@ fun SettingsScreen(
                         ) {
                             ListPopupColumn {
                                 DropdownImpl(
-                                    text = "跟随系统",
+                                    text = tr("跟随系统"),
                                     optionSize = 3,
                                     isSelected = settings.flowingStyle == HyperOsStyle.AUTO,
                                     index = 0,
@@ -276,25 +284,76 @@ fun SettingsScreen(
                 }
             }
 
+            // 语言：中文 / 英文 / 繁体。词表见 core/i18n/Strings.kt，
+            // 切换后靠 Compose 重组即时生效，不用重启 Activity。
+            SmallTitle(text = tr("语言"))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+            ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    BasicComponent(
+                        title = tr("语言"),
+                        onClick = { showLanguagePopup = true },
+                        startAction = { RowStartIcon(rememberLanguageIcon()) },
+                        endActions = {
+                            Text(
+                                // 语言名一律用它自己的写法，不跟着翻译走
+                                text = AppLocale.current.label,
+                                style = MiuixTheme.textStyles.body2,
+                                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = MiuixIcons.Basic.ArrowUpDown,
+                                contentDescription = null,
+                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                            )
+                        },
+                    )
+                    OverlayListPopup(
+                        show = showLanguagePopup,
+                        alignment = PopupPositionProvider.Align.End,
+                        onDismissRequest = { showLanguagePopup = false },
+                    ) {
+                        ListPopupColumn {
+                            AppLanguage.entries.forEachIndexed { index, language ->
+                                DropdownImpl(
+                                    text = language.label,
+                                    optionSize = AppLanguage.entries.size,
+                                    isSelected = AppLocale.current == language,
+                                    index = index,
+                                    onSelectedIndexChange = {
+                                        settings.language = language.code
+                                        showLanguagePopup = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // 兼容性提示：单独一张圆角卡，和上面的「外观」分开，也不再跟在关于信息后面。
-            SmallTitle(text = "兼容性")
+            SmallTitle(text = tr("兼容性"))
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
                 BasicComponent(
-                    title = "兼容性提示",
+                    title = tr("兼容性提示"),
                     startAction = { RowStartIcon(MiuixIcons.Help) },
-                    summary = "花体、特殊符号等字符依赖系统字体，个别机型或 App 里可能显示成方框、问号，" +
-                        "这是字体缺失导致的正常现象，换台设备或换成支持字体的 App 就能正常显示。" +
-                        "另外不同平台（微信 / QQ / 游戏等）的昵称规则不一样，个别符号可能被过滤或截断，" +
-                        "建议先复制到输入框里看一眼再保存。",
+                    summary = tr("花体、特殊符号等字符依赖系统字体，个别机型或 App 里可能显示成方框、问号，") +
+                        tr("这是字体缺失导致的正常现象，换台设备或换成支持字体的 App 就能正常显示。") +
+                        tr("另外不同平台（微信 / QQ / 游戏等）的昵称规则不一样，个别符号可能被过滤或截断，") +
+                        tr("建议先复制到输入框里看一眼再保存。"),
                 )
             }
 
             // 更新与协议：检查更新 + 隐私政策 + 开源许可。
-            SmallTitle(text = "更新与协议")
+            SmallTitle(text = tr("更新与协议"))
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -310,7 +369,7 @@ fun SettingsScreen(
                 )
                 val hasNewer = updateResult is UpdateChecker.Result.Newer
                 BasicComponent(
-                    title = "检查更新",
+                    title = tr("检查更新"),
                     summary = updateSummary,
                     startAction = { RowStartIcon(MiuixIcons.Update) },
                     onClick = {
@@ -323,20 +382,20 @@ fun SettingsScreen(
                     endActions = {
                         Icon(
                             imageVector = MiuixIcons.Refresh,
-                            contentDescription = "检查更新",
+                            contentDescription = tr("检查更新"),
                             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                         )
                     },
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 BasicComponent(
-                    title = "隐私政策",
+                    title = tr("隐私政策"),
                     onClick = onOpenPrivacy,
                     startAction = { RowStartIcon(MiuixIcons.Lock) },
                     endActions = {
                         Icon(
                             imageVector = MiuixIcons.Info,
-                            contentDescription = "打开隐私政策",
+                            contentDescription = tr("打开隐私政策"),
                             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                         )
                     },
@@ -348,20 +407,20 @@ fun SettingsScreen(
 
             // 关于：作者 / 交流群 / 仓库等信息全部收进独立的「关于」页（仿上游 lyricon），
             // 设置页这里只留一行入口，不再把四条信息摊在列表里。
-            SmallTitle(text = "关于")
+            SmallTitle(text = tr("关于"))
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
                 BasicComponent(
-                    title = "关于 SweetLime",
+                    title = tr("关于 SweetLime"),
                     onClick = onOpenAbout,
                     startAction = { RowStartIcon(MiuixIcons.Info) },
                     endActions = {
                         Icon(
                             imageVector = MiuixIcons.Basic.ArrowRight,
-                            contentDescription = "打开关于页",
+                            contentDescription = tr("打开关于页"),
                             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                         )
                     },
@@ -390,13 +449,13 @@ fun SettingsScreen(
                     ),
             )
             SmallTopAppBar(
-                title = "设置",
+                title = tr("设置"),
                 color = Color.Transparent,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = MiuixIcons.Back,
-                            contentDescription = "返回",
+                            contentDescription = tr("返回"),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
                     }
@@ -416,15 +475,25 @@ private fun RowStartIcon(icon: ImageVector) {
     )
 }
 
+/** 同上，但图标是矢量资源（painter）而不是 Miuix 自带的 ImageVector。 */
+@Composable
+private fun RowStartIcon(icon: Painter) {
+    Icon(
+        painter = icon,
+        contentDescription = null,
+        tint = MiuixTheme.colorScheme.onBackground,
+    )
+}
+
 private fun themeLabel(mode: Int): String = when (mode) {
-    ThemeMode.LIGHT -> "浅色"
-    ThemeMode.DARK -> "深色"
-    else -> "跟随系统"
+    ThemeMode.LIGHT -> tr("浅色")
+    ThemeMode.DARK -> tr("深色")
+    else -> tr("跟随系统")
 }
 
 /** 「流光风格」当前值：跟随系统 / OS 2 / OS 3。 */
 private fun flowStyleLabel(style: Int): String = when (style) {
     HyperOsStyle.OS2 -> "OS 2"
     HyperOsStyle.OS3 -> "OS 3"
-    else -> "跟随系统"
+    else -> tr("跟随系统")
 }
