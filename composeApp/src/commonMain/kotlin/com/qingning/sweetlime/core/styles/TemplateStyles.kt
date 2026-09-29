@@ -2,6 +2,7 @@ package com.qingning.sweetlime.core.styles
 
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
+import com.qingning.sweetlime.core.i18n.tr
 
 /**
  * 「装饰模板」样式：在原文前、以及每个字符之间 / 文字之后插入固定图案。
@@ -12,12 +13,21 @@ import com.qingning.sweetlime.core.TextTransform
  */
 internal class TemplateStyle(
     override val id: String,
-    override val title: String,
+    /**
+     * 标题的**简体原文**（词表 key），不是已经翻译好的文案。
+     *
+     * 翻译必须推迟到读取时做（理由同 [com.qingning.sweetlime.core.transform]）：
+     * 这些样式会被 [com.qingning.sweetlime.core.TransformRegistry.all] 提前构造好，
+     * 若在构造函数里就把 `tr()` 的结果存下来，标题会定死成构造那一刻的语言。
+     */
+    private val titleKey: String,
     override val group: StyleGroup,
     private val prefix: String,
     private val between: String,
     private val suffix: String,
 ) : TextTransform {
+    override val title: String get() = tr(titleKey)
+
     override fun transform(input: String): String = buildString(input.length * 3) {
         append(prefix)
         var first = true

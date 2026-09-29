@@ -1,10 +1,12 @@
 package com.qingning.sweetlime.core.i18n
 
+import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.tools.BmiLevel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
  * 「读时才翻译」的回归测试。
@@ -63,5 +65,31 @@ class LazyTranslationTest {
             assertEquals(style, TransformRegistry.byId(style.id), "byId 查不到 ${style.id}")
         }
         assertEquals(null, TransformRegistry.byId("不存在的样式id"))
+    }
+
+    /** 一个字符串里有没有汉字。 */
+    private fun hasHanzi(text: String): Boolean =
+        text.any { it in '\u4e00'..'\u9fff' }
+
+    @Test
+    fun noStyleTitleStaysChineseInEnglish() {
+        // 这是「特效符号 / 花样网名 / 翅膀装饰 / 花藤字」那一大票装饰模板的兜底：
+        // 它们由 TemplateStyle 自带的类构造，一旦标题在构造时就被定死，
+        // 切到英文后整片列表都还是中文（用户实际报过这个）。
+        AppLocale.apply(AppLanguage.EN)
+
+        val leftover = TransformRegistry.all.filter { hasHanzi(it.title) }
+        assertTrue(
+            leftover.isEmpty(),
+            "英文下仍有中文样式标题：" + leftover.joinToString { "${it.id}=${it.title}" },
+        )
+
+        val groups = StyleGroup.entries.filter { hasHanzi(it.label) }
+        assertTrue(
+            groups.isEmpty(),
+            "英文下仍有中文分组名：" + groups.joinToString { "${it.name}=${it.label}" },
+        )
+
+        AppLocale.apply(AppLanguage.ZH)
     }
 }

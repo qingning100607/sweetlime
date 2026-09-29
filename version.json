@@ -1,6 +1,6 @@
 {
-  "version": "2.6.8",
+  "version": "2.6.9",
   "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.6.8",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.6.8/SweetLime-2.6.8.apk",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.6.9/SweetLime-2.6.9.apk",
   "note": "应用内「检查更新」的备用源。GitHub API 对匿名请求有频率限制（共享出口 IP 时很容易撞到），这个文件走 raw CDN，没有限制。发版时由 gh_release.py 自动更新。 url = 发布页；apk = 安装包直链（应用内直接下载用）。"
 }
