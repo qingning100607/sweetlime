@@ -19,6 +19,7 @@ val TOOL_ENTRIES: List<ToolEntry> = listOf(
     ToolEntry("chai", "汉字拆分", "把汉字拆成部件：卧项功 → 臣卜工页工力"),
     ToolEntry("daxie", "数字大写", "金额「小写 ↔ 大写」双向转换，自动补整"),
     ToolEntry("base64", "Base64 编解码", "文字 ↔ Base64 双向转换，UTF-8"),
+    ToolEntry("url", "URL 编解码", "文字 ↔ URL 百分号编码（%XX）双向转换"),
     ToolEntry("radix", "进制转换", "2–36 进制任意互转，一次给出二 / 八 / 十 / 十六进制"),
     ToolEntry("color", "颜色代码转换", "#FF5722 ↔ rgb / hsl，附色块预览"),
     ToolEntry("currency", "汇率计算", "常用货币实时换算"),

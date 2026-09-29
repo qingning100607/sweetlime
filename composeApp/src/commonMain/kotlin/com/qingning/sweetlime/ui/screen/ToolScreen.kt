@@ -94,6 +94,7 @@ fun ToolScreen(
             )
             "daxie" -> DaxieToolScreen(onCopyText = onCopyText)
             "base64" -> Base64ToolScreen(onCopyText = onCopyText)
+            "url" -> UrlToolScreen(onCopyText = onCopyText)
             "radix" -> RadixToolScreen(onCopyText = onCopyText)
             "color" -> ColorToolScreen(onCopyText = onCopyText)
             "currency" -> CurrencyToolScreen(onCopyText = onCopyText)

@@ -22,6 +22,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import kotlinx.coroutines.delay
@@ -68,11 +69,19 @@ fun BgEffectBackground(
 
         // 配色不是硬切：每隔 preset.colorInterpPeriod * 500ms 把 stage 加一，
         // 再用一个很软的弹簧插过去，观感就是「颜色慢慢流过去」。
-        LaunchedEffect(animate, preset, drawEffect) {
+        //
+        // 注意这里**故意不把 preset 放进 key**（周期用 rememberUpdatedState 读最新的）：
+        // preset 是挂在 isDark 上的，切深色模式、或者从后台回来时主题亮度抖一下，
+        // 它都会变成一个新对象。以前那样写会让这个效果整个重启 —— targetStage 被重置回
+        // 1，而 colorStage 早就涨到几十了，于是它「倒着」一路弹回 1，颜色在 0.2s 内
+        // 乱扫一遍再落回正常，看起来就是流光突然闪了一下别的配色（概率小、但确实会撞上）。
+        // 现在阶段只增不减：重启也从当前值接着往上走，主题怎么切都不影响。
+        val periodState = rememberUpdatedState(preset.colorInterpPeriod)
+        LaunchedEffect(animate, drawEffect) {
             if (!animate || !drawEffect) return@LaunchedEffect
-            var targetStage = 1f
+            var targetStage = colorStage.value + 1f
             while (isActive) {
-                delay((preset.colorInterpPeriod * 500).toLong())
+                delay((periodState.value * 500).toLong())
                 colorStage.animateTo(
                     targetValue = targetStage,
                     animationSpec = spring(dampingRatio = 0.9f, stiffness = 35f),
