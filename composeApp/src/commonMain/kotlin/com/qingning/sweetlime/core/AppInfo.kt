@@ -4,7 +4,7 @@ package com.qingning.sweetlime.core
  * 应用版本号 —— 与 `composeApp/build.gradle.kts` 里的 `versionName` 保持一致。
  * 界面上要显示版本时统一读这里，避免两处写死对不上。
  */
-const val APP_VERSION: String = "2.6.6"
+const val APP_VERSION: String = "2.6.7"
 
 /**
  * 作者 / 交流群信息 —— 设置页和「关于」页共用一份，想改成自己的直接改这里。
