@@ -1,10 +1,9 @@
 # SweetLime
 
-一款**离线**的文字特效 / 花式昵称生成器，附带一组随手可用的小工具。
-输入任意文字，实时生成多种花体样式，一键复制或收藏。
+一款的文字特效 / 花式昵称生成器，附带一组工具
+输入任意文字，支持实时生成多种花体样式
 
-UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplatform 版 HyperOS 设计语言），
-即 KernelSU 同款风格。
+UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplatform 版 HyperOS 设计语言）
 
 ## 功能
 
@@ -15,7 +14,7 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 | 收藏页 | 按 `样式 + 原文` 持久化，含最近使用记录 |
 | 搜索 | 一个输入框搜全站：汉字释义、拼音、拆字、花体样式、符号、工具箱 |
 | 工具箱 | 符号表、拼音、拆字、大写金额、Base64、进制、颜色、汇率、BMI、代码编辑器 |
-| 设置页 | 动态取色（Monet）、深色模式（跟随系统 / 浅色 / 深色）、隐私与兼容性说明 |
+| 设置页 | 动态取色（Monet）、深色模式+流光背景（跟随系统 / 浅色 / 深色）、隐私与兼容性说明 |
 | 手势 | 系统预测性返回：跟手滑动详情页，同时底层主界面高斯模糊（最大 28dp） |
 
 样式清单（`core/styles/`）：
@@ -26,7 +25,7 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 
 ## 代码编辑器
 
-一个能对付日常小活的文本框，重点在「别把用户的数据弄坏」：
+一个能对付日常小活的文本框：
 
 * **导入**普通文本文件，或**追加导入**到当前内容后面
 * **读压缩包**：能进 zip 里逐层浏览、编辑其中某个文件
@@ -35,7 +34,7 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 * **编码不硬改**：读取时探测（UTF-8 / UTF-8-BOM / UTF-16LE / UTF-16BE / GB18030），
   保存时**按原编码写回** —— 一个 GBK 的老文件不会被悄悄改成 UTF-8
 * **写回可回滚**：覆盖前先把原内容留在内存，写失败立刻写回去
-* **解压炸弹防护**：解压总量 > 96 MB 或条目数 > 4096 直接拒绝；单个导入文件上限 32 MB
+* **解压防护**：解压总量 > 96 MB 或条目数 > 4096 直接拒绝；单个导入文件上限 32 MB
 
 限制（有意为之）：只支持 zip（rar / 7z / tar.gz 不支持）；写回不是原子操作，
 硬掉电理论上仍可能留下半截文件。
@@ -54,28 +53,8 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 > compileSdk 必须是 37：Miuix 0.9.4 与 androidx.compose 1.12.1 的 AAR 元数据要求 37；
 > 同时 compose 1.12.1 要求 AGP ≥ 9.1.0，AGP 9.1.0 要求 Gradle ≥ 9.3.1。
 
-## 应用图标
-
-自适应图标（Android 8.0+ 标准三层结构），五档密度齐全：
-
-```
-res/mipmap-anydpi-v26/ic_launcher.xml   自适应图标定义（含 round 版本）
-res/mipmap-*/ic_launcher_background.png 背景层：青柠绿对角渐变
-res/mipmap-*/ic_launcher_foreground.png 前景层：白色柠檬片 + 叶子
-res/mipmap-*/ic_launcher_monochrome.png 单色层：纯白剪影，给 Android 13+ 主题图标用
 ```
 
-图标是**脚本画的，可复现**，不需要设计稿：
-
-```bash
-python3 tools/make_icon.py     # 需要 Pillow
-```
-
-脚本每次生成都会校验一条最容易踩的规则：自适应图标的 108x108 画布里，
-只有中间 72x72 必然可见，圆形掩码最多裁到半径 36 —— 所以**所有不透明像素**
-**到中心的距离必须 ≤ 34**（留余量）。超了会直接打印报警，不用靠眼睛看。
-
-预览（左→右：背景层 / 前景层 / 合成效果 / 单色层）：`icon_preview.png`
 
 ## 构建
 
@@ -89,24 +68,9 @@ python3 tools/make_icon.py     # 需要 Pillow
 ```bash
 ./gradlew :composeApp:assembleRelease
 ```
+### 注意
 
-### 正式签名与密钥
-
-**本仓库不包含签名密钥**（`*.jks` / `local.properties` 都在 `.gitignore` 里）。
-签名信息从 `local.properties` 读取，缺了就只出未签名包，不会让编译失败：
-
-```properties
-sweetlime.storeFile=sweetlime-release.jks
-sweetlime.storePassword=你的仓库口令
-sweetlime.keyAlias=sweetlime
-sweetlime.keyPassword=你的密钥口令
-```
-
-要发自己的包，用 `keytool` 生成一份密钥放到 `composeApp/` 下，按上面填好即可。
-
-> 覆盖安装要求签名一致：换了密钥就必须先卸载旧版。
-
-注意：AGP 9 起 `com.android.application` 不再与 `org.jetbrains.kotlin.multiplatform`
+自AGP 9 起 `com.android.application` 不再与 `org.jetbrains.kotlin.multiplatform`
 直接共用，本项目在 `gradle.properties` 里用官方给出的兼容开关绕过：
 
 ```properties
@@ -121,9 +85,7 @@ Google 发布的 `aapt2`（linux 分类）自 AGP 9.1 起只有 x86_64 版本，
 
 ```properties
 android.aapt2FromMavenOverride=/绝对路径/aapt2
-```
 
-（普通 x86_64 电脑 / Android Studio 不需要这一项。）
 
 ## 测试
 
@@ -166,20 +128,13 @@ composeApp/src/
 
 ## 已验证
 
-在 arm64 Ubuntu（proot）+ Android 15/16 真机上：
+在 arm64 Ubuntu（proot）+ Android 15/16/17 真机上：
 
 * `assembleDebug` / `assembleRelease` 构建成功
 * release 包签名校验通过（自签密钥）
-* 单元测试全绿
-* 安装并启动成功，无崩溃
 
 ## 许可证
 
-[MIT](LICENSE) —— 随便用、随便改、随便发，保留版权声明即可。
+[MIT](LICENSE)
 
-## 待办
-
-* 更新检查接的是本仓库的 Releases：主源 `releases/latest`，备用源 `master/version.json`
-  （GitHub 匿名 API 有频率限制，共享 IP 容易撞到，raw 没有）
-* 预测性返回与 Miuix 组件的手感需真机手动确认；如与 `miuix-nav` 手势冲突，需二选一
-* 压缩包只支持 zip；写回尚非事务（已有内存备份回滚）
+杂鱼
