@@ -44,8 +44,23 @@ internal object DaxieConverter {
         if (value < 0 || value > MAXIMUM_NUMBER) return null
 
         val dot = text.indexOf('.')
-        val integral = if (dot >= 0) text.substring(0, dot) else text
-        val decimal = if (dot >= 0) text.substring(dot + 1).take(2).padEnd(2, '0') else ""
+        val integralText = if (dot >= 0) text.substring(0, dot) else text
+        val fracText = if (dot >= 0) text.substring(dot + 1) else ""
+
+        // 四舍五入到分：看小数点后第 3 位，>= 5 就进一位。
+        //
+        // 这里绝不能走 Double：1.005 在二进制里其实略小于 1.005，乘 100 得到
+        // 100.4999…，roundToLong 之后仍然是 100，照样是错的。所以按字符串取位算整数。
+        val frac = fracText.padEnd(3, '0').take(3)
+        var cents = frac.substring(0, 2).toLong()
+        if (frac[2] >= '5') cents++
+        var yuan = integralText.toLongOrNull() ?: 0L
+        if (cents >= 100) {
+            cents -= 100
+            yuan += 1
+        }
+        val integral = yuan.toString()
+        val decimal = if (dot < 0) "" else cents.toString().padStart(2, '0')
 
         val sb = StringBuilder()
         if ((integral.toLongOrNull() ?: 0L) > 0L) {

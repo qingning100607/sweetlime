@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.core.styles
 
-import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.transform
@@ -29,9 +28,9 @@ private fun overlayStyle(id: String, title: String, mark: Char): TextTransform =
 
 internal val overlayStyles: List<TextTransform>
     get() = listOf(
-    overlayStyle("overlay_underline", tr("下划线"), '\u0332'),      // COMBINING LOW LINE
-    overlayStyle("overlay_strike", tr("删除线"), '\u0336'),         // COMBINING LONG STROKE OVERLAY
-    overlayStyle("overlay_slash", tr("斜杠"), '\u0338'),            // COMBINING LONG SOLIDUS OVERLAY
-    overlayStyle("overlay_dot_above", tr("上点"), '\u0307'),        // COMBINING DOT ABOVE
-    overlayStyle("overlay_tilde_below", tr("波浪线"), '\u0330'),    // COMBINING TILDE BELOW
+    overlayStyle("overlay_underline", "下划线", '\u0332'),      // COMBINING LOW LINE
+    overlayStyle("overlay_strike", "删除线", '\u0336'),         // COMBINING LONG STROKE OVERLAY
+    overlayStyle("overlay_slash", "斜杠", '\u0338'),            // COMBINING LONG SOLIDUS OVERLAY
+    overlayStyle("overlay_dot_above", "上点", '\u0307'),        // COMBINING DOT ABOVE
+    overlayStyle("overlay_tilde_below", "波浪线", '\u0330'),    // COMBINING TILDE BELOW
 )

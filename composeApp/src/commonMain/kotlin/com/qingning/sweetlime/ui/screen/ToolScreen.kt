@@ -102,6 +102,10 @@ fun ToolScreen(
             "currency" -> CurrencyToolScreen(onCopyText = onCopyText)
             "bmi" -> BmiToolScreen(onCopyText = onCopyText)
             "editor" -> CodeEditorToolScreen(onCopyText = onCopyText)
+            // 兜底：toolId 正常只可能来自路由，走到这里说明 id 对不上
+            // （路由恢复异常、版本调整过工具表等）。没有这个分支就是一整页空白，
+            // 连顶栏都没有，用户只能靠系统返回键退出。
+            else -> UnknownTool()
         }
     }
 }
@@ -274,4 +278,31 @@ internal fun ModeRow(
             }
         },
     )
+}
+
+/* -------------------------------------------------------------------------- */
+/* 未知工具：兜底页                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * toolId 认不出来时的兜底。
+ *
+ * 正常路径不会走到这里；但路由恢复异常、或者以后工具表调整过，
+ * 没有兜底就是一整页空白 —— 用户会以为应用卡死了。
+ */
+@Composable
+private fun UnknownTool() {
+    Column(modifier = Modifier.fillMaxSize()) {
+        SmallTitle(text = tr("出错了"))
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+        ) {
+            BasicComponent(
+                title = tr("这个工具不存在"),
+                summary = tr("可能是版本更新后工具列表调整过。返回上一页重新进一次就好。"),
+            )
+        }
+    }
 }

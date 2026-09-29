@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.core.styles
 
-import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.mapping.SUBSCRIPT_MAP
@@ -17,8 +16,8 @@ private fun mapStyle(id: String, title: String, group: StyleGroup, table: Map<Ch
 /** 上标 / 下标。 */
 internal val superSubStyles: List<TextTransform>
     get() = listOf(
-    mapStyle("sup", tr("上标"), StyleGroup.SUPSUB, SUPERSCRIPT_MAP),
-    mapStyle("sub", tr("下标"), StyleGroup.SUPSUB, SUBSCRIPT_MAP),
+    mapStyle("sup", "上标", StyleGroup.SUPSUB, SUPERSCRIPT_MAP),
+    mapStyle("sub", "下标", StyleGroup.SUPSUB, SUBSCRIPT_MAP),
 )
 
 /**
@@ -33,7 +32,7 @@ private fun regionalIndicator(ch: Char): String? = when {
 
 internal val colorStyles: List<TextTransform>
     get() = listOf(
-    transform("color_ri", tr("区域指示符"), StyleGroup.COLOR) { input ->
+    transform("color_ri", "区域指示符", StyleGroup.COLOR) { input ->
         buildString(input.length * 3) {
             input.forEach { ch ->
                 val ri = regionalIndicator(ch)
@@ -48,7 +47,7 @@ internal val colorStyles: List<TextTransform>
 /** 飞鸟文：每个字后面追加组合字符 ོ，部分 App 会渲染成小鸟形状。 */
 internal val birdStyles: List<TextTransform>
     get() = listOf(
-    transform("bird", tr("飞鸟文"), StyleGroup.BIRD) { input -> toFlyingBird(input) },
+    transform("bird", "飞鸟文", StyleGroup.BIRD) { input -> toFlyingBird(input) },
 )
 
 /** 空白字符：利用不可见 / 无宽字符把网名“拉长”或直接隐形。 */
@@ -64,12 +63,12 @@ private fun blankAppend(id: String, title: String, mark: String): TextTransform 
 
 internal val blankStyles: List<TextTransform>
     get() = listOf(
-    blankAppend("blank_zwsp", tr("零宽空格"), "\u200B"),       // ZERO WIDTH SPACE
-    blankAppend("blank_wj", tr("词连接符"), "\u2060"),         // WORD JOINER
-    blankAppend("blank_hangul", tr("韩文填充"), "\u3164"),     // HANGUL FILLER（有宽度但不显字）
-    blankAppend("blank_mongolian", tr("蒙文分隔"), "\u180E"),  // MONGOLIAN VOWEL SEPARATOR
-    blankAppend("blank_ideographic", tr("全角空格"), "\u3000"), // IDEOGRAPHIC SPACE
-    transform("blank_pure", tr("纯空白"), StyleGroup.BLANK) { input ->
+    blankAppend("blank_zwsp", "零宽空格", "\u200B"),       // ZERO WIDTH SPACE
+    blankAppend("blank_wj", "词连接符", "\u2060"),         // WORD JOINER
+    blankAppend("blank_hangul", "韩文填充", "\u3164"),     // HANGUL FILLER（有宽度但不显字）
+    blankAppend("blank_mongolian", "蒙文分隔", "\u180E"),  // MONGOLIAN VOWEL SEPARATOR
+    blankAppend("blank_ideographic", "全角空格", "\u3000"), // IDEOGRAPHIC SPACE
+    transform("blank_pure", "纯空白", StyleGroup.BLANK) { input ->
         buildString(input.length) {
             input.forEach { ch -> if (ch == '\n' || ch == '\r') append(ch) else append("\u3164") }
         }

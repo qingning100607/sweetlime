@@ -9,11 +9,21 @@ import kotlin.math.roundToInt
  * 注意和国际口径的差别：这里是 24 算超重的起点、28 算肥胖，
  * 而 WHO 用的是 25 / 30。中文界面下用国内标准更贴合直觉。
  */
-enum class BmiLevel(val label: String, val range: String) {
-    THIN(tr("偏瘦"), tr("低于 18.5")),
-    NORMAL(tr("正常"), "18.5 – 23.9"),
-    OVERWEIGHT(tr("超重"), "24.0 – 27.9"),
-    OBESE(tr("肥胖"), tr("28.0 及以上")),
+enum class BmiLevel(private val labelKey: String, private val rangeKey: String) {
+    THIN("偏瘦", "低于 18.5"),
+    NORMAL("正常", "18.5 – 23.9"),
+    OVERWEIGHT("超重", "24.0 – 27.9"),
+    OBESE("肥胖", "28.0 及以上"),
+    ;
+
+    /**
+     * 和 [StyleGroup.label] 同一个道理：枚举初始化只有一次，
+     * 把 tr() 的返回值当构造参数存下来，语言就被定死成初始化那一刻的了。
+     */
+    val label: String get() = tr(labelKey)
+
+    /** 纯数字区间在词表里没有条目，[tr] 查不到会原样返回。 */
+    val range: String get() = tr(rangeKey)
 }
 
 /** 一次 BMI 计算的全部结果。 */

@@ -43,7 +43,19 @@ internal fun transform(
     block: (String) -> String,
 ) = object : TextTransform {
     override val id: String = id
-    override val title: String = title
+
+    /**
+     * 传进来的 [title] 是**简体原文**（词表 key），不是已经翻译好的文案。
+     *
+     * 翻译必须推迟到读取时做：样式表一旦被提前构造（[TransformRegistry.all] 就是），
+     * 标题会被定死成构造那一刻的语言，之后切语言就不再跟着变。
+     * 这和 [StyleGroup.label] 是同一个坑，那边早已避开。
+     */
+    private val titleKey: String = title
+
+    override val title: String get() = tr(titleKey)
+
     override val group: StyleGroup = group
+
     override fun transform(input: String): String = block(input)
 }

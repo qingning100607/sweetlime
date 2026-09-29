@@ -48,7 +48,7 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 | AGP / Gradle | **9.1.0** / **9.3.1** |
 | 依赖 | androidx activity-compose 1.13.0 |
 | SDK | compileSdk **37**、minSdk **33**（毛玻璃与预测性返回的下限）、targetSdk **36** |
-| 版本 | versionCode **2500** / versionName **2.5.0** |
+| 版本 | versionCode **2608** / versionName **2.6.8** |
 
 > compileSdk 必须是 37：Miuix 0.9.4 与 androidx.compose 1.12.1 的 AAR 元数据要求 37；
 > 同时 compose 1.12.1 要求 AGP ≥ 9.1.0，AGP 9.1.0 要求 Gradle ≥ 9.3.1。

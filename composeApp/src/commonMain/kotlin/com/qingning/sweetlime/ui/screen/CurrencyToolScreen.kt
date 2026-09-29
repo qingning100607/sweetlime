@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.tools.CurrencyApi
 import com.qingning.sweetlime.core.tools.CurrencyRates
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -187,16 +188,19 @@ private fun CurrencyPickRow(
                 )
             },
         )
+        // 词表是「按当前语言现算」的 getter，直接在下面循环里用会每次重组重建 12 个 Pair。
+        val options = remember(AppLocale.current) { CurrencyApi.COMMON }
+
         OverlayListPopup(
             show = expanded,
             alignment = PopupPositionProvider.Align.End,
             onDismissRequest = onDismiss,
         ) {
             ListPopupColumn {
-                CurrencyApi.COMMON.forEachIndexed { index, entry ->
+                options.forEachIndexed { index, entry ->
                     DropdownImpl(
                         text = "${entry.first} ${entry.second}",
-                        optionSize = CurrencyApi.COMMON.size,
+                        optionSize = options.size,
                         isSelected = entry.second == code,
                         index = index,
                         onSelectedIndexChange = { onPick(entry.second) },

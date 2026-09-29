@@ -91,7 +91,12 @@ fun HomeScreen(
         }
     }
     // 最近使用里已经失效的 id 直接跳过，顺便还原出标题。
-    val recentStyles = remember(recentIds) {
+    //
+    // 键必须是 recentIds.toList()：RecentStore.ids 现在直接返回内部的
+    // SnapshotStateList，而它的 equals 是**引用比较**（不是逐元素比较），
+    // 实例一直是同一个，拿它当 remember 的键就永远不会失效，列表会变成死的。
+    // toList() 换来一个普通 List：既按内容判等，读的过程也顺带订阅了列表变化。
+    val recentStyles = remember(recentIds.toList()) {
         recentIds.mapNotNull { id -> TransformRegistry.byId(id) }
     }
     LazyColumn(

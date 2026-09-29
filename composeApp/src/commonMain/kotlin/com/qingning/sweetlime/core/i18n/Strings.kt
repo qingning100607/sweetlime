@@ -362,6 +362,9 @@ internal val EN: Map<String, String> = mapOf(
     "AppContext 尚未初始化，请确认 AndroidManifest 中已声明 SweetLimeApplication" to "AppContext is not initialised yet; make sure SweetLimeApplication is declared in AndroidManifest",
     "输入要编码的文字或链接，例如：你好 世界" to "Enter text or a link to encode, e.g. 你好 世界",
     "下载失败了？国内直连 GitHub 经常抽风（更新源就在 GitHub）。开个代理 / 加速再点一下重试，或者到 GitHub 仓库页手动下载安装包。" to "Download failed. Direct access to GitHub is flaky on many networks (the update source lives there) — retry with a proxy or accelerator, or grab the APK manually from the GitHub repo page.",
+    "出错了" to "Something went wrong",
+    "这个工具不存在" to "No such tool",
+    "可能是版本更新后工具列表调整过。返回上一页重新进一次就好。" to "The tool list may have changed in an update. Just go back and open it again.",
 )
 
 internal val TW: Map<String, String> = mapOf(
@@ -717,6 +720,9 @@ internal val TW: Map<String, String> = mapOf(
     "AppContext 尚未初始化，请确认 AndroidManifest 中已声明 SweetLimeApplication" to "AppContext 尚未初始化，請確認 AndroidManifest 中已宣告 SweetLimeApplication",
     "输入要编码的文字或链接，例如：你好 世界" to "輸入要編碼的文字或連結，例如：你好 世界",
     "下载失败了？国内直连 GitHub 经常抽风（更新源就在 GitHub）。开个代理 / 加速再点一下重试，或者到 GitHub 仓库页手动下载安装包。" to "下載失敗了？中國大陸直連 GitHub 經常抽風（更新來源就在 GitHub）。開個代理 / 加速再點一下重試，或者到 GitHub 儲存庫頁面手動下載安裝檔。",
+    "出错了" to "發生錯誤",
+    "这个工具不存在" to "這個工具不存在",
+    "可能是版本更新后工具列表调整过。返回上一页重新进一次就好。" to "可能是版本更新後工具列表調整過。返回上一頁重新進一次就好。",
 )
 
 private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {
