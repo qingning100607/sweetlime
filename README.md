@@ -1,5 +1,7 @@
 # SweetLime
 
+**简体中文** | [English](README.en.md)
+
 一款的文字特效 / 花式昵称生成器，附带一组工具
 输入任意文字，支持实时生成多种花体样式
 
@@ -53,9 +55,6 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 > compileSdk 必须是 37：Miuix 0.9.4 与 androidx.compose 1.12.1 的 AAR 元数据要求 37；
 > 同时 compose 1.12.1 要求 AGP ≥ 9.1.0，AGP 9.1.0 要求 Gradle ≥ 9.3.1。
 
-```
-
-
 ## 构建
 
 ```bash
@@ -85,7 +84,7 @@ Google 发布的 `aapt2`（linux 分类）自 AGP 9.1 起只有 x86_64 版本，
 
 ```properties
 android.aapt2FromMavenOverride=/绝对路径/aapt2
-
+```
 
 ## 测试
 
