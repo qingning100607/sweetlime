@@ -137,3 +137,7 @@ On arm64 Ubuntu (proot) + Android 15/16/17 devices:
 ## License
 
 [MIT](LICENSE)
+
+---
+
+[简体中文](README.md) | **English**

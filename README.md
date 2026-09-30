@@ -137,3 +137,7 @@ composeApp/src/
 [MIT](LICENSE)
 
 杂鱼
+
+---
+
+**简体中文** | [English](README.en.md)
