@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
@@ -18,9 +19,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.TOOL_ENTRIES
 import com.qingning.sweetlime.core.mapping.SYMBOL_CATEGORIES
@@ -56,29 +67,27 @@ fun ToolScreen(
     onOpenSymbolCategory: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    var topBarHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+    val hazeState = remember { HazeState() }
+    val hazeTint = MiuixTheme.colorScheme.surface
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
-        // 顶栏这一条也铺一层同样的流光：顶栏自己不铺底，铺的就是整页那层实流光。
-        Box(modifier = Modifier.fillMaxWidth().flowingPageLayer()) {
-        SmallTopAppBar(
-            // 顶栏自己不铺底：二级页的背景已经是「实流光」了，铺底会把顶部那块盖成纯白。
-            color = Color.Transparent,
-            title = toolTitle(toolId),
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = MiuixIcons.Back,
-                        contentDescription = tr("返回"),
-                        tint = MiuixTheme.colorScheme.onBackground,
-                    )
-                }
-            },
-        )
-        }
-        when (toolId) {
+        // 内容层：Haze 的采样源。顶部先空出顶栏高度，滚动时内容从顶栏下面穿过去并被实时糊。
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
+                // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
+                .pageBackdropLayer()
+                .hazeSource(state = hazeState),
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(modifier = Modifier.height(topBarHeight))
+                when (toolId) {
             "symbol" -> SymbolCategoryList(onOpen = onOpenSymbolCategory)
             "pinyin" -> ConverterToolScreen(
                 placeholder = tr("输入汉字，例如：你好世界"),
@@ -106,6 +115,48 @@ fun ToolScreen(
             // （路由恢复异常、版本调整过工具表等）。没有这个分支就是一整页空白，
             // 连顶栏都没有，用户只能靠系统返回键退出。
             else -> UnknownTool()
+                }
+            }
+        }
+
+        // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。内容从它下面穿过去时会被逐帧糊掉。
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .onSizeChanged { topBarHeight = with(density) { it.height.toDp() } },
+        ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(
+                            blurRadius = 20.dp,
+                            noiseFactor = 0.15f,
+                            tint = HazeTint(hazeTint.copy(alpha = 0.30f)),
+                        ),
+                    ) {
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f,
+                        )
+                    },
+            )
+            SmallTopAppBar(
+                // 顶栏自己不铺底：背景已经由外层铺好了。
+                color = Color.Transparent,
+                title = toolTitle(toolId),
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = MiuixIcons.Back,
+                            contentDescription = tr("返回"),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                },
+            )
         }
     }
 }

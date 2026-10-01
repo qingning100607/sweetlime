@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.components
 
+import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.foundation.background
@@ -20,12 +21,16 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -46,10 +51,9 @@ fun GlassTopBarScaffold(
 ) {
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
-    val backdrop = rememberLayerBackdrop()
-    val blurPx = remember(density) { with(density) { 24.dp.toPx() } }
+    // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect（逐帧真高斯 + 渐变）。
+    val hazeState = remember { HazeState() }
     val tint = MiuixTheme.colorScheme.surface
-    // 流光模式下顶栏不做玻璃，让底层流光透上来（对齐上游 lyricon 的 hazeState = null）。
     val flowing = LocalFlowingBackground.current
 
     Box(
@@ -57,10 +61,15 @@ fun GlassTopBarScaffold(
             .fillMaxSize()
             .background(tint).flowingPageLayer(),
     ) {
+        // 内容层：Haze 的采样源。顶栏是它的**兄弟**节点（不是子节点），
+        // 所以列表从顶栏下面滑过去时会被实时糊掉。
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop),
+                // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
+                // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
+                .pageBackdropLayer()
+                .hazeSource(state = hazeState),
         ) {
             content(topBarHeight)
         }
@@ -74,22 +83,19 @@ fun GlassTopBarScaffold(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    // 流光模式下顶栏不做玻璃（上游 lyricon 就是把 haze 模糊整个关掉的：
-                    // 顶栏保持全透明，让底层流光直接透上来），只有非流光模式才铺这层玻璃。
-                    // 注意流光时这里**什么都不画**：整屏的实流光已经由外层 Box 铺好了，
-                    // 顶栏这一条本身就在它上面，直接透上来即可（详见下面的注释）。
-                    .then(
-                        if (flowing) {
-                            // 整页的流光已经由外层 Box 铺满了（顶栏这一条也在它下面），
-                            // 这里千万不要再画一层：flowingPageLayer 的画刷是按「整屏」
-                            // 取样出来的，塞进顶栏这一小条里只会取到画刷偏亮的那一段，
-                            // 顶栏就变成一条发白的横条（上滑时尤其明显）。
-                            // 所以流光模式下这里什么都不画，让外层那层实流光直接透上来。
-                            Modifier
-                        } else {
-                            Modifier.glassBar(backdrop, blurPx, tint, fadeFromTop = true)
-                        },
-                    ),
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(
+                            blurRadius = 20.dp,
+                            noiseFactor = 0.15f,
+                            tint = HazeTint(tint.copy(alpha = if (flowing) 0.16f else 0.30f)),
+                        ),
+                    ) {
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f,
+                        )
+                    },
             )
             SmallTopAppBar(
                 title = title,

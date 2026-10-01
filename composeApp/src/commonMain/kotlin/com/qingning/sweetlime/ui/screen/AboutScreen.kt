@@ -1,5 +1,11 @@
 package com.qingning.sweetlime.ui.screen
 
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.Image
@@ -94,6 +100,9 @@ fun AboutScreen(
     val blurPx = remember(density) { with(density) { 24.dp.toPx() } }
     val surface = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
+    // 顶栏的实时模糊（Haze）：和主页/其他二级页同一套参数。
+    val hazeState = remember { HazeState() }
+    val hazeTint = MiuixTheme.colorScheme.surface
 
     val scrollProgress by remember {
         derivedStateOf {
@@ -118,7 +127,10 @@ fun AboutScreen(
     ) {
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
+                .hazeSource(state = hazeState),
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {
             item(key = "about_hero") {
@@ -227,13 +239,22 @@ fun AboutScreen(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .then(
-                        if (flowing) {
-                            Modifier.background(surface.copy(alpha = scrollProgress))
-                        } else {
-                            Modifier.glassBar(backdrop, blurPx, surface, fadeFromTop = true)
-                        },
-                    ),
+                    // 顶栏实时模糊（Haze）：列表从下面滑过去时逐帧被糊。
+                    // 停在顶部时按原设计整条透明（alpha = scrollProgress），一上滑就浮出来。
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(
+                            blurRadius = 20.dp,
+                            noiseFactor = 0.15f,
+                            tint = HazeTint(hazeTint.copy(alpha = if (flowing) 0.16f else 0.30f)),
+                        ),
+                    ) {
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f,
+                        )
+                        alpha = scrollProgress
+                    },
             )
             SmallTopAppBar(
                 title = tr("关于"),

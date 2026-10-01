@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import androidx.compose.foundation.background
@@ -34,7 +35,6 @@ import com.qingning.sweetlime.data.ThemeMode
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.UpdateDownloadState
-import com.qingning.sweetlime.ui.components.glassBar
 import com.qingning.sweetlime.ui.updateRowText
 import com.qingning.sweetlime.core.i18n.AppLanguage
 import com.qingning.sweetlime.core.i18n.AppLocale
@@ -48,9 +48,13 @@ import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.basic.ArrowUpDown
@@ -109,11 +113,9 @@ fun SettingsScreen(
     var showLanguagePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
-    val backdrop = rememberLayerBackdrop()
-    val blurPx = remember(density) { with(density) { 22.dp.toPx() } }
-    val glassTint = MiuixTheme.colorScheme.surface
-    // 流光模式下顶栏不做玻璃：整页已经是「实流光」，再铺一层玻璃会在顶部留一块
-    // 发白的横条（上游 lyricon 在流光时就是把 haze 整个关掉的）。
+    // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect，滚动时逐帧真高斯。
+    val hazeState = remember { HazeState() }
+    val hazeTint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
 
     Box(
@@ -124,8 +126,11 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                // 内容层既是要展示的东西，也当顶部玻璃的采样源。
-                .layerBackdrop(backdrop)
+                // 内容层既是要展示的东西，也当顶部实时模糊的采样源。
+                // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
+                // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
+                .pageBackdropLayer()
+                .hazeSource(state = hazeState)
                 .verticalScroll(rememberScrollState()),
         ) {
             // 空出顶栏高度，内容从玻璃下面开始；滚动时它从玻璃下面穿过去。
@@ -439,14 +444,21 @@ fun SettingsScreen(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    // 流光模式下不铺玻璃：顶部那一条直接露出页面自己的实流光。
-                    .then(
-                        if (flowing) {
-                            Modifier
-                        } else {
-                            Modifier.glassBar(backdrop, blurPx, glassTint, fadeFromTop = true)
-                        },
+                    // 顶栏的实时模糊（Haze）：下面内容滚过去时逐帧被糊，
+                // progressive 让「贴着最顶上最糊、往下渐隐到 0」。
+                .hazeEffect(
+                    state = hazeState,
+                    style = HazeStyle(
+                        blurRadius = 20.dp,
+                        noiseFactor = 0.15f,
+                        tint = HazeTint(hazeTint.copy(alpha = if (flowing) 0.16f else 0.30f)),
                     ),
+                ) {
+                    progressive = HazeProgressive.verticalGradient(
+                        startIntensity = 1f,
+                        endIntensity = 0f,
+                    )
+                },
             )
             SmallTopAppBar(
                 title = tr("设置"),

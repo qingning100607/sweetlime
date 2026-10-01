@@ -1,5 +1,12 @@
 package com.qingning.sweetlime.ui.screen
 
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
@@ -61,14 +68,40 @@ fun GroupScreen(
                 .mapNotNull { TransformItem.of(it, input) }
         }
     }
+    val hazeState = remember { HazeState() }
+    val hazeTint = MiuixTheme.colorScheme.surface
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
-        // 顶栏这一条也铺一层同样的流光：顶栏自己不铺底，铺的就是整页那层实流光。
-        Box(modifier = Modifier.fillMaxWidth().flowingPageLayer()) {
-        SmallTopAppBar(
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // 采样源：在顶栏这一条里铺一层和整页一模一样的底（流光 / 纯色），
+            // 顶栏的模糊就糊它 —— 和主页顶栏同一套参数，观感一致。
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .pageBackdropLayer()
+                    .hazeSource(state = hazeState),
+            ) {}
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(
+                            blurRadius = 20.dp,
+                            noiseFactor = 0.15f,
+                            tint = HazeTint(hazeTint.copy(alpha = 0.30f)),
+                        ),
+                    ) {
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f,
+                        )
+                    },
+            )
+            SmallTopAppBar(
             // 顶栏自己不铺底：二级页的背景已经是「实流光」了，铺底会把顶部那块盖成纯白。
             color = Color.Transparent,
             title = group.label,

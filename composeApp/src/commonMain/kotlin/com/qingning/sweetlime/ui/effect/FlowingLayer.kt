@@ -16,7 +16,9 @@
  */
 package com.qingning.sweetlime.ui.effect
 
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -76,5 +78,23 @@ fun Modifier.flowingPageLayer(alpha: () -> Float = { 1f }): Modifier {
         if (a <= 0f) return@drawBehind
         drawRect(layer.base, alpha = a)
         drawRect(layer.brush, alpha = a)
+    }
+}
+
+/**
+ * 给「Haze 的采样源」铺一层和整页一模一样的底。
+ *
+ * 顶栏玻璃要糊的是**它下面的东西**：如果采样区里什么都没有（透明的），
+ * 那片区域就是「没糊」，看起来就像顶栏没有模糊 —— 之前设置页和主页观感不一致
+ * 就是这个原因。所以采样源里必须先铺底：流光开着就铺同一帧的流光，
+ * 关着就铺纯主题底色（跟主页内容层用的是同一套）。
+ */
+@Composable
+fun Modifier.pageBackdropLayer(): Modifier {
+    val flowing = LocalFlowingBackground.current
+    return if (flowing) {
+        this.flowingPageLayer()
+    } else {
+        this.background(MiuixTheme.colorScheme.background)
     }
 }

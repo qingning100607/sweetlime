@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -119,6 +121,9 @@ import top.yukonga.miuix.kmp.nav.transition.NavTransition
 import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
 import top.yukonga.miuix.kmp.nav.transition.NavTransitions
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.LocalOverScrollState
+import top.yukonga.miuix.kmp.utils.MiuixOverscrollFactory
+import top.yukonga.miuix.kmp.utils.OverScrollState
 
 /**
  * 应用外壳。
@@ -267,6 +272,15 @@ fun SweetLimeApp() {
     }
 
     SweetLimeTheme(monet = settings.monet, themeMode = settings.themeMode) {
+        // 全局把 Compose 默认的 overscroll 换成 **miuix 那套 iOS 风格弹性回弹**：
+        // 滑到顶/底之后还能继续拖（内容跟手走，松手弹回去），而不是硬邦邦地顶住。
+        // 换的是 CompositionLocal，所以整个软件里所有 LazyColumn / verticalScroll 都自动生效，
+        // 不用一页一页去挂 modifier。
+        val overScrollState = remember { OverScrollState() }
+        CompositionLocalProvider(
+            LocalOverscrollFactory provides MiuixOverscrollFactory,
+            LocalOverScrollState provides overScrollState,
+        ) {
         // 外面套一层 miuix 的 Scaffold：它负责提供 LocalPopupStates / LocalRootPopupStates，
         // 并在最外层渲染 MiuixPopupHost()。设置页里「点一下弹出圆角菜单」的 OverlayListPopup
         // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
@@ -473,6 +487,7 @@ fun SweetLimeApp() {
             }
             }
         }
+    }
     }
 }
 
