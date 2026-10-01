@@ -5,21 +5,18 @@ import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.runtime.SideEffect
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +32,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.RectangleShape
@@ -42,13 +40,12 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.TransformRegistry
@@ -64,9 +61,12 @@ import com.qingning.sweetlime.core.shareText
 import com.qingning.sweetlime.data.FavoritesStore
 import com.qingning.sweetlime.data.RecentStore
 import com.qingning.sweetlime.data.SweetLimeSettings
+import com.qingning.sweetlime.ui.components.FloatingBottomBar
+import com.qingning.sweetlime.ui.components.FloatingBottomBarItem
 import com.qingning.sweetlime.ui.components.glassBar
 import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
+import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.nav.Route
@@ -83,9 +83,6 @@ import com.qingning.sweetlime.ui.screen.ToolScreen
 import com.qingning.sweetlime.ui.screen.ToolsScreen
 import com.qingning.sweetlime.ui.theme.SweetLimeTheme
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.FloatingNavigationBar
-import top.yukonga.miuix.kmp.basic.FloatingNavigationBarItem
-import top.yukonga.miuix.kmp.basic.FloatingToolbarDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -95,6 +92,7 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.drawBackdrop
 import top.yukonga.miuix.kmp.blur.effect
@@ -224,7 +222,21 @@ fun SweetLimeApp() {
     // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
     fun goBack() {
-        backStack.removeLastOrNull()
+        // 双击返回时也会同一帧跑两次：把栈底那一页也弹掉的话，返回栈就空了。
+        if (backStack.size > 1) backStack.removeLastOrNull()
+    }
+
+    /**
+     * 唯一的入栈入口。
+     *
+     * 手速快（尤其双击）时，同一个点击回调会在同一帧里跑两次 —— 于是同一个路由
+     * **连续入栈两次**。miuix-nav 拿路由本身当 entry 的 contentKey，重复的 key 会直接
+     * 抛 `IllegalArgumentException: Duplicate contentKey on the back stack` → 闪退。
+     * 栈顶已经是同一个路由就把这次点击吞掉：观感上只是「第二下没生效」，而不是崩掉。
+     */
+    fun push(route: Route) {
+        if (backStack.lastOrNull() == route) return
+        backStack.add(route)
     }
 
     fun copy(item: TransformItem) {
@@ -245,7 +257,7 @@ fun SweetLimeApp() {
      */
     fun openStyle(styleId: String, text: String = input) {
         recent.record(styleId)
-        backStack.add(Route.Item(styleId, text))
+        push(Route.Item(styleId, text))
     }
 
     SweetLimeTheme(monet = settings.monet, themeMode = settings.themeMode) {
@@ -319,11 +331,11 @@ fun SweetLimeApp() {
                         onInputChange = { input = it },
                         floatingBottomBar = settings.floatingBottomBar,
                         onCopy = ::copy,
-                        onOpenGroup = { backStack.add(Route.Group(it.name)) },
-                        onOpenTool = { backStack.add(Route.Tool(it)) },
+                        onOpenGroup = { push(Route.Group(it.name)) },
+                        onOpenTool = { push(Route.Tool(it)) },
                         onOpenItem = { openStyle(it.styleId, it.input) },
-                        onOpenSettings = { backStack.add(Route.Settings) },
-                        onOpenSearch = { backStack.add(Route.Search) },
+                        onOpenSettings = { push(Route.Settings) },
+                        onOpenSearch = { push(Route.Search) },
                         recentIds = recent.ids,
                         onOpenRecent = { openStyle(it) },
                         newVersion = newVersion?.latest,
@@ -376,7 +388,7 @@ fun SweetLimeApp() {
                         toolId = route.id,
                         onBack = { goBack() },
                         onCopyText = ::copyRaw,
-                        onOpenSymbolCategory = { backStack.add(Route.Symbols(it)) },
+                        onOpenSymbolCategory = { push(Route.Symbols(it)) },
                     )
                 }
 
@@ -394,9 +406,9 @@ fun SweetLimeApp() {
                         onBack = { goBack() },
                         onCopyText = ::copyRaw,
                         onOpenUrl = ::openUrl,
-                        onOpenPrivacy = { backStack.add(Route.Privacy) },
-                        onOpenLicenses = { backStack.add(Route.Licenses) },
-                        onOpenAbout = { backStack.add(Route.About) },
+                        onOpenPrivacy = { push(Route.Privacy) },
+                        onOpenLicenses = { push(Route.Licenses) },
+                        onOpenAbout = { push(Route.About) },
                         // 检查更新 / 下载安装：和主页横幅共用同一份状态，两边显示永远一致。
                         updateResult = updateResult,
                         checkingUpdate = checkingUpdate,
@@ -411,9 +423,9 @@ fun SweetLimeApp() {
                         onBack = { goBack() },
                         // 搜索页的原文 = 搜索框里那行字，直接带进详情页。
                         onOpenStyle = { styleId, text -> openStyle(styleId, text) },
-                        onOpenGroup = { backStack.add(Route.Group(it)) },
-                        onOpenSymbols = { backStack.add(Route.Symbols(it)) },
-                        onOpenTool = { backStack.add(Route.Tool(it)) },
+                        onOpenGroup = { push(Route.Group(it)) },
+                        onOpenSymbols = { push(Route.Symbols(it)) },
+                        onOpenTool = { push(Route.Tool(it)) },
                         onCopyText = ::copyRaw,
                     )
                 }
@@ -431,7 +443,7 @@ fun SweetLimeApp() {
                         onBack = { goBack() },
                         onOpenUrl = ::openUrl,
                         onCopyText = ::copyRaw,
-                        onOpenLicenses = { backStack.add(Route.Licenses) },
+                        onOpenLicenses = { push(Route.Licenses) },
                     )
                 }
 
@@ -509,7 +521,23 @@ private fun RootScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                // 背景也画进这一层里。
+                //
+                // 底栏玻璃是从「这一层」采样去模糊的 —— 而这三页自己是透明的
+                // （背景由更底下的 BgEffectBackground 铺），所以只要底栏后面没有内容
+                // 垫着（收藏页空列表时就是），采样区就是一片空白，miuix 的液态玻璃管线
+                // 在空白处会出一层不透明黑 → 整条胶囊看起来「切到了深色模式」。
+                // 这里把同一帧的流光（或纯主题底色）也铺进来，背板就永远有东西可采。
+                .then(
+                    if (flowing) {
+                        Modifier.flowingPageLayer()
+                    } else {
+                        // 不能在 lambda 里读主题（drawBehind 不是 @Composable 作用域），先取出来。
+                        val plainBg = MiuixTheme.colorScheme.background
+                        Modifier.drawBehind { drawRect(plainBg) }
+                    },
+                ),
         ) {
             val contentPadding = remember(topBarHeight, bottomBarHeight) {
                 PaddingValues(
@@ -606,21 +634,32 @@ private fun RootScaffold(
                 .onSizeChanged { bottomBarHeight = with(density) { it.height.toDp() } },
         ) {
             if (floatingBottomBar) {
-                FloatingNavigationBar(
-                    // 胶囊自己的背景置空：圆角玻璃由下面的 glassBar 画，尺寸形状天然一致。
-                    color = Color.Transparent,
-                    modifier = Modifier.glassBar(
-                        backdrop = backdrop,
-                        blurPx = bottomBlurPx,
-                        tint = glassTint,
-                        shape = RoundedCornerShape(FloatingToolbarDefaults.CornerRadius),
-                        fadeFromTop = null,
-                        tintAlpha = 0.66f,
-                    ),
+                // KernelSU 那套「液态玻璃」胶囊（移植自它的 FloatingBottomBar，见
+                // ui/components/FloatingBottomBar.kt）：玻璃、随重力转的高光反光、
+                // 按下放大、以及那枚**能跟着手指拖动的指示器**，全部由组件自己画。
+                // 我们只负责把「内容那一层」的 backdrop 递进去当采样源，并按它的规矩留边距。
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    FloatingBottomItem(selectedTab == 0, { onTabSelected(0) }, MiuixIcons.ConvertFile, tr("转换"))
-                    FloatingBottomItem(selectedTab == 1, { onTabSelected(1) }, MiuixIcons.Tune, tr("工具"))
-                    FloatingBottomItem(selectedTab == 2, { onTabSelected(2) }, MiuixIcons.Favorites, tr("收藏"))
+                    FloatingBottomBar(
+                        modifier = Modifier.padding(
+                            start = 28.dp,
+                            end = 28.dp,
+                            // 胶囊浮在系统手势条之上：KernelSU 是 8dp + 系统内边距，
+                            // 这里给得略松一点（12dp + 内边距），观感更透气。
+                            bottom = 12.dp +
+                                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                        ),
+                        selectedIndex = selectedTab,
+                        onSelected = onTabSelected,
+                        backdrop = backdrop,
+                        tabsCount = 3,
+                    ) { activateTab ->
+                        LiquidBarItem(0, selectedTab, activateTab, MiuixIcons.ConvertFile, tr("转换"))
+                        LiquidBarItem(1, selectedTab, activateTab, MiuixIcons.Tune, tr("工具"))
+                        LiquidBarItem(2, selectedTab, activateTab, MiuixIcons.Favorites, tr("收藏"))
+                    }
                 }
             } else {
                 Box(
@@ -663,54 +702,38 @@ private fun RootScaffold(
 
 
 /**
- * 悬浮底栏里的单个入口（只有图标，跟 KernelSU 那种胶囊一致）。
+ * 液态玻璃底栏里的单个入口：图标 + 一行小字，跟 KernelSU 那边一致。
  *
- * miuix 的 [FloatingNavigationBarItem] 按下去只会换一下图标颜色，手感几乎察觉不到，
- * 所以在外面再包一层：按下时图标用力缩到 0.86 再带弹簧弹回（弹簧很硬、阻尼偏低，
- * 即使是轻点一下也能看到那下回弹），真正点中时再补一次很轻的触感反馈。
+ * 之所以把「图标 + 文字」都按 KernelSU 的写法直接塞进去（而不是用 miuix 现成的 item）：
+ * 拖动那枚指示器时，玻璃会把胶囊**内部的这一层内容**重新着色成强调色 —— 前提是图标和文字
+ * 都取 `LocalContentColor`，组件自己会在指示器滑过来时把 LocalContentColor 换成强调色。
  *
- * 这里只「观察」按下状态、不消费手势，点击仍然由里面的 item 自己处理。
+ * [activateTab] 来自 [FloatingBottomBar] 的 content lambda：点一下就带动画地滑过去。
  */
 @Composable
-private fun FloatingBottomItem(
-    selected: Boolean,
-    onClick: () -> Unit,
+private fun RowScope.LiquidBarItem(
+    index: Int,
+    selectedTab: Int,
+    activateTab: (Int) -> Unit,
     icon: ImageVector,
     label: String,
 ) {
-    val haptic = LocalHapticFeedback.current
-    var pressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.86f else 1f,
-        animationSpec = spring(
-            dampingRatio = 0.55f,
-            stiffness = 2500f,
-        ),
-        label = "floatingItemScale",
-    )
-    Box(
-        modifier = Modifier
-            .pointerInput(Unit) {
-                awaitEachGesture {
-                    awaitFirstDown(requireUnconsumed = false)
-                    pressed = true
-                    waitForUpOrCancellation()
-                    pressed = false
-                }
-            }
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            },
+    FloatingBottomBarItem(
+        selected = selectedTab == index,
+        onClick = { activateTab(index) },
+        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
     ) {
-        FloatingNavigationBarItem(
-            selected = selected,
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
-            },
-            icon = icon,
-            label = label,
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+        )
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            lineHeight = 14.sp,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Visible,
         )
     }
 }
