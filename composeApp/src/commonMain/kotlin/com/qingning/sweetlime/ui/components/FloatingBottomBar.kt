@@ -45,7 +45,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.input.key.Key
@@ -347,12 +346,7 @@ fun FloatingBottomBar(
                     tabWidthPx = (contentWidthPx / tabsCount).coerceAtLeast(0f)
                 }
                 .selectableGroup()
-                .graphicsLayer {
-                    translationX = panelOffset
-                    // 和 glassBar 一致：这块内容要单独录到离屏图层里再模糊，
-                    // 否则背板采不到东西的地方会变成一层不透明黑。
-                    compositingStrategy = CompositingStrategy.Offscreen
-                }
+                .graphicsLayer { translationX = panelOffset }
                 .dropShadow(
                     shape = pillShape,
                     shadow = Shadow(
@@ -415,7 +409,7 @@ fun FloatingBottomBar(
                         .clearAndSetSemantics {}
                         .alpha(0f)
                         .layerBackdrop(tabsBackdrop)
-                        .graphicsLayer { translationX = panelOffset; compositingStrategy = CompositingStrategy.Offscreen }
+                        .graphicsLayer { translationX = panelOffset }
                         .drawBackdrop(
                             backdrop = backdrop,
                             shape = { pillShape },
@@ -447,8 +441,6 @@ fun FloatingBottomBar(
                         .graphicsLayer {
                             val progressOffset = dampedDragAnimation.value * tabWidthPx
                             translationX = if (isLtr) progressOffset + panelOffset else -progressOffset + panelOffset
-                            // 同 main capsule：背板层要单独记账，否则采样不到的地方是一层黑。
-                            compositingStrategy = CompositingStrategy.Offscreen
                         }
                         .drawBackdrop(
                             backdrop = combinedBackdrop,

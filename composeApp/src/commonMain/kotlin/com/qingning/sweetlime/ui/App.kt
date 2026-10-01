@@ -507,7 +507,7 @@ private fun RootScaffold(
     // 它靠嵌套滚动驱动，所以下面的内容层要挂上它的 nestedScrollConnection。
     val scrollBehavior = MiuixScrollBehavior()
     val topBlurPx = remember(density) { with(density) { 24.dp.toPx() } }
-    val bottomBlurPx = remember(density) { with(density) { 28.dp.toPx() } }
+    val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
     // 但流光模式下不铺这层玻璃（对齐上游 lyricon 的 hazeState = null）：顶栏保持透明，
@@ -665,14 +665,15 @@ private fun RootScaffold(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        // 底栏要的是「看得见的一层磨砂玻璃」，不是几乎全透的薄雾：
-                        // 不透明度主要由 tint 提供（0.32 → 0.62），顶部的渐隐只留一小截让内容溶解。
+                        // 底栏要的是「看得见的一层磨砂玻璃」：底色只留一层很淡的白，
+                        // 模糊半径给大一点，让底下的流光/内容实时透上来。
+                        // （原来 0.62 的底色太实，看着像一条实心白条，不像玻璃。）
                         .glassBar(
                             backdrop = backdrop,
                             blurPx = bottomBlurPx,
                             tint = glassTint,
                             fadeFromTop = false,
-                            tintAlpha = 0.62f,
+                            tintAlpha = 0.42f,
                         ),
                 )
                 NavigationBar(color = Color.Transparent) {
