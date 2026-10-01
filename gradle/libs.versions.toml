@@ -4,6 +4,7 @@ kotlin = "2.4.10"
 compose = "1.12.1"
 miuix = "0.9.4"
 androidx-activity = "1.13.0"
+haze = "1.7.3"
 
 android-compileSdk = "37"
 android-minSdk = "33"
@@ -18,6 +19,10 @@ miuix-preference = { module = "top.yukonga.miuix.kmp:miuix-preference", version.
 miuix-blur = { module = "top.yukonga.miuix.kmp:miuix-blur", version.ref = "miuix" }
 miuix-nav = { module = "top.yukonga.miuix.kmp:miuix-nav", version.ref = "miuix" }
 miuix-squircle = { module = "top.yukonga.miuix.kmp:miuix-squircle", version.ref = "miuix" }
+
+# 顶栏「滑动时实时模糊」用的库：KernelSU 之外，HyperLight 那类 App 用的也是它。
+# 它内部就是一条 AGSL 着色器（RenderEffect.createRuntimeShaderEffect），逐帧对背后内容做真高斯模糊。
+haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

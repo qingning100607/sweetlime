@@ -64,6 +64,12 @@ import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.ui.components.FloatingBottomBar
 import com.qingning.sweetlime.ui.components.FloatingBottomBarItem
 import com.qingning.sweetlime.ui.components.glassBar
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
@@ -299,7 +305,7 @@ fun SweetLimeApp() {
                 // 也就是返回过程中那点「景深 / 对焦」的味道。
                 transition = CardNavTransition(
                     base = NavTransitions.MiuixDefault,
-                    maxBlurPx = with(LocalDensity.current) { 9.dp.toPx() },
+                    maxBlurPx = with(LocalDensity.current) { 16.dp.toPx() },
                 ),
                 // 大 R 角 + 轻微压暗：过渡中两张页面（滑进来的新的、以及底下被揭开的上一级）
                 // 四角都是圆角，露出底下那层背景色，就是 HyperOS 那种「卡片」观感。
@@ -503,10 +509,11 @@ private fun RootScaffold(
     var bottomBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     val backdrop = rememberLayerBackdrop()
+    // 顶栏「实时模糊」用：下面内容层当 source，顶栏当 effect（Haze 的 AGSL 逐帧高斯）。
+    val hazeState = remember { HazeState() }
     // HyperOS 的大标题：往上滑时大标题收起、往下滑时再展开。
     // 它靠嵌套滚动驱动，所以下面的内容层要挂上它的 nestedScrollConnection。
     val scrollBehavior = MiuixScrollBehavior()
-    val topBlurPx = remember(density) { with(density) { 24.dp.toPx() } }
     val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
@@ -521,6 +528,7 @@ private fun RootScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
+                .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 // 背景也画进这一层里。
                 //
@@ -573,10 +581,11 @@ private fun RootScaffold(
 
         // 顶部玻璃栏。
         //
-        // 这里不用 shader 的「渐进模糊」（部分机型会退化成整块均匀模糊，
-        // 于是顶栏下沿出现一条方形硬边），而是把**模糊结果本身**用一条垂直 alpha
-        // 渐变遮罩掉：顶部 100% 可见 → 越往下越淡 → 到底边刚好为 0。
-        // 不管设备支持什么，下边缘都一定是平滑消失的，不可能出现硬边。
+        // 顶栏的模糊走 **Haze**（AGSL 逐帧高斯，RenderEffect.createRuntimeShaderEffect）——
+        // 内容层是 source、这里是 effect，所以：**列表从下面滑过去时是实时糊的**，
+        // 而且用 progressive 做成「贴着最顶上最糊、往下渐隐到 0」的渐变，
+        // 而不是「一条硬边的整块模糊」。
+        // 流光模式下也照铺（以前这时顶栏是全透明的，滚动时一点模糊都没有）。
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -586,14 +595,20 @@ private fun RootScaffold(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    // 流光模式下不铺玻璃：顶栏保持透明，流光直接透上来（对齐上游的 hazeState = null）。
-                    .then(
-                        if (flowing) {
-                            Modifier
-                        } else {
-                            Modifier.glassBar(backdrop, topBlurPx, glassTint, fadeFromTop = true)
-                        },
-                    ),
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(
+                            // 半径 20dp / 噪点 0.15：跟 HyperLight 那边同一套参数。
+                            blurRadius = 20.dp,
+                            noiseFactor = 0.15f,
+                            tint = HazeTint(glassTint.copy(alpha = if (flowing) 0.16f else 0.30f)),
+                        ),
+                    ) {
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f,
+                        )
+                    },
             )
             TopAppBar(
                 // 大标题会随内容上滑收起、下滑展开（HyperOS 那种），
@@ -775,7 +790,11 @@ private class CardNavTransition(
                 val s = enteringScale + (1f - enteringScale) * (1f - p)
                 scaleX = s
                 scaleY = s
-                renderEffect = null
+                // 正在进/出的这一页也给一点模糊（最大只有被盖住那层的一半）：
+                // 推进来的时候是「对焦」过程（由糊变清），返回拖出去的时候是「拉焦」离开，
+                // 也就是系统返回手势那种「两页同时有景深」的味道。
+                val r = maxBlurPx * 0.5f * p
+                renderEffect = if (r > 0.5f) BlurEffect(r, r, TileMode.Clamp) else null
             } else {
                 // 被盖住的那一层：缩小 + 变糊。
                 val p = d.coerceIn(0f, 1f)

@@ -42,6 +42,9 @@ kotlin {
             implementation(libs.miuix.blur)
             implementation(libs.miuix.nav)
             implementation(libs.miuix.squircle)
+
+            // 顶栏的「实时模糊 / 渐变模糊」走 Haze（和 HyperOS 那些液态玻璃 App 同源）。
+            implementation(libs.haze)
         }
 
         androidMain.dependencies {
