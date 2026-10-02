@@ -14,14 +14,12 @@ import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.TOOL_ENTRIES
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-
 
 /**
  * 工具页（底层）：一列**竖排的工具入口**。
@@ -68,7 +66,6 @@ fun ToolsScreen(
                         },
                     )
                     if (index != TOOL_ENTRIES.lastIndex) {
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
             }

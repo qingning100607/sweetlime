@@ -49,7 +49,6 @@ import com.qingning.sweetlime.ui.components.glassBar
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -163,7 +162,6 @@ fun AboutScreen(
                             )
                         },
                     )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     BasicComponent(
                         title = tr("开源许可"),
                         summary = tr("用到的开源项目与许可证"),
@@ -198,7 +196,6 @@ fun AboutScreen(
                             )
                         },
                     )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     BasicComponent(
                         title = tr("交流群"),
                         summary = trf("QQ 群 {} · 点击一键加群", COMMUNITY_GROUP),

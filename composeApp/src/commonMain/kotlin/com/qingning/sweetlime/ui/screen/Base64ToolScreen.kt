@@ -12,8 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.Base64Codec
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
-
 
 @Composable
 internal fun Base64ToolScreen(onCopyText: (String, String) -> Unit) {
@@ -41,7 +39,6 @@ internal fun Base64ToolScreen(onCopyText: (String, String) -> Unit) {
                     selected = encodeMode,
                     onClick = { encodeMode = true },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ModeRow(
                     title = tr("解码（Base64 → 文字）"),
                     selected = !encodeMode,

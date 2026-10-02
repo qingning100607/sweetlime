@@ -21,7 +21,6 @@ import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.data.FavoritesStore
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -111,7 +110,6 @@ fun FavoriteScreen(
                         onRemove = { favorites.remove(item.key) },
                     )
                     if (index != items.lastIndex) {
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
             }

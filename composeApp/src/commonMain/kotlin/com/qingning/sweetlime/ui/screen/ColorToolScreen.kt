@@ -33,13 +33,11 @@ import com.qingning.sweetlime.core.tools.ColorConverter
 import com.qingning.sweetlime.core.tools.ColorInfo
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-
 
 @Composable
 internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
@@ -115,7 +113,6 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
                     lines.forEachIndexed { index, line ->
                         ColorLine(label = line.first, value = line.second)
                         if (index != lines.lastIndex) {
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
                 }

@@ -31,7 +31,6 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
@@ -45,7 +44,6 @@ import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs
 import kotlin.math.round
-
 
 @Composable
 internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
@@ -107,7 +105,6 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
                     showFrom = false
                 },
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
             CurrencyPickRow(
                 title = tr("到"),
                 code = toCode,

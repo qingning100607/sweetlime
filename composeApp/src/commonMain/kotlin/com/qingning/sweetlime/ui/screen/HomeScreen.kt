@@ -28,7 +28,6 @@ import com.qingning.sweetlime.ui.components.ChipButton
 import com.qingning.sweetlime.ui.components.TiltPressTextField
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -260,7 +259,6 @@ fun HomeScreen(
                         },
                     )
                     if (index != entries.lastIndex) {
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
             }

@@ -46,7 +46,6 @@ import com.qingning.sweetlime.core.i18n.AppLocale
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
@@ -159,7 +158,6 @@ fun SettingsScreen(
                     onCheckedChange = { settings.monet = it },
                     startAction = { RowStartIcon(MiuixIcons.Theme) },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
                         title = tr("深色模式"),
@@ -218,7 +216,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // 悬浮底栏：直接照搬 KernelSU 那种浮在底部的小圆角胶囊。
                 SwitchPreference(
                     title = tr("悬浮底栏"),
@@ -226,7 +223,6 @@ fun SettingsScreen(
                     onCheckedChange = { settings.floatingBottomBar = it },
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // 流光背景：整屏一层着色器动效。默认关，且需 Android 13+，
                 // 机型不支持时 BgEffectBackground 会自动退化成纯底色。
                 SwitchPreference(
@@ -237,7 +233,6 @@ fun SettingsScreen(
                 )
                 // 流光风格：跟随系统 / OS2 / OS3。开关关着的时候不显示（没有流光就无所谓风格）。
                 if (settings.flowingBackground) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         BasicComponent(
                             title = tr("流光风格"),
@@ -402,7 +397,6 @@ fun SettingsScreen(
                         )
                     },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 BasicComponent(
                     title = tr("隐私政策"),
                     onClick = onOpenPrivacy,
@@ -415,7 +409,6 @@ fun SettingsScreen(
                         )
                     },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // 「开源许可」挪到「关于」页里去了（那边和仓库、作者放在一起），
                 // 设置页不再重复一份。
             }

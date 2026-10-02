@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.UrlCodec
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 
 /**
  * URL 编解码（工具箱里 id = `url`）。
@@ -49,7 +48,6 @@ internal fun UrlToolScreen(onCopyText: (String, String) -> Unit) {
                     selected = encodeMode,
                     onClick = { encodeMode = true },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ModeRow(
                     title = tr("解码（URL → 文字）"),
                     selected = !encodeMode,

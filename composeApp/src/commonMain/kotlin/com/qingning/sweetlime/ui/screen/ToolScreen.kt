@@ -48,7 +48,6 @@ import com.qingning.sweetlime.core.tools.hanziToPinyin
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -213,7 +212,6 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
                         },
                     )
                     if (index != categories.lastIndex) {
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
             }
@@ -320,7 +318,6 @@ private fun DaxieToolScreen(onCopyText: (String, String) -> Unit) {
                     selected = toUpperMode,
                     onClick = { toUpperMode = true },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ModeRow(
                     title = tr("大写转小写"),
                     selected = !toUpperMode,

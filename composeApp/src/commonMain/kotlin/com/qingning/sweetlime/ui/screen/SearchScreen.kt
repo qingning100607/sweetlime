@@ -22,7 +22,6 @@ import com.qingning.sweetlime.core.SearchHit
 import com.qingning.sweetlime.ui.components.GlassTopBarScaffold
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
@@ -135,7 +134,6 @@ fun SearchScreen(
                                 onCopyText = onCopyText,
                             )
                             if (i != sectionEnd - 1) {
-                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             }
                         }
                     }

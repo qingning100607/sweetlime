@@ -41,7 +41,6 @@ import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.data.FavoritesStore
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -159,7 +158,6 @@ fun GroupScreen(
                             },
                         )
                         if (index != items.lastIndex) {
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
                 }
