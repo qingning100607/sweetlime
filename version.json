@@ -1,6 +1,6 @@
 {
-  "version": "2.9.13",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.13",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.13/SweetLime-release.apk",
+  "version": "2.9.15",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.15",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.15/SweetLime-release.apk",
   "note": "应用内「检查更新」的备用源。GitHub API 对匿名请求有频率限制（共享出口 IP 时很容易撞到），这个文件走 raw CDN，没有限制。发版时必须和 Release 一起改（版本号、url、apk 三处），否则 API 限流降级到这里会拿到旧版本。 url = 发布页；apk = 安装包直链（应用内直接下载用）。"
 }
