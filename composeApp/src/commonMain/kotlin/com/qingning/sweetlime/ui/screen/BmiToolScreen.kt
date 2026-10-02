@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
@@ -59,7 +60,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()).overScrollVertical()
+            .bounceVerticalScroll()
             .padding(horizontal = 12.dp),
     ) {
         // 顶栏是浮层：这点高度必须写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。

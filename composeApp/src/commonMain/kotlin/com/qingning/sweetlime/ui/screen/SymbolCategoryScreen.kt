@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -74,7 +75,7 @@ fun SymbolCategoryScreen(
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer()
-                .verticalScroll(rememberScrollState()).overScrollVertical()
+                .bounceVerticalScroll()
                 .padding(horizontal = 12.dp),
         ) {
             // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。

@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
@@ -132,7 +133,7 @@ fun SettingsScreen(
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer()
-                .verticalScroll(rememberScrollState()).overScrollVertical(),
+                .bounceVerticalScroll(),
         ) {
             // 空出顶栏高度，内容从玻璃下面开始；滚动时它从玻璃下面穿过去。
             Spacer(modifier = Modifier.height(topBarHeight))

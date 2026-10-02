@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,8 +35,11 @@ fun ToolsScreen(
     outerPadding: PaddingValues,
     onOpenTool: (String) -> Unit,
 ) {
+    val listState = rememberLazyListState()
     LazyColumn(
+        state = listState,
         modifier = Modifier
+            .bounceListScroll(listState)
             .fillMaxSize()
             .overScrollVertical(),
         contentPadding = PaddingValues(

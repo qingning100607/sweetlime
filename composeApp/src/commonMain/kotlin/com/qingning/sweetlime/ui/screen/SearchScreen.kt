@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
@@ -59,8 +61,11 @@ fun SearchScreen(
     val hits = remember(q) { SearchEngine.search(q, q) }
 
     GlassTopBarScaffold(title = tr("搜索"), onBack = onBack, modifier = modifier) { topPadding ->
+        val listState = rememberLazyListState()
         LazyColumn(
+            state = listState,
             modifier = Modifier
+            .bounceListScroll(listState)
             .overScrollVertical().fillMaxSize(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {

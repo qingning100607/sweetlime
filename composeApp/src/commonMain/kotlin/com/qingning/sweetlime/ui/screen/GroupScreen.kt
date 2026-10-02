@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Spacer
@@ -110,8 +112,11 @@ fun GroupScreen(
             }
             return@Column
         }
+        val listState = rememberLazyListState()
         LazyColumn(
+            state = listState,
             modifier = Modifier
+            .bounceListScroll(listState)
             .overScrollVertical().fillMaxSize(),
             // 顶部让出顶栏高度 —— 写在 contentPadding 里（不是外层占位），
             // 这样滚动时条目能滑到顶栏**下面**被实时糊掉。

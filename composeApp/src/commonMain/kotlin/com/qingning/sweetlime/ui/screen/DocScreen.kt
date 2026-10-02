@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,8 +33,11 @@ fun DocScreen(
     modifier: Modifier = Modifier,
 ) {
     GlassTopBarScaffold(title = title, onBack = onBack, modifier = modifier) { topPadding ->
+        val listState = rememberLazyListState()
         LazyColumn(
+            state = listState,
             modifier = Modifier
+            .bounceListScroll(listState)
             .overScrollVertical().fillMaxSize(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {

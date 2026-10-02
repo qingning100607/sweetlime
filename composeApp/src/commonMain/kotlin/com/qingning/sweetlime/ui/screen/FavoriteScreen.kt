@@ -1,5 +1,8 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.qingning.sweetlime.ui.effect.bounceListScroll
+import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
@@ -56,8 +59,7 @@ fun FavoriteScreen(
             modifier = Modifier
                 .fillMaxSize()
                 // 挂上滚动 + miuix 弹性 overscroll：内容不满一屏也能拖着弹。
-                .verticalScroll(rememberScrollState())
-                .overScrollVertical()
+                .bounceVerticalScroll()
                 .padding(top = outerPadding.calculateTopPadding()),
         ) {
             SmallTitle(text = tr("收藏"))
@@ -76,8 +78,11 @@ fun FavoriteScreen(
         }
         return
     }
+    val listState = rememberLazyListState()
     LazyColumn(
+        state = listState,
         modifier = Modifier
+            .bounceListScroll(listState)
             .fillMaxSize().overScrollVertical()
             // miuix 的弹性 overscroll：滑到底还能继续拖，松手弹回。
             .overScrollVertical(),

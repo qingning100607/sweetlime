@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import com.qingning.sweetlime.ui.effect.LocalTopBarInset
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
@@ -110,9 +111,9 @@ fun ToolScreen(
                 onCopyText = onCopyText,
             )
             "daxie" -> DaxieToolScreen(onCopyText = onCopyText)
-            "base64" -> ScrollableToolPage { Base64ToolScreen(onCopyText = onCopyText) }
-            "url" -> ScrollableToolPage { UrlToolScreen(onCopyText = onCopyText) }
-            "radix" -> ScrollableToolPage { RadixToolScreen(onCopyText = onCopyText) }
+            "base64" -> Base64ToolScreen(onCopyText = onCopyText)
+            "url" -> UrlToolScreen(onCopyText = onCopyText)
+            "radix" -> RadixToolScreen(onCopyText = onCopyText)
             "color" -> ColorToolScreen(onCopyText = onCopyText)
             "currency" -> CurrencyToolScreen(onCopyText = onCopyText)
             "bmi" -> BmiToolScreen(onCopyText = onCopyText)
@@ -171,19 +172,6 @@ fun ToolScreen(
 /* -------------------------------------------------------------------------- */
 /* 特殊符号：分类目录（竖向）                                                    */
 /* -------------------------------------------------------------------------- */
-/** 给「自己没有滚动容器」的工具页套一层：能滚 + 弹性回弹 + 让出顶栏高度。 */
-@Composable
-private fun ScrollableToolPage(content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()).overScrollVertical(),
-    ) {
-        TopBarInsetSpacer()
-        content()
-    }
-}
-
 @Composable
 private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     val categories = SYMBOL_CATEGORIES
@@ -248,7 +236,7 @@ internal fun ConverterToolScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()).overScrollVertical()
+            .bounceVerticalScroll()
             .padding(horizontal = 12.dp),
     ) {
         // 顶栏是浮层：这点高度写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
