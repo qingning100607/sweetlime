@@ -93,11 +93,12 @@ fun GroupScreen(
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer(),
         ) {
-            Spacer(modifier = Modifier.height(topBarHeight))
         if (items.isEmpty()) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    // 空状态：自己让出顶栏高度（顶栏是浮层，会盖在上面）。
+                    .padding(top = topBarHeight)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
@@ -112,7 +113,9 @@ fun GroupScreen(
         LazyColumn(
             modifier = Modifier
             .overScrollVertical().fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 48.dp),
+            // 顶部让出顶栏高度 —— 写在 contentPadding 里（不是外层占位），
+            // 这样滚动时条目能滑到顶栏**下面**被实时糊掉。
+            contentPadding = PaddingValues(top = topBarHeight, bottom = 48.dp),
         ) {
             item(key = "group_count") {
                 SmallTitle(text = trf("共 {} 种样式 · 点条目看详情", items.size))

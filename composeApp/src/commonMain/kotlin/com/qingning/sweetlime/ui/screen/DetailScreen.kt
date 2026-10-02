@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
@@ -88,60 +90,27 @@ fun DetailScreen(
 
     val hazeState = remember { HazeState() }
     val hazeTint = MiuixTheme.colorScheme.surface
-    Column(
+    var topBarHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            // 采样源：在顶栏这一条里铺一层和整页一模一样的底（流光 / 纯色），
-            // 顶栏的模糊就糊它 —— 和主页顶栏同一套参数，观感一致。
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .hazeSource(state = hazeState)
-                    .pageBackdropLayer(),
-            ) {}
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .hazeEffect(
-                        state = hazeState,
-                        style = HazeStyle(
-                            blurRadius = 20.dp,
-                            noiseFactor = 0.15f,
-                            tint = HazeTint(hazeTint.copy(alpha = 0.30f)),
-                        ),
-                    ) {
-                        progressive = HazeProgressive.verticalGradient(
-                            startIntensity = 1f,
-                            endIntensity = 0f,
-                        )
-                    },
-            )
-            SmallTopAppBar(
-            // 顶栏自己不铺底：二级页的背景已经是「实流光」了，铺底会把顶部那块盖成纯白。
-            color = Color.Transparent,
-            title = transform.title,
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = MiuixIcons.Back,
-                        contentDescription = tr("返回"),
-                        tint = MiuixTheme.colorScheme.onBackground,
-                    )
-                }
-            },
-        )
-        }
-
+        // 内容层 = Haze 的采样源。整页铺满，滚动时卡片从顶栏**下面穿过去**并被实时糊掉
+        // —— 这就是主页顶栏那种模糊。以前这里只铺了一层底，没东西可糊，所以看着没模糊。
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer()
                 .verticalScroll(rememberScrollState()).overScrollVertical()
                 .padding(horizontal = 12.dp),
         ) {
-            SmallTitle(text = tr("原文"))
+            // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。
+            Spacer(modifier = Modifier.height(topBarHeight))
+
+SmallTitle(text = tr("原文"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 TextField(
                     value = text,
@@ -241,6 +210,46 @@ fun DetailScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。卡片从它下面穿过去时逐帧被糊掉。
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .onSizeChanged { topBarHeight = with(density) { it.height.toDp() } },
+        ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(
+                            blurRadius = 20.dp,
+                            noiseFactor = 0.15f,
+                            tint = HazeTint(hazeTint.copy(alpha = 0.30f)),
+                        ),
+                    ) {
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f,
+                        )
+                    },
+            )
+            SmallTopAppBar(
+                // 顶栏自己不铺底：二级页的背景已经是「实流光」了，铺底会把顶部那块盖成纯白。
+                color = Color.Transparent,
+                title = transform.title,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = MiuixIcons.Back,
+                            contentDescription = tr("返回"),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                },
+            )
         }
     }
 }
