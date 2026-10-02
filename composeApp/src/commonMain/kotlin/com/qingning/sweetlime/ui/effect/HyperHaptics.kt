@@ -199,22 +199,14 @@ private class SlideHapticConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        // 只在「顶到顶 / 拉到底」那一刻震一下（对应 HyperLight 的 rb0.java）；
-        // 平时滑动完全不震，也不消费任何事件。
-        if (available.y != 0f) {
-            if (!atEdge) {
-                atEdge = true
-                tick(HapticFeedbackConstants.CLOCK_TICK)
-            }
-        } else {
-            atEdge = false
-        }
+        // 边界震动统一交给 EdgeScrollHaptic（miuix 的 isOverScrollActive 状态位，
+        // 进入 overscroll 只跳变一次）；这里逐帧判断 available 会在贴边慢拉时反复触发，
+        // 所以此连接只做占位、不消费任何事件。
         return Offset.Zero
     }
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
         accumulated = 0f
-        atEdge = false
         return Velocity.Zero
     }
 }
