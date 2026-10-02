@@ -180,6 +180,8 @@ private class SlideHapticConnection(
 ) : NestedScrollConnection {
 
     private var accumulated = 0f
+    // 是否已经贴在边界上（贴着不重复震，离开才重置）
+    private var atEdge = false
     private var lastTickAt = 0L
 
     private fun tick(constant: Int) {
@@ -197,23 +199,22 @@ private class SlideHapticConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        // 拖动过程：每滑过 step 轻震一次（对应 HyperLight 的 haptic_feedback_for_slide）
-        if (consumed.y != 0f) {
-            accumulated += abs(consumed.y)
-            if (accumulated >= stepPx) {
-                accumulated = 0f
+        // 只在「顶到顶 / 拉到底」那一刻震一下（对应 HyperLight 的 rb0.java）；
+        // 平时滑动完全不震，也不消费任何事件。
+        if (available.y != 0f) {
+            if (!atEdge) {
+                atEdge = true
                 tick(HapticFeedbackConstants.CLOCK_TICK)
             }
-        }
-        // 顶到边界还在继续拉：再响一次（对应 rb0.java）
-        if (available.y != 0f) {
-            tick(HapticFeedbackConstants.CLOCK_TICK)
+        } else {
+            atEdge = false
         }
         return Offset.Zero
     }
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
         accumulated = 0f
+        atEdge = false
         return Velocity.Zero
     }
 }
