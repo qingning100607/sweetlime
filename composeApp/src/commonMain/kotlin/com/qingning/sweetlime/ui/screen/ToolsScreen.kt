@@ -39,9 +39,8 @@ fun ToolsScreen(
     LazyColumn(
         state = listState,
         modifier = Modifier
-            .bounceListScroll()
             .fillMaxSize()
-            .bounceListScroll(),
+            .overScrollVertical(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),

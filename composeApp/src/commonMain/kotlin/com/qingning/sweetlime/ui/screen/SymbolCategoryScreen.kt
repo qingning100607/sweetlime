@@ -78,12 +78,12 @@ fun SymbolCategoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .overScrollVertical()
                 .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .pageBackdropLayer()
+                .pageBackdropLayer(),
                 
                 
-                .bounceListScroll(),
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
         ) {
             item {

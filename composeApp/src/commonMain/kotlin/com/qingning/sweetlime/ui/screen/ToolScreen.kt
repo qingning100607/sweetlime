@@ -184,7 +184,7 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .bounceListScroll(),
+            .overScrollVertical(),
         // 顶栏是浮层：顶栏高度写进 contentPadding，条目才能滑到顶栏下面被实时糊。
         contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
@@ -241,9 +241,7 @@ internal fun ConverterToolScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            
-            
-            .bounceListScroll(),
+            .overScrollVertical(),
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {

@@ -65,8 +65,8 @@ fun SearchScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-            .bounceListScroll()
-            .bounceListScroll().fillMaxSize(),
+            .fillMaxSize()
+            .overScrollVertical(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "search_field") {
