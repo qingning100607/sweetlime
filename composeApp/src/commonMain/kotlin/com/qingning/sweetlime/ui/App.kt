@@ -1,5 +1,11 @@
 package com.qingning.sweetlime.ui
 
+import androidx.compose.ui.platform.LocalHapticFeedback
+
+import com.qingning.sweetlime.ui.effect.EdgeScrollHaptic
+
+import com.qingning.sweetlime.ui.effect.rememberHyperHapticFeedback
+
 import com.qingning.sweetlime.core.i18n.AppLanguage
 import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
@@ -277,10 +283,17 @@ fun SweetLimeApp() {
         // 换的是 CompositionLocal，所以整个软件里所有 LazyColumn / verticalScroll 都自动生效，
         // 不用一页一页去挂 modifier。
         val overScrollState = remember { OverScrollState() }
+        // 震动逻辑（移植自 HyperLight）：把 Compose 的 HapticFeedback 全局换掉 ——
+        // 所有控件（按钮/开关/滑块/长按/文本选择）都先走 HyperOS 原生马达，
+        // 拿不到再按 HyperLight 的映射表转发 Android 常量；下面再挂「顶到边还在拉」的边界震动。
+        val hyperHaptic = rememberHyperHapticFeedback()
         CompositionLocalProvider(
             LocalOverscrollFactory provides MiuixOverscrollFactory,
             LocalOverScrollState provides overScrollState,
+            LocalHapticFeedback provides hyperHaptic,
         ) {
+            // 顶到列表边界还继续拉时响一次（HyperLight rb0.java 那条逻辑）。
+            EdgeScrollHaptic(overScrollState = overScrollState)
         // 外面套一层 miuix 的 Scaffold：它负责提供 LocalPopupStates / LocalRootPopupStates，
         // 并在最外层渲染 MiuixPopupHost()。设置页里「点一下弹出圆角菜单」的 OverlayListPopup
         // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
