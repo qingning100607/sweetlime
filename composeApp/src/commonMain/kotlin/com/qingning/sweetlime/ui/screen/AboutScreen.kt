@@ -1,8 +1,8 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.qingning.sweetlime.ui.effect.bounceListScroll
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -133,12 +133,12 @@ fun AboutScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .bounceListScroll(listState)
+                .bounceListScroll()
                 .fillMaxSize()
                 // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
                 .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .overScrollVertical(),
+                .bounceListScroll(),
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {
             item(key = "about_hero") {

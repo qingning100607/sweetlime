@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
@@ -103,7 +104,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .overScrollVertical(),
+            .bounceListScroll(),
         // 顶部 / 底部都给足空间：底部栏和右下角的悬浮设置按钮都不会压住最后一条。
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),

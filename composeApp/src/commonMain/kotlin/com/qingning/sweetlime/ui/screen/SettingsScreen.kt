@@ -1,8 +1,10 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
@@ -128,7 +130,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 // 内容层既是要展示的东西，也当顶部实时模糊的采样源。
@@ -137,8 +139,13 @@ fun SettingsScreen(
                 .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer()
-                .bounceVerticalScroll(),
+                
+                .bounceListScroll(),
+            contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
         ) {
+            item {
+                Column {
+
             // 空出顶栏高度，内容从玻璃下面开始；滚动时它从玻璃下面穿过去。
             Spacer(modifier = Modifier.height(topBarHeight))
 
@@ -438,6 +445,9 @@ fun SettingsScreen(
                 )
             }
             Spacer(modifier = Modifier.height(48.dp))
+        
+                }
+            }
         }
 
         // 顶部玻璃栏：内容上滑时从它下面穿过去并被模糊。

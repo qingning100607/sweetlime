@@ -1,6 +1,8 @@
 package com.qingning.sweetlime.ui.screen
 
-import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
+import com.qingning.sweetlime.ui.effect.bounceListScroll
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
@@ -249,12 +251,17 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
     val lineCount = text.count { it == '\n' } + 1
     val matchCount = remember(text, findText) { countOccurrences(text, findText) }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .bounceVerticalScroll()
-            .padding(horizontal = 12.dp),
+            
+            
+            .bounceListScroll(),
+        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
+        item {
+            Column {
+
         // 顶栏是浮层：这点高度必须写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
@@ -438,5 +445,8 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
         Spacer(modifier = Modifier.height(48.dp))
+    
+            }
+        }
     }
 }

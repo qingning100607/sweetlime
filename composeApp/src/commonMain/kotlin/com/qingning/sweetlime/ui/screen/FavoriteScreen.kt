@@ -1,8 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
-import androidx.compose.foundation.lazy.rememberLazyListState
 import com.qingning.sweetlime.ui.effect.bounceListScroll
-import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
@@ -55,13 +54,18 @@ fun FavoriteScreen(
         }
     }
     if (items.isEmpty()) {
-        Column(
+        // 和主页转换列表同一个容器：LazyColumn + 外层 overScrollVertical。
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                // 挂上滚动 + miuix 弹性 overscroll：内容不满一屏也能拖着弹。
-                .bounceVerticalScroll()
-                .padding(top = outerPadding.calculateTopPadding()),
+                .bounceListScroll(),
+            contentPadding = PaddingValues(
+                top = outerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding(),
+            ),
         ) {
+            item {
+                Column {
             SmallTitle(text = tr("收藏"))
             Card(
                 modifier = Modifier
@@ -75,6 +79,8 @@ fun FavoriteScreen(
                     modifier = Modifier.padding(16.dp),
                 )
             }
+                }
+            }
         }
         return
     }
@@ -82,10 +88,10 @@ fun FavoriteScreen(
     LazyColumn(
         state = listState,
         modifier = Modifier
-            .bounceListScroll(listState)
-            .fillMaxSize().overScrollVertical()
+            .bounceListScroll()
+            .fillMaxSize().bounceListScroll()
             // miuix 的弹性 overscroll：滑到底还能继续拖，松手弹回。
-            .overScrollVertical(),
+            .bounceListScroll(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),

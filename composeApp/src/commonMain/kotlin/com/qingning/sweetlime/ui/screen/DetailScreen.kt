@@ -1,8 +1,10 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -103,15 +105,20 @@ fun DetailScreen(
     ) {
         // 内容层 = Haze 的采样源。整页铺满，滚动时卡片从顶栏**下面穿过去**并被实时糊掉
         // —— 这就是主页顶栏那种模糊。以前这里只铺了一层底，没东西可糊，所以看着没模糊。
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer()
-                .bounceVerticalScroll()
-                .padding(horizontal = 12.dp),
+                
+                
+                .bounceListScroll(),
+            contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
         ) {
+            item {
+                Column {
+
             // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。
             Spacer(modifier = Modifier.height(topBarHeight))
 
@@ -215,6 +222,9 @@ SmallTitle(text = tr("原文"))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        
+                }
+            }
         }
 
         // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。卡片从它下面穿过去时逐帧被糊掉。

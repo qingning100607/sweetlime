@@ -1,8 +1,9 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import com.qingning.sweetlime.ui.effect.LocalTopBarInset
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
@@ -183,7 +184,7 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .overScrollVertical(),
+            .bounceListScroll(),
         // 顶栏是浮层：顶栏高度写进 contentPadding，条目才能滑到顶栏下面被实时糊。
         contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
@@ -237,12 +238,17 @@ internal fun ConverterToolScreen(
 ) {
     var input by rememberSaveable { mutableStateOf("") }
     val result = if (input.isBlank()) "" else convert(input)
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .bounceVerticalScroll()
-            .padding(horizontal = 12.dp),
+            
+            
+            .bounceListScroll(),
+        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
+        item {
+            Column {
+
         // 顶栏是浮层：这点高度写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
@@ -287,6 +293,9 @@ internal fun ConverterToolScreen(
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
         Spacer(modifier = Modifier.height(48.dp))
+    
+            }
+        }
     }
 }
 
