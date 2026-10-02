@@ -58,7 +58,7 @@ fun FavoriteScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .bounceListScroll(),
+                .overScrollVertical(),
             contentPadding = PaddingValues(
                 top = outerPadding.calculateTopPadding(),
                 bottom = outerPadding.calculateBottomPadding(),
@@ -88,10 +88,8 @@ fun FavoriteScreen(
     LazyColumn(
         state = listState,
         modifier = Modifier
-            .bounceListScroll()
-            .fillMaxSize().bounceListScroll()
-            // miuix 的弹性 overscroll：滑到底还能继续拖，松手弹回。
-            .bounceListScroll(),
+            .fillMaxSize()
+            .overScrollVertical(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),
