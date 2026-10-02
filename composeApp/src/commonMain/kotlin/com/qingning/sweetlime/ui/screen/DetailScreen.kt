@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -90,6 +92,7 @@ fun DetailScreen(
     val favorite = isFavorite(text)
 
     val hazeState = remember { HazeState() }
+    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -104,6 +107,7 @@ fun DetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer()
                 .bounceVerticalScroll()
                 .padding(horizontal = 12.dp),

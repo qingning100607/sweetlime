@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.qingning.sweetlime.ui.effect.bounceVerticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +62,7 @@ fun SymbolCategoryScreen(
     val safeIndex = index.coerceIn(0, SYMBOL_CATEGORIES.lastIndex)
     val category = SYMBOL_CATEGORIES[safeIndex]
     val hazeState = remember { HazeState() }
+    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -74,6 +77,7 @@ fun SymbolCategoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer()
                 .bounceVerticalScroll()
                 .padding(horizontal = 12.dp),

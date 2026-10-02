@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.runtime.getValue
@@ -80,6 +82,7 @@ fun GroupScreen(
         }
     }
     val hazeState = remember { HazeState() }
+    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -93,6 +96,7 @@ fun GroupScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
         ) {
         if (items.isEmpty()) {

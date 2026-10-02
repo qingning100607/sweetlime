@@ -45,7 +45,7 @@ private class RubberBand {
     fun onDrag(delta: Float): Float {
         if (delta == 0f || limitPx <= 0f) return 0f
         val progress = abs(offset) / limitPx
-        val damped = delta * 0.5f * (1f - progress * 0.6f)
+        val damped = delta * 0.55f * (1f - progress * 0.55f)
         offset = (offset + damped).coerceIn(-limitPx, limitPx)
         return delta
     }
@@ -56,7 +56,7 @@ private class RubberBand {
         anim.animateTo(
             targetValue = 0f,
             animationSpec = spring(
-                dampingRatio = 0.68f,
+                dampingRatio = 0.72f,
                 stiffness = Spring.StiffnessMediumLow,
             ),
         ) {
@@ -92,7 +92,7 @@ fun Modifier.bounceVerticalScroll(
     val band = remember { RubberBand() }
     val connection = remember(band) { RubberBandConnection(band) }
     val density = LocalDensity.current
-    band.limitPx = with(density) { 132.dp.toPx() }
+    band.limitPx = with(density) { 200.dp.toPx() }
 
     // 只有「真的没得滚」时才自己接管；内容够长就交给 miuix，避免双重回弹。
     val takeOver = state.maxValue == 0
@@ -123,7 +123,7 @@ fun Modifier.bounceListScroll(state: LazyListState): Modifier {
     val band = remember { RubberBand() }
     val connection = remember(band) { RubberBandConnection(band) }
     val density = LocalDensity.current
-    band.limitPx = with(density) { 132.dp.toPx() }
+    band.limitPx = with(density) { 200.dp.toPx() }
     return this
         .nestedScroll(connection)
         .graphicsLayer { translationY = band.offset }
@@ -150,7 +150,7 @@ fun BounceListContainer(
     val band = remember { RubberBand() }
     val connection = remember(band) { RubberBandConnection(band) }
     val density = LocalDensity.current
-    band.limitPx = with(density) { 132.dp.toPx() }
+    band.limitPx = with(density) { 200.dp.toPx() }
     Box(
         modifier = modifier
             .nestedScroll(connection)

@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.qingning.sweetlime.ui.effect.bounceListScroll
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
@@ -104,6 +106,7 @@ fun AboutScreen(
     val flowing = LocalFlowingBackground.current
     // 顶栏的实时模糊（Haze）：和主页/其他二级页同一套参数。
     val hazeState = remember { HazeState() }
+    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
 
     val scrollProgress by remember {
@@ -134,6 +137,7 @@ fun AboutScreen(
                 .fillMaxSize()
                 // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
                 .hazeSource(state = hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {

@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.ui.components
 
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
@@ -53,6 +55,7 @@ fun GlassTopBarScaffold(
     val density = LocalDensity.current
     // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect（逐帧真高斯 + 渐变）。
     val hazeState = remember { HazeState() }
+    val scrollBehavior = MiuixScrollBehavior()
     val tint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
 
@@ -69,6 +72,7 @@ fun GlassTopBarScaffold(
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
                 .hazeSource(state = hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
         ) {
             content(topBarHeight)
