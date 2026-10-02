@@ -11,6 +11,8 @@ import android.provider.Settings
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.FileProvider
 import com.qingning.sweetlime.AppContext
@@ -38,6 +40,16 @@ import java.nio.charset.CodingErrorAction
 import android.app.Activity
 import androidx.activity.result.contract.ActivityResultContract
 import java.io.ByteArrayOutputStream
+import android.graphics.BitmapFactory
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlin.math.atan2
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 @Composable
@@ -508,3 +520,156 @@ actual suspend fun writeZipBackPickedFile(
         }
     }
 }
+
+/** 低通滤波系数：越大越跟手、越小越稳。0.15 是「气泡不抖、手一动又能跟上」的常见取值。 */
+private const val TILT_FILTER = 0.15f
+
+/**
+ * 水平仪：订阅加速度计，按「一阶低通 + atan2」算出左右 / 前后倾角。
+ *
+ * 为什么要滤波：原始加速度噪声很大（手轻轻一抖就跳好几度），气泡会一直蹦，
+ * 所以每次只把读数的 15% 混进当前值里。
+ */
+@Composable
+actual fun rememberTilt(): Tilt? {
+    val context = AppContext.get()
+    var tilt by remember { mutableStateOf<Tilt?>(null) }
+    DisposableEffect(context) {
+        val manager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val sensor = manager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        var listener: SensorEventListener? = null
+        if (manager != null && sensor != null) {
+            val l = object : SensorEventListener {
+                private var gx = 0f
+                private var gy = 0f
+                private var gz = 0f
+
+                override fun onSensorChanged(event: SensorEvent) {
+                    val v = event.values
+                    gx += TILT_FILTER * (v[0] - gx)
+                    gy += TILT_FILTER * (v[1] - gy)
+                    gz += TILT_FILTER * (v[2] - gz)
+                    // 屏幕朝上水平放置时 gx≈0、gy≈0、gz≈9.8：
+                    // atan2(gx, gz) 是左右倾角，atan2(gy, gz) 是前后倾角。
+                    tilt = Tilt(
+                        x = Math.toDegrees(atan2(gx.toDouble(), gz.toDouble())).toFloat(),
+                        y = Math.toDegrees(atan2(gy.toDouble(), gz.toDouble())).toFloat(),
+                    )
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+            }
+            listener = l
+            // SENSOR_DELAY_GAME ≈ 20ms 一帧，气泡跟得上手。
+            manager.registerListener(l, sensor, SensorManager.SENSOR_DELAY_GAME)
+        }
+        onDispose {
+            // 离开页面立刻注销：传感器一直开着是实打实的耗电。
+            val l = listener
+            if (l != null) manager?.unregisterListener(l)
+        }
+    }
+    return tilt
+}
+
+/** 嗅探一次最多读 4MB 正文：够解析几万个标签，又不至于把内存吃爆。 */
+private const val MAX_DOCUMENT_BYTES = 4 * 1024 * 1024
+
+/** 装成普通浏览器：不少站点看 UA 决定给不给你完整页面。 */
+private const val BROWSER_UA =
+    "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) " +
+        "Chrome/124.0.0.0 Mobile Safari/537.36"
+
+/** 从 Content-Type 里抠出 charset，没有就返回 null。 */
+private fun charsetFromContentType(contentType: String?): String? {
+    val header = contentType ?: return null
+    val value = Regex("charset\\s*=\\s*[\"']?([A-Za-z0-9_\\-]+)", RegexOption.IGNORE_CASE)
+        .find(header)?.groupValues?.get(1) ?: return null
+    return value.takeIf { runCatching { Charset.forName(it) }.isSuccess }
+}
+
+/** 读满 [max] 字节就停（页面里如果挂了超大文件，不至于整段读进来）。 */
+private fun readLimited(input: InputStream, max: Int): ByteArray {
+    val out = ByteArrayOutputStream()
+    val buffer = ByteArray(16 * 1024)
+    var total = 0
+    while (true) {
+        val n = input.read(buffer)
+        if (n < 0) break
+        if (total + n >= max) {
+            out.write(buffer, 0, max - total)
+            break
+        }
+        out.write(buffer, 0, n)
+        total += n
+    }
+    return out.toByteArray()
+}
+
+actual suspend fun httpGetDocument(url: String): HttpResponse? = withContext(Dispatchers.IO) {
+    runCatching {
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10000
+            readTimeout = 15000
+            requestMethod = "GET"
+            instanceFollowRedirects = true
+            setRequestProperty("User-Agent", BROWSER_UA)
+            setRequestProperty(
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,text/css,*/*;q=0.8",
+            )
+            setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
+        }
+        try {
+            if (connection.responseCode !in 200..299) return@runCatching null
+            val bytes = connection.inputStream.use { readLimited(it, MAX_DOCUMENT_BYTES) }
+            // 重定向之后的地址：解析相对链接要用它，不然 /img/a.png 会拼到旧主机上。
+            val finalUrl = connection.url?.toString() ?: url
+            if (bytes.isEmpty()) return@runCatching HttpResponse("", finalUrl)
+            val byHeader = charsetFromContentType(connection.contentType)
+                ?.let { name -> runCatching { bytes.toString(Charset.forName(name)) }.getOrNull() }
+            HttpResponse(byHeader ?: decodeTextBytes(bytes), finalUrl)
+        } finally {
+            connection.disconnect()
+        }
+    }.getOrNull()
+}
+
+/** 单张图片最多下 12MB（有些站点的「图」其实是几百 KB 的 GIF，够用了）。 */
+private const val MAX_IMAGE_BYTES = 12 * 1024 * 1024
+
+/** 按长边上限算采样率：列表里的小缩略图没必要把整张原图读进内存。 */
+private fun decodeSampled(bytes: ByteArray, maxPixels: Int): ImageBitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+    var sample = 1
+    val longest = maxOf(bounds.outWidth, bounds.outHeight)
+    // 采样率是 2 的幂；留一倍余量（比如只要 160px，就解成 ≤320px 再缩，画质更稳）
+    while (longest / sample > maxPixels * 2) sample *= 2
+
+    val options = BitmapFactory.Options().apply { inSampleSize = sample }
+    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options) ?: return null
+    return bitmap.asImageBitmap()
+}
+
+actual suspend fun loadImageBitmap(url: String, maxPixels: Int): ImageBitmap? =
+    withContext(Dispatchers.IO) {
+        runCatching {
+            val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 8000
+                readTimeout = 15000
+                setRequestProperty("User-Agent", BROWSER_UA)
+                setRequestProperty("Accept", "image/*,*/*;q=0.8")
+            }
+            try {
+                if (connection.responseCode !in 200..299) return@runCatching null
+                val bytes = connection.inputStream.use { readLimited(it, MAX_IMAGE_BYTES) }
+                if (bytes.isEmpty()) return@runCatching null
+                decodeSampled(bytes, maxPixels)
+            } finally {
+                connection.disconnect()
+            }
+        }.getOrNull()
+    }

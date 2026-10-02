@@ -114,6 +114,9 @@ fun ToolScreen(
             )
             "daxie" -> DaxieToolScreen(onCopyText = onCopyText)
             "base64" -> Base64ToolScreen(onCopyText = onCopyText)
+            "md5" -> Md5ToolScreen(onCopyText = onCopyText)
+            "sniff" -> SnifferToolScreen(onCopyText = onCopyText)
+            "level" -> LevelToolScreen()
             "url" -> UrlToolScreen(onCopyText = onCopyText)
             "radix" -> RadixToolScreen(onCopyText = onCopyText)
             "color" -> ColorToolScreen(onCopyText = onCopyText)
@@ -232,6 +235,11 @@ internal fun ConverterToolScreen(
     convert: (String) -> String,
     onCopyText: (String, String) -> Unit,
     extra: (@Composable () -> Unit)? = null,
+    /**
+     * 和 [extra] 一样是插在输入框下面的额外内容，区别是它能拿到**当前输入**。
+     * MD5 那种「同一个输入要给出好几种形式」的页面用它。
+     */
+    extraForInput: (@Composable (String) -> Unit)? = null,
 ) {
     var input by rememberSaveable { mutableStateOf("") }
     val result = if (input.isBlank()) "" else convert(input)
@@ -259,6 +267,10 @@ internal fun ConverterToolScreen(
         if (extra != null) {
             Spacer(modifier = Modifier.height(8.dp))
             extra()
+        }
+        if (extraForInput != null && input.isNotBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            extraForInput(input)
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(

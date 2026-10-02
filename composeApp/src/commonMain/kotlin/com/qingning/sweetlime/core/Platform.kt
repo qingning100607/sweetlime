@@ -1,6 +1,7 @@
 package com.qingning.sweetlime.core
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.painter.Painter
 
@@ -166,9 +167,56 @@ expect fun rememberLanguageIcon(): Painter
 expect fun detectTextCharset(bytes: ByteArray): String
 
 /**
+ * 一次网页抓取的结果。
+ *
+ * [finalUrl] 是**跟完重定向之后**的地址 —— 解析页面里的相对地址必须用它，
+ * 否则 `/img/a.png` 会按错的主机名去拼。
+ */
+data class HttpResponse(val text: String, val finalUrl: String)
+
+/**
+ * 拉一个网页 / 样式表正文（嗅探用）。
+ *
+ * 和 [httpGetText] 的区别：
+ * - 装成普通浏览器（UA + Accept），否则不少站点会给你一份残缺页面；
+ * - 不要求 JSON，什么 content-type 都收；
+ * - 按 `Content-Type` 里的 charset 或内容猜编码（中文站点大量还是 GBK）；
+ * - 回传重定向之后的最终地址。
+ *
+ * 失败（网络错误 / 非 2xx / 太大）返回 null。
+ */
+expect suspend fun httpGetDocument(url: String): HttpResponse?
+
+/**
+ * 下载一张网络图片并解码成位图，用于嗅探结果里的缩略图与点开预览。
+ *
+ * [maxPixels] 是**长边上限**，解码时按它做采样（inSampleSize）——
+ * 列表里只要小缩略图，没必要把一张 4K 图整张读进内存。
+ * 失败（网络错误 / 不是图片 / 太大）返回 null。
+ */
+expect suspend fun loadImageBitmap(url: String, maxPixels: Int = 1200): ImageBitmap?
+
+/**
  * 按指定编码把文本编回字节。
  *
  * 保存回原文件时必须用它，而不是默认 UTF-8 —— 否则一个 GBK 的老文件
  * 打开时显示正常（读取会猜编码），一存就整篇变成 UTF-8 了。
  */
 expect fun encodeTextToBytes(text: String, charsetName: String): ByteArray
+
+/**
+ * 水平仪（气泡水平尺）的一次读数：左右倾角 [x] 与前后倾角 [y]，单位「度」。
+ *
+ * 手机水平放置时是 (0, 0)；向右倾 [x] 为正，向下倾（屏幕朝上那面往下沉）[y] 为正。
+ */
+data class Tilt(val x: Float, val y: Float)
+
+/**
+ * 订阅重力（加速度计）并返回当前倾角；设备没有加速度计、注册失败时返回 null。
+ *
+ * 写成 `@Composable expect` 的原因和后两个「图标」类似：读传感器要 Context / SensorManager，
+ * 而且必须跟着界面生命周期注册与注销（离开页面立刻停，不然一直耗电），
+ * 这两件事只有 Compose 侧能做。
+ */
+@Composable
+expect fun rememberTilt(): Tilt?
