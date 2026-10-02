@@ -141,6 +141,7 @@ import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
 import top.yukonga.miuix.kmp.nav.core.NavDisplay
 import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
 import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
+import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
 import top.yukonga.miuix.kmp.nav.transition.NavTransition
 import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
@@ -858,8 +859,11 @@ private fun RowScope.LiquidBarItem(
  *
  * 相对深度 `relativeDepth`：0 = 当前最上面的页面，1 = 被它完全盖住的那一层。
  *
- * - **顶层页面**（d ≤ 0，正在滑入 / 正在被返回掉）：只做一点轻微的放大收尾，
- *   不糊 —— 顶层的字必须始终是清晰的。
+ * - **正在被返回掉的页面**（`NavRole.Outgoing`）：跟着手指**缩小成一张卡片**，
+ *   也就是系统预测性返回那种「往后退、缩一点、露出下一层」的跟手感；不糊，
+ *   字要一直是清楚的。
+ * - **滑进来的新页**（`NavRole.Incoming`）：只做一点轻微的放大收尾，不糊 ——
+ *   顶层页面的字必须始终是清晰的。
  * - **被盖住的上一级**（0 < d ≤ 1）：缩小成一张小卡片、往左退一点、同时越来越糊；
  *   返回时这段动画反着走，于是「卡片一边变清晰一边放大回全屏」，
  *   也就是用户要的「返回过程中加一点高斯模糊」。
@@ -876,33 +880,60 @@ private class CardNavTransition(
     /** 被盖住时缩到多小（越小卡片感越强，1f 就是完全不缩）。 */
     private val coveredScale = 0.94f
 
+    /**
+     * 「正在被返回掉的那一页」跟手缩小到的比例。
+     *
+     * 这就是预测性返回的交互感来源：手指往右拖多少，这一页就缩多少，
+     * 松手后由 base 过渡接着收尾。0.92 ≈ 系统那套缩得有点明显但不过分的手感。
+     */
+    private val outgoingScale = 0.92f
+
     /** 顶层页面滑入时的起始缩放（略小一点点，收尾时回到 1）。 */
     private val enteringScale = 0.97f
 
     override fun Modifier.transformEntry(scope: NavTransitionScope): Modifier {
         val layered = with(base) { this@transformEntry.transformEntry(scope) }
+        // 这一页在整段过渡里扮演什么角色（Top / Incoming / Outgoing / Covered），
+        // 在 lambda 外面读一次即可 —— 它整段过渡都不会变。
+        val role = scope.role
         return layered.graphicsLayer {
             val d = scope.relativeDepth
-            if (d <= 0f) {
-                // 顶层：从 enteringScale 收到 1，配合滑入；不施加模糊。
-                val p = (-d).coerceIn(0f, 1f)
-                val s = enteringScale + (1f - enteringScale) * (1f - p)
-                scaleX = s
-                scaleY = s
-                // 这一页（正在进/出的那一页）**不糊**：按需求，过渡时只糊「二级界面以外的
-                // 界面」—— 二级页自己的卡片要一直是清晰的，缩放和景深交给被盖住的那层。
-                renderEffect = null
-            } else {
-                // 被盖住的那一层：缩小 + 变糊。
-                val p = d.coerceIn(0f, 1f)
-                val s = 1f - (1f - coveredScale) * p
-                scaleX = s
-                scaleY = s
-                val radius = maxBlurPx * p
-                renderEffect = if (radius > 0.5f) {
-                    BlurEffect(radius, radius, TileMode.Clamp)
-                } else {
-                    null
+            // 「跟手进度」：预测性返回 / 滑动返回时手指拖到哪，就是 0→1。
+            // 拿不到手势（比如点返回键触发的收尾动画）就退回用深度当进度。
+            val dragged = scope.gesture?.progress?.coerceIn(0f, 1f)
+
+            when (role) {
+                // 正在被返回掉的那一页：跟着手指**缩小成一张卡片** ——
+                // 这就是系统预测性返回那种「整页往后退、缩一点、露出下面一层」的交互感。
+                // 它不糊：字要一直清楚（要糊的是被它盖住的那一层）。
+                NavRole.Outgoing -> {
+                    val p = dragged ?: (-d).coerceIn(0f, 1f)
+                    val s = 1f - (1f - outgoingScale) * p
+                    scaleX = s
+                    scaleY = s
+                    renderEffect = null
+                }
+                // 滑进来的新页：从 enteringScale 收到 1，配合滑入；不施加模糊。
+                NavRole.Incoming -> {
+                    val p = dragged?.let { 1f - it } ?: (-d).coerceIn(0f, 1f)
+                    val s = enteringScale + (1f - enteringScale) * (1f - p)
+                    scaleX = s
+                    scaleY = s
+                    renderEffect = null
+                }
+                // 被盖住的上一级：缩小 + 变糊（返回时反过来走，于是「卡片一边变清晰
+                // 一边放大回全屏」）。
+                else -> {
+                    val p = d.coerceIn(0f, 1f)
+                    val s = 1f - (1f - coveredScale) * p
+                    scaleX = s
+                    scaleY = s
+                    val radius = maxBlurPx * p
+                    renderEffect = if (radius > 0.5f) {
+                        BlurEffect(radius, radius, TileMode.Clamp)
+                    } else {
+                        null
+                    }
                 }
             }
         }
