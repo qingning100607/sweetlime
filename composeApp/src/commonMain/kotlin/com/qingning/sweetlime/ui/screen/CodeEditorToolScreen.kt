@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui.screen
 
-import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
@@ -256,7 +255,7 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
             .fillMaxSize()
             
             
-            .bounceListScroll(),
+            .overScrollVertical(),
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {

@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui.screen
 
-import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -70,6 +69,8 @@ fun SymbolCategoryScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .hazeSource(state = hazeState)
+            .pageBackdropLayer()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
         // 内容层 = Haze 的采样源。整页铺满，滚动时符号从顶栏**下面穿过去**并被实时糊掉
@@ -77,9 +78,7 @@ fun SymbolCategoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical()
-                .hazeSource(state = hazeState)
-                .pageBackdropLayer(),
+                .overScrollVertical(),
                 
                 
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),

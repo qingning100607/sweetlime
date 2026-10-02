@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui.screen
 
-import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf

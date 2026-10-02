@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui.screen
 
-import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -82,16 +81,17 @@ fun ToolScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .hazeSource(state = hazeState)
+            .pageBackdropLayer()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
         // 内容层：Haze 的采样源。顶部先空出顶栏高度，滚动时内容从顶栏下面穿过去并被实时糊。
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .overScrollVertical(),
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
-                .hazeSource(state = hazeState)
-                .pageBackdropLayer(),
         ) {
             // 顶栏是浮层：把它的高度往下传，各工具页自己把那点高度写进「滚动内容」里。
             // （写在外层占位里的话，内容永远滑不到顶栏下面 → 顶栏就没有东西可糊。）
