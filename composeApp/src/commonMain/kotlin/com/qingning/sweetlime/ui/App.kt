@@ -722,13 +722,7 @@ private fun RootScaffold(
                                 noiseFactor = 0.15f,
                                 tint = HazeTint(glassTint.copy(alpha = if (flowing) 0.12f else 0.22f)),
                             ),
-                        ) {
-                            // 上边完全透明、往下逐渐变实：顶边跟内容自然衔接。
-                            progressive = HazeProgressive.verticalGradient(
-                                startIntensity = 0f,
-                                endIntensity = 1f,
-                            )
-                        },
+                        ) ,
                 )
                 NavigationBar(color = Color.Transparent) {
                     NavigationBarItem(
