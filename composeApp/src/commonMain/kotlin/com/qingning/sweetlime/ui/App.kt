@@ -17,6 +17,9 @@ import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.runtime.SideEffect
+import kotlinx.coroutines.Job
+import top.yukonga.miuix.kmp.utils.PagerInterceptionMode
+import top.yukonga.miuix.kmp.utils.pagerGestureOverride
 import androidx.compose.foundation.pager.PagerDefaults
 import top.yukonga.miuix.kmp.utils.PagerGestureNestedScrollConnection
 import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
@@ -561,11 +564,15 @@ private fun RootScaffold(
     // 三个 Tab 的横向分页：手指左右滑换页；点底栏则是带动画滚过去 ——
     // 这就是 KernelSU 的切换方式（它的 miuix 里也是 Pager + animateToPage 那一套）。
     val tabPagerState = rememberPagerState(pageCount = { 3 })
-    // 点底栏 → 走 KernelSU 那条路：miuix 的 springAnimateToPage（弹簧曲线，不�ишь是默认滚动曲线）。
-    // （LaunchedEffect 换 key 会自动取消上一次动画，等价 KernelSU 的 navJob?.cancel()。）
-    LaunchedEffect(selectedTab) {
-        if (tabPagerState.settledPage != selectedTab) {
-            tabPagerState.springAnimateToPage(selectedTab)
+    // KernelSU 的 MainPagerState.animateToPage：点底栏时直接带动画滚过去，
+    // 连点会先取消上一段（navJob?.cancel()），不靠「改 state 再等副作用」那条有竞态的链路。
+    val pagerScope = rememberCoroutineScope()
+    var navJob by remember { mutableStateOf<Job?>(null) }
+    val goToTab: (Int) -> Unit = { index ->
+        if (index != selectedTab) {
+            navJob?.cancel()
+            onTabSelected(index)
+            navJob = pagerScope.launch { tabPagerState.springAnimateToPage(index) }
         }
     }
     // 手滑翻页 → 停下来之后回写选中态（等价 KernelSU 的 syncPage）。
@@ -619,10 +626,19 @@ private fun RootScaffold(
             }
             HorizontalPager(
                 state = tabPagerState,
-                modifier = Modifier.fillMaxSize(),
-                // ↓ 下面这几项全是 KernelSU MainActivity 里那一套，生硬就生硬在这:
+                modifier = Modifier
+                    .fillMaxSize()
+                    // KernelSU 那半段我之前漏了：手势交给 miuix 的拦截器统一管
+                    // （斜滑判定 + 点到就刹车），不再和内置手滑两套抢。
+                    .pagerGestureOverride(
+                        pagerState = tabPagerState,
+                        mode = PagerInterceptionMode.CrossAxisInterceptor,
+                        enabled = true,
+                    ),
                 beyondViewportPageCount = 1,
                 overscrollEffect = null,
+                // 和 KernelSU 一样：内置手滑关掉，手势只走上面那个拦截器。
+                userScrollEnabled = false,
                 pageNestedScrollConnection = PagerGestureNestedScrollConnection,
                 flingBehavior = PagerDefaults.flingBehavior(
                     state = tabPagerState,
@@ -744,7 +760,7 @@ private fun RootScaffold(
                                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
                         ),
                         selectedIndex = selectedTab,
-                        onSelected = onTabSelected,
+                        onSelected = goToTab,
                         backdrop = backdrop,
                         tabsCount = 3,
                     ) { activateTab ->
@@ -759,19 +775,19 @@ private fun RootScaffold(
                 NavigationBar {
                     NavigationBarItem(
                         selected = selectedTab == 0,
-                        onClick = { onTabSelected(0) },
+                        onClick = { goToTab(0) },
                         icon = MiuixIcons.ConvertFile,
                         label = tr("转换"),
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
-                        onClick = { onTabSelected(1) },
+                        onClick = { goToTab(1) },
                         icon = MiuixIcons.Tune,
                         label = tr("工具"),
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
-                        onClick = { onTabSelected(2) },
+                        onClick = { goToTab(2) },
                         icon = MiuixIcons.Favorites,
                         label = tr("收藏"),
                     )
