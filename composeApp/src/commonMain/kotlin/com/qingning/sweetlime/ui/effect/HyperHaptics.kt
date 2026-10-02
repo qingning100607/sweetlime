@@ -179,7 +179,9 @@ private class SlideHapticConnection(
     private val stepPx: Float,
 ) : NestedScrollConnection {
 
-    private var accumulated = 0f
+    // 两个方向各自「是否已经报过这一下」（= HyperLight rb0.java 里的 pz0 状态位）
+    private var armedTop = false
+    private var armedBottom = false
     // 是否已经贴在边界上（贴着不重复震，离开才重置）
     private var atEdge = false
     private var lastTickAt = 0L
@@ -199,14 +201,26 @@ private class SlideHapticConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        // 边界震动统一交给 EdgeScrollHaptic（miuix 的 isOverScrollActive 状态位，
-        // 进入 overscroll 只跳变一次）；这里逐帧判断 available 会在贴边慢拉时反复触发，
-        // 所以此连接只做占位、不消费任何事件。
+        // 照抄 HyperLight rb0.java：
+        // 顶到顶部还继续下拉（available.y > 0）/ 拉到底部还继续上拉（available.y < 0）各震一下；
+        // available == 0f 时不清标志位 —— 贴边慢拉时这个值会抖，清了就会一直震。
+        if (available.y > 0f) {
+            if (!armedTop) {
+                armedTop = true
+                tick(HapticFeedbackConstants.CLOCK_TICK)
+            }
+        } else if (available.y < 0f) {
+            if (!armedBottom) {
+                armedBottom = true
+                tick(HapticFeedbackConstants.CLOCK_TICK)
+            }
+        }
         return Offset.Zero
     }
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        accumulated = 0f
+        armedTop = false
+        armedBottom = false
         return Velocity.Zero
     }
 }

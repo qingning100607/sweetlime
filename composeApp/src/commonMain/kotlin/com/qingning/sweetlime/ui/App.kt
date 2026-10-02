@@ -122,7 +122,6 @@ import top.yukonga.miuix.kmp.nav.core.NavDisplay
 import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
 import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
 import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
-import com.qingning.sweetlime.ui.effect.EdgeScrollHaptic
 import top.yukonga.miuix.kmp.nav.transition.NavTransition
 import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
 import top.yukonga.miuix.kmp.nav.transition.NavTransitions
@@ -293,7 +292,6 @@ fun SweetLimeApp() {
             LocalHapticFeedback provides hyperHaptic,
         ) {
             // 顶到列表边界还继续拉时响一次（HyperLight rb0.java 那条逻辑）。
-            EdgeScrollHaptic(overScrollState = overScrollState)
         // 外面套一层 miuix 的 Scaffold：它负责提供 LocalPopupStates / LocalRootPopupStates，
         // 并在最外层渲染 MiuixPopupHost()。设置页里「点一下弹出圆角菜单」的 OverlayListPopup
         // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
