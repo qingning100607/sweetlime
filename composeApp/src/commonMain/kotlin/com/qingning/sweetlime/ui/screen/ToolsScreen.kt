@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +35,8 @@ fun ToolsScreen(
 ) {
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .overScrollVertical(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,6 +29,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /** 收藏页（底层）：竖排的收藏条目，点条目进详情。 */
 @Composable
@@ -52,6 +55,9 @@ fun FavoriteScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                // 挂上滚动 + miuix 弹性 overscroll：内容不满一屏也能拖着弹。
+                .verticalScroll(rememberScrollState())
+                .overScrollVertical()
                 .padding(top = outerPadding.calculateTopPadding()),
         ) {
             SmallTitle(text = tr("收藏"))
@@ -72,7 +78,9 @@ fun FavoriteScreen(
     }
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize().overScrollVertical()
+            // miuix 的弹性 overscroll：滑到底还能继续拖，松手弹回。
+            .overScrollVertical(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),

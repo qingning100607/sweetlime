@@ -68,8 +68,8 @@ fun GlassTopBarScaffold(
                 .fillMaxSize()
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
-                .pageBackdropLayer()
-                .hazeSource(state = hazeState),
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer(),
         ) {
             content(topBarHeight)
         }

@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
@@ -82,8 +83,8 @@ fun ToolScreen(
                 .fillMaxSize()
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
-                .pageBackdropLayer()
-                .hazeSource(state = hazeState),
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer(),
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(topBarHeight))
@@ -168,7 +169,9 @@ fun ToolScreen(
 private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     val categories = SYMBOL_CATEGORIES
     androidx.compose.foundation.lazy.LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .overScrollVertical(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 48.dp),
     ) {
         item(key = "symbol_hint") {
@@ -224,7 +227,7 @@ internal fun ConverterToolScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()).overScrollVertical()
             .padding(horizontal = 12.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))

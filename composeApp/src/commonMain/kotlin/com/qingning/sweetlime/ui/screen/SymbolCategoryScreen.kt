@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -64,8 +65,8 @@ fun SymbolCategoryScreen(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .pageBackdropLayer()
-                    .hazeSource(state = hazeState),
+                    .hazeSource(state = hazeState)
+                    .pageBackdropLayer(),
             ) {}
             Box(
                 modifier = Modifier
@@ -108,7 +109,7 @@ fun SymbolCategoryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()).overScrollVertical()
                 .padding(horizontal = 12.dp),
         ) {
             Spacer(modifier = Modifier.height(8.dp))

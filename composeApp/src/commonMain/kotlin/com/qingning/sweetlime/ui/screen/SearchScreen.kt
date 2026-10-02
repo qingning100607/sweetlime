@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.PaddingValues
@@ -59,7 +60,8 @@ fun SearchScreen(
 
     GlassTopBarScaffold(title = tr("搜索"), onBack = onBack, modifier = modifier) { topPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+            .overScrollVertical().fillMaxSize(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "search_field") {

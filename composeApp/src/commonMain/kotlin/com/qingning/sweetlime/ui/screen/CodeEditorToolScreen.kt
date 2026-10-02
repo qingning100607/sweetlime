@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.layout.Column
@@ -249,7 +250,7 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()).overScrollVertical()
             .padding(horizontal = 12.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))

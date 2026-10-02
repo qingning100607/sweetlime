@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +32,8 @@ fun DocScreen(
 ) {
     GlassTopBarScaffold(title = title, onBack = onBack, modifier = modifier) { topPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+            .overScrollVertical().fillMaxSize(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "doc_body") {

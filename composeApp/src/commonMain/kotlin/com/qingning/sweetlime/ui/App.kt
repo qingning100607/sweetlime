@@ -805,11 +805,9 @@ private class CardNavTransition(
                 val s = enteringScale + (1f - enteringScale) * (1f - p)
                 scaleX = s
                 scaleY = s
-                // 正在进/出的这一页也给一点模糊（最大只有被盖住那层的一半）：
-                // 推进来的时候是「对焦」过程（由糊变清），返回拖出去的时候是「拉焦」离开，
-                // 也就是系统返回手势那种「两页同时有景深」的味道。
-                val r = maxBlurPx * 0.5f * p
-                renderEffect = if (r > 0.5f) BlurEffect(r, r, TileMode.Clamp) else null
+                // 这一页（正在进/出的那一页）**不糊**：按需求，过渡时只糊「二级界面以外的
+                // 界面」—— 二级页自己的卡片要一直是清晰的，缩放和景深交给被盖住的那层。
+                renderEffect = null
             } else {
                 // 被盖住的那一层：缩小 + 变糊。
                 val p = d.coerceIn(0f, 1f)

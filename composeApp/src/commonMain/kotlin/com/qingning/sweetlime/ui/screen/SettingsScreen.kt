@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
@@ -129,9 +130,9 @@ fun SettingsScreen(
                 // 内容层既是要展示的东西，也当顶部实时模糊的采样源。
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
-                .pageBackdropLayer()
                 .hazeSource(state = hazeState)
-                .verticalScroll(rememberScrollState()),
+                .pageBackdropLayer()
+                .verticalScroll(rememberScrollState()).overScrollVertical(),
         ) {
             // 空出顶栏高度，内容从玻璃下面开始；滚动时它从玻璃下面穿过去。
             Spacer(modifier = Modifier.height(topBarHeight))

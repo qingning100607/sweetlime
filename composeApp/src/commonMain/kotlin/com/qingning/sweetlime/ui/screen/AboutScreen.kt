@@ -61,6 +61,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.Notes
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 /**
  * 「关于」页（二级页）。
@@ -130,7 +131,8 @@ fun AboutScreen(
             modifier = Modifier
                 .fillMaxSize()
                 // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
-                .hazeSource(state = hazeState),
+                .hazeSource(state = hazeState)
+                .overScrollVertical(),
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {
             item(key = "about_hero") {
