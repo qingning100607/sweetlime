@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui.screen
 
-import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
