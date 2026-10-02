@@ -86,37 +86,15 @@ private class RubberBandConnection(
     }
 }
 
-/** 竖向滚动。和主页一样：外层 `overScrollVertical()`，滚动交给列表自己。 */
+/** 竖向滚动 —— 与主页转换列表**完全一致**：只挂外层 overScrollVertical，其余交给 miuix。 */
 @Composable
 fun Modifier.bounceVerticalScroll(
     state: ScrollState = rememberScrollState(),
-): Modifier {
-    val base = this.overScrollVertical()
-    // 有滚动范围：完全交给 miuix（和主页一模一样）。
-    if (state.maxValue > 0) return base.verticalScroll(state)
+): Modifier = this
+    .overScrollVertical()
+    .verticalScroll(state)
 
-    // 不满一屏：miuix 不管底部那侧，这里补一份跟手的橡皮筋。
-    val band = remember { RubberBand() }
-    val connection = remember(band) { RubberBandConnection(band) }
-    val density = LocalDensity.current
-    band.limitPx = with(density) { 420.dp.toPx() }
-    return base
-        .nestedScroll(connection)
-        .graphicsLayer { translationY = band.offset }
-        .verticalScroll(state)
-}
-
-/** LazyColumn 用：逻辑同上（没得滚时补底部那侧）。 */
+/** LazyColumn 用：与主页转换列表完全一致，只挂外层 overScrollVertical。 */
 @Composable
-fun Modifier.bounceListScroll(state: LazyListState = rememberLazyListState()): Modifier {
-    val base = this.overScrollVertical()
-    if (state.canScrollForward || state.canScrollBackward) return base
-
-    val band = remember { RubberBand() }
-    val connection = remember(band) { RubberBandConnection(band) }
-    val density = LocalDensity.current
-    band.limitPx = with(density) { 420.dp.toPx() }
-    return base
-        .nestedScroll(connection)
-        .graphicsLayer { translationY = band.offset }
-}
+fun Modifier.bounceListScroll(state: LazyListState = rememberLazyListState()): Modifier =
+    this.overScrollVertical()
