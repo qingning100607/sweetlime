@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -87,15 +88,14 @@ fun GroupScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .hazeSource(state = hazeState)
-            .pageBackdropLayer()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
         // 内容层：Haze 的采样源。顶部空出顶栏高度，滚动时卡片从顶栏下面穿过去并被实时糊。
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical(),
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer(),
         ) {
         if (items.isEmpty()) {
             Card(
@@ -118,8 +118,8 @@ fun GroupScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .fillMaxSize()
-                .overScrollVertical(),
+            .fillMaxSize()
+            .overScrollVertical(),
             // 顶部让出顶栏高度 —— 写在 contentPadding 里（不是外层占位），
             // 这样滚动时条目能滑到顶栏**下面**被实时糊掉。
             contentPadding = PaddingValues(top = topBarHeight, bottom = 48.dp),

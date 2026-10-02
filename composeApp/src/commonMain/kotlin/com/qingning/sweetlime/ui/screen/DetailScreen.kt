@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -99,8 +100,6 @@ fun DetailScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .hazeSource(state = hazeState)
-            .pageBackdropLayer()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
         // 内容层 = Haze 的采样源。整页铺满，滚动时卡片从顶栏**下面穿过去**并被实时糊掉
@@ -108,7 +107,9 @@ fun DetailScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical(),
+                .overScrollVertical()
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer(),
                 
                 
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),

@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import dev.chrisbanes.haze.HazeProgressive
@@ -48,7 +49,6 @@ import com.qingning.sweetlime.ui.components.TiltPressCard
 import com.qingning.sweetlime.ui.components.glassBar
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
-import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
@@ -124,8 +124,6 @@ fun AboutScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .hazeSource(state = hazeState)
-            .pageBackdropLayer()
             .background(surface)
             // 流光跟着滚动淡出：滑过顶部的青柠区之后整页就是纯 surface，
             // 也就是上游 lyricon 那句 `BgEffectBackground(alpha = { 1f - scrollProgress })`。
@@ -134,9 +132,11 @@ fun AboutScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
+                .bounceListScroll()
                 .fillMaxSize()
-                .overScrollVertical(),
                 // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
+                .hazeSource(state = hazeState)
+                .bounceListScroll(),
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {
             item(key = "about_hero") {

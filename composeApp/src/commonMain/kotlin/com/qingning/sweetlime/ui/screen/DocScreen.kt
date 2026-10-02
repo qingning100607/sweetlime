@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.bounceListScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import androidx.compose.foundation.layout.Column
@@ -36,8 +37,8 @@ fun DocScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .fillMaxSize()
-                .overScrollVertical(),
+            .fillMaxSize()
+            .overScrollVertical(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "doc_body") {
