@@ -82,7 +82,6 @@ fun GroupScreen(
         }
     }
     val hazeState = remember { HazeState() }
-    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -96,7 +95,6 @@ fun GroupScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
         ) {
         if (items.isEmpty()) {

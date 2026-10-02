@@ -78,7 +78,6 @@ fun ToolScreen(
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     val hazeState = remember { HazeState() }
-    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     Box(
         modifier = modifier
@@ -92,7 +91,6 @@ fun ToolScreen(
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
                 .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
         ) {
             // 顶栏是浮层：把它的高度往下传，各工具页自己把那点高度写进「滚动内容」里。

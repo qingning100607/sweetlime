@@ -94,7 +94,6 @@ fun DetailScreen(
     val favorite = isFavorite(text)
 
     val hazeState = remember { HazeState() }
-    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -110,7 +109,6 @@ fun DetailScreen(
                 .fillMaxSize()
                 .overScrollVertical()
                 .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
                 
                 

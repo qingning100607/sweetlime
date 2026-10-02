@@ -106,7 +106,6 @@ fun AboutScreen(
     val flowing = LocalFlowingBackground.current
     // 顶栏的实时模糊（Haze）：和主页/其他二级页同一套参数。
     val hazeState = remember { HazeState() }
-    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
 
     val scrollProgress by remember {
@@ -137,7 +136,6 @@ fun AboutScreen(
                 .fillMaxSize()
                 // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
                 .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .bounceListScroll(),
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {

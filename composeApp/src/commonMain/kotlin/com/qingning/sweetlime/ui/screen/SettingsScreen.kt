@@ -121,7 +121,6 @@ fun SettingsScreen(
     val density = LocalDensity.current
     // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect，滚动时逐帧真高斯。
     val hazeState = remember { HazeState() }
-    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
 
@@ -138,7 +137,6 @@ fun SettingsScreen(
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
                 .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
                 
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),

@@ -64,7 +64,6 @@ fun SymbolCategoryScreen(
     val safeIndex = index.coerceIn(0, SYMBOL_CATEGORIES.lastIndex)
     val category = SYMBOL_CATEGORIES[safeIndex]
     val hazeState = remember { HazeState() }
-    val scrollBehavior = MiuixScrollBehavior()
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -80,7 +79,6 @@ fun SymbolCategoryScreen(
                 .fillMaxSize()
                 .overScrollVertical()
                 .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pageBackdropLayer(),
                 
                 
