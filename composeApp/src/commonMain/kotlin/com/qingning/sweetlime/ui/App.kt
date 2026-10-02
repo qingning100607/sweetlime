@@ -17,6 +17,9 @@ import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.runtime.SideEffect
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -550,6 +553,22 @@ private fun RootScaffold(
     // HyperOS 的大标题：往上滑时大标题收起、往下滑时再展开。
     // 它靠嵌套滚动驱动，所以下面的内容层要挂上它的 nestedScrollConnection。
     val scrollBehavior = MiuixScrollBehavior()
+
+    // 三个 Tab 的横向分页：手指左右滑换页；点底栏则是带动画滚过去 ——
+    // 这就是 KernelSU 的切换方式（它的 miuix 里也是 Pager + animateToPage 那一套）。
+    val tabPagerState = rememberPagerState(pageCount = { 3 })
+    // 点底栏 → 带动画滚到那一页（衔接动画就是这个滚动本身，不是淡入淡出）。
+    LaunchedEffect(selectedTab) {
+        if (tabPagerState.currentPage != selectedTab) {
+            tabPagerState.animateScrollToPage(selectedTab)
+        }
+    }
+    // 手滑翻页 → 回写选中态，底栏跟着亮起来。
+    LaunchedEffect(tabPagerState) {
+        snapshotFlow { tabPagerState.currentPage }.collect { page ->
+            if (page != selectedTab) onTabSelected(page)
+        }
+    }
     val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
@@ -593,20 +612,11 @@ private fun RootScaffold(
                     bottom = bottomBarHeight + 24.dp,
                 )
             }
-            AnimatedContent(
-                targetState = selectedTab,
-                transitionSpec = {
-                    // 往右切（0→1→2）：新页从右侧滑进来、旧页往左滑走；往左切就反过来。
-                    val forward = targetState > initialState
-                    val w = 3
-                    (slideInHorizontally(animationSpec = tween(320)) { width -> if (forward) width / w else -width / w } +
-                        fadeIn(animationSpec = tween(220))) togetherWith
-                        (slideOutHorizontally(animationSpec = tween(320)) { width -> if (forward) -width / w else width / w } +
-                            fadeOut(animationSpec = tween(200)))
-                },
-                label = "tab",
-            ) { tab ->
-                when (tab) {
+            HorizontalPager(
+                state = tabPagerState,
+                modifier = Modifier.fillMaxSize(),
+            ) { page ->
+                when (page) {
                 0 -> HomeScreen(
                     input = input,
                     onInputChange = onInputChange,
