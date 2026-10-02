@@ -63,6 +63,10 @@ fun SymbolCategoryScreen(
 ) {
     val safeIndex = index.coerceIn(0, SYMBOL_CATEGORIES.lastIndex)
     val category = SYMBOL_CATEGORIES[safeIndex]
+    // 关键：符号**按行切片**，每一行是一个独立的 lazy item。
+    // 以前是「一个 item 里 forEach 全部符号」——等于一进页面就把整页几百个 chip 全组合出来，
+    // 内容多的分类（特殊符号那种）必掉帧，LazyColumn 也白用了。
+    val symbolRows = remember(category.symbols) { category.symbols.chunked(6) }
     val hazeState = remember { HazeState() }
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
@@ -90,28 +94,30 @@ fun SymbolCategoryScreen(
         ) {
             item {
                 Column {
-
-            // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。
-            Spacer(modifier = Modifier.height(topBarHeight))
-        Text(
-            text = trf("共 {} 个符号 · 点一下即复制", category.symbols.size),
-            style = MiuixTheme.textStyles.footnote1,
-            color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-        )
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                category.symbols.forEach { symbol ->
-                    SymbolChip(symbol = symbol) { onCopyText(symbol, category.title) }
+                    // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。
+                    Spacer(modifier = Modifier.height(topBarHeight))
+                    Text(
+                        text = trf("共 {} 个符号 · 点一下即复制", category.symbols.size),
+                        style = MiuixTheme.textStyles.footnote1,
+                        color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(48.dp))
-        
+            // 每一行单独成一个 item：LazyColumn 只组合可见的那几行。
+            items(count = symbolRows.size) { rowIndex ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(bottom = 8.dp),
+                ) {
+                    symbolRows[rowIndex].forEach { symbol ->
+                        SymbolChip(symbol = symbol) { onCopyText(symbol, category.title) }
+                    }
                 }
             }
+            item { Spacer(modifier = Modifier.height(48.dp)) }
         }
             }
 
