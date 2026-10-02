@@ -1,5 +1,12 @@
 package com.qingning.sweetlime.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.ui.platform.LocalHapticFeedback
 
 
@@ -586,7 +593,20 @@ private fun RootScaffold(
                     bottom = bottomBarHeight + 24.dp,
                 )
             }
-            when (selectedTab) {
+            AnimatedContent(
+                targetState = selectedTab,
+                transitionSpec = {
+                    // 往右切（0→1→2）：新页从右侧滑进来、旧页往左滑走；往左切就反过来。
+                    val forward = targetState > initialState
+                    val w = 3
+                    (slideInHorizontally(animationSpec = tween(320)) { width -> if (forward) width / w else -width / w } +
+                        fadeIn(animationSpec = tween(220))) togetherWith
+                        (slideOutHorizontally(animationSpec = tween(320)) { width -> if (forward) -width / w else width / w } +
+                            fadeOut(animationSpec = tween(200)))
+                },
+                label = "tab",
+            ) { tab ->
+                when (tab) {
                 0 -> HomeScreen(
                     input = input,
                     onInputChange = onInputChange,
@@ -609,6 +629,7 @@ private fun RootScaffold(
                     onCopy = onCopy,
                     onOpen = onOpenItem,
                 )
+            }
             }
         }
 
@@ -710,25 +731,27 @@ private fun RootScaffold(
                     }
                 }
             } else {
-                // KernelSU 默认形态：同一套液态玻璃组件，但贴底、几乎整宽，不浮起也不留白。
-                // （组件自己带玻璃、随重力转的高光、按下放大，以及那枚能拖动的指示器。）
-                FloatingBottomBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = 8.dp,
-                            end = 8.dp,
-                            // 只让开系统手势条，不再像悬浮形态那样额外抬 12dp。
-                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
-                        ),
-                    selectedIndex = selectedTab,
-                    onSelected = onTabSelected,
-                    backdrop = backdrop,
-                    tabsCount = 3,
-                ) { activateTab ->
-                    LiquidBarItem(0, selectedTab, activateTab, MiuixIcons.ConvertFile, tr("转换"))
-                    LiquidBarItem(1, selectedTab, activateTab, MiuixIcons.Tune, tr("工具"))
-                    LiquidBarItem(2, selectedTab, activateTab, MiuixIcons.Favorites, tr("收藏"))
+                // KernelSU 的默认形态 = miuix 标准 NavigationBar：贴底、主题底色，一条实心栏。
+                // 不铺玻璃、不做模糊、不浮起（那套液态玻璃只在「悬浮底栏」打开时才用）。
+                NavigationBar {
+                    NavigationBarItem(
+                        selected = selectedTab == 0,
+                        onClick = { onTabSelected(0) },
+                        icon = MiuixIcons.ConvertFile,
+                        label = tr("转换"),
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick = { onTabSelected(1) },
+                        icon = MiuixIcons.Tune,
+                        label = tr("工具"),
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 2,
+                        onClick = { onTabSelected(2) },
+                        icon = MiuixIcons.Favorites,
+                        label = tr("收藏"),
+                    )
                 }
             }
         }
