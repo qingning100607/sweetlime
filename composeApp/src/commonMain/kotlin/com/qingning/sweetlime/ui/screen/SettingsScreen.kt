@@ -128,13 +128,18 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
     ) {
-        LazyColumn(
+        // 采样层单独一层、不参与滚动：和详情页/工具页同一套结构（解决下拉露灰条）。
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical()
                 .hazeSource(state = hazeState)
-                .pageBackdropLayer()
-                .hyperScrollHaptic(),
+                .pageBackdropLayer(),
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overScrollVertical()
+                    .hyperScrollHaptic(),
                 // 内容层既是要展示的东西，也当顶部实时模糊的采样源。
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
@@ -440,6 +445,7 @@ fun SettingsScreen(
         
                 }
             }
+        }
         }
 
         // 顶部玻璃栏：内容上滑时从它下面穿过去并被模糊。

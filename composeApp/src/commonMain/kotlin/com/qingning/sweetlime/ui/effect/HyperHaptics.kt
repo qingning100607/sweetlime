@@ -133,9 +133,8 @@ fun EdgeScrollHaptic(
     val view = LocalView.current
     val context = LocalContext.current
     val rich = remember(context) { HyperHaptics.hasRichHaptics(context) }
-    if (!enabled && !rich) return
+    if (!enabled) return
     LaunchedEffect(overScrollState, rich, view) {
-        if (!rich) return@LaunchedEffect
         var last = 0L
         snapshotFlow { overScrollState.isOverScrollActive }.collect { active ->
             if (!active) return@collect
@@ -169,7 +168,7 @@ fun Modifier.hyperScrollHaptic(
     val view = LocalView.current
     val context = LocalContext.current
     val rich = remember(context) { HyperHaptics.hasRichHaptics(context) }
-    if (!enabled || !rich) return this
+    if (!enabled) return this
     val stepPx = with(LocalDensity.current) { step.toPx() }
     val connection = remember(view, stepPx) { SlideHapticConnection(view, stepPx) }
     return this.nestedScroll(connection)
@@ -198,19 +197,17 @@ private class SlideHapticConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        if (source == NestedScrollSource.UserInput) {
-            // ① 滑动过程：每滑过 step 震一次
-            if (consumed.y != 0f) {
-                accumulated += abs(consumed.y)
-                if (accumulated >= stepPx) {
-                    accumulated = 0f
-                    tick(HapticFeedbackConstants.CLOCK_TICK)
-                }
-            }
-            // ② 顶到边界还在继续拉：再响一次
-            if (available.y != 0f) {
+        // 拖动过程：每滑过 step 轻震一次（对应 HyperLight 的 haptic_feedback_for_slide）
+        if (consumed.y != 0f) {
+            accumulated += abs(consumed.y)
+            if (accumulated >= stepPx) {
+                accumulated = 0f
                 tick(HapticFeedbackConstants.CLOCK_TICK)
             }
+        }
+        // 顶到边界还在继续拉：再响一次（对应 rb0.java）
+        if (available.y != 0f) {
+            tick(HapticFeedbackConstants.CLOCK_TICK)
         }
         return Offset.Zero
     }
