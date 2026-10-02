@@ -17,6 +17,10 @@ import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.runtime.SideEffect
+import androidx.compose.foundation.pager.PagerDefaults
+import top.yukonga.miuix.kmp.utils.PagerGestureNestedScrollConnection
+import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
+import top.yukonga.miuix.kmp.utils.springAnimateToPage
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.snapshotFlow
@@ -557,15 +561,16 @@ private fun RootScaffold(
     // 三个 Tab 的横向分页：手指左右滑换页；点底栏则是带动画滚过去 ——
     // 这就是 KernelSU 的切换方式（它的 miuix 里也是 Pager + animateToPage 那一套）。
     val tabPagerState = rememberPagerState(pageCount = { 3 })
-    // 点底栏 → 带动画滚到那一页（衔接动画就是这个滚动本身，不是淡入淡出）。
+    // 点底栏 → 走 KernelSU 那条路：miuix 的 springAnimateToPage（弹簧曲线，不�ишь是默认滚动曲线）。
+    // （LaunchedEffect 换 key 会自动取消上一次动画，等价 KernelSU 的 navJob?.cancel()。）
     LaunchedEffect(selectedTab) {
-        if (tabPagerState.currentPage != selectedTab) {
-            tabPagerState.animateScrollToPage(selectedTab)
+        if (tabPagerState.settledPage != selectedTab) {
+            tabPagerState.springAnimateToPage(selectedTab)
         }
     }
-    // 手滑翻页 → 回写选中态，底栏跟着亮起来。
+    // 手滑翻页 → 停下来之后回写选中态（等价 KernelSU 的 syncPage）。
     LaunchedEffect(tabPagerState) {
-        snapshotFlow { tabPagerState.currentPage }.collect { page ->
+        snapshotFlow { tabPagerState.settledPage }.collect { page ->
             if (page != selectedTab) onTabSelected(page)
         }
     }
@@ -615,6 +620,14 @@ private fun RootScaffold(
             HorizontalPager(
                 state = tabPagerState,
                 modifier = Modifier.fillMaxSize(),
+                // ↓ 下面这几项全是 KernelSU MainActivity 里那一套，生硬就生硬在这:
+                beyondViewportPageCount = 1,
+                overscrollEffect = null,
+                pageNestedScrollConnection = PagerGestureNestedScrollConnection,
+                flingBehavior = PagerDefaults.flingBehavior(
+                    state = tabPagerState,
+                    snapAnimationSpec = PagerNavigationSpringSpec,
+                ),
             ) { page ->
                 when (page) {
                 0 -> HomeScreen(
