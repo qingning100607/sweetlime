@@ -95,6 +95,11 @@ fun Modifier.pageBackdropLayer(): Modifier {
     return if (flowing) {
         this.flowingPageLayer()
     } else {
-        this.background(MiuixTheme.colorScheme.background)
+        // 关键：这里必须用 surface —— 也就是**页面根节点铺的那层底色**
+        // （各页都是 `background(surface).flowingPageLayer()`）。
+        // 之前写成 colorScheme.background，和 surface 不是一个色，
+        // 等于在采样层里又盖了一层「比卡片还白」的底，卡片就白卡白底糊成一片、
+        // 圆角看不见了。现在采样层铺的和页面底一模一样，卡片 R 角就回来了。
+        this.background(MiuixTheme.colorScheme.surface)
     }
 }
