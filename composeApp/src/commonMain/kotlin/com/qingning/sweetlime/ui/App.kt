@@ -710,39 +710,25 @@ private fun RootScaffold(
                     }
                 }
             } else {
-                Box(
+                // KernelSU 默认形态：同一套液态玻璃组件，但贴底、几乎整宽，不浮起也不留白。
+                // （组件自己带玻璃、随重力转的高光、按下放大，以及那枚能拖动的指示器。）
+                FloatingBottomBar(
                     modifier = Modifier
-                        .matchParentSize()
-                        // 底栏玻璃和顶栏走同一条 Haze 逐帧高斯（采样源是内容层，所以是实时模糊）；
-                        // 底色只留一点点，就是一块「低透明的磨砂玻璃」。
-                        .hazeEffect(
-                            state = hazeState,
-                            style = HazeStyle(
-                                blurRadius = 28.dp,
-                                noiseFactor = 0.15f,
-                                tint = HazeTint(glassTint.copy(alpha = if (flowing) 0.12f else 0.22f)),
-                            ),
-                        ) ,
-                )
-                NavigationBar(color = Color.Transparent) {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { onTabSelected(0) },
-                        icon = MiuixIcons.ConvertFile,
-                        label = tr("转换"),
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { onTabSelected(1) },
-                        icon = MiuixIcons.Tune,
-                        label = tr("工具"),
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { onTabSelected(2) },
-                        icon = MiuixIcons.Favorites,
-                        label = tr("收藏"),
-                    )
+                        .fillMaxWidth()
+                        .padding(
+                            start = 8.dp,
+                            end = 8.dp,
+                            // 只让开系统手势条，不再像悬浮形态那样额外抬 12dp。
+                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                        ),
+                    selectedIndex = selectedTab,
+                    onSelected = onTabSelected,
+                    backdrop = backdrop,
+                    tabsCount = 3,
+                ) { activateTab ->
+                    LiquidBarItem(0, selectedTab, activateTab, MiuixIcons.ConvertFile, tr("转换"))
+                    LiquidBarItem(1, selectedTab, activateTab, MiuixIcons.Tune, tr("工具"))
+                    LiquidBarItem(2, selectedTab, activateTab, MiuixIcons.Favorites, tr("收藏"))
                 }
             }
         }
