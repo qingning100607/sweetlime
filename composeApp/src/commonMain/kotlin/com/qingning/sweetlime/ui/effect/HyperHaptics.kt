@@ -1,4 +1,15 @@
 package com.qingning.sweetlime.ui.effect
+import android.os.SystemClock
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 
 import android.content.Context
 import android.os.Vibrator
@@ -136,5 +147,76 @@ fun EdgeScrollHaptic(
                 view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
             }
         }
+    }
+}
+
+/**
+ * 滑动时的震动反馈 —— 对应 HyperLight 的 `haptic_feedback_for_slide`：
+ * 它是在「滑动进度」回调里调 miuix 的 `performHapticFeedbackAsync(view, 0x1000000D)`
+ * （反编译里的 `ac0.java`），这里换成挂在滚动容器上：
+ *
+ * - 拖动过程中每滑过 [step] 轻震一次（对应 HyperLight 的 slide 震动）；
+ * - 顶到边界还在拉时额外响一次 CLOCK_TICK（对应 `rb0.java`）。
+ *
+ * 注意：这个 modifier 只是**读取**滚动增量，永远返回「未消费」，
+ * 所以挂在哪一段都不会影响 miuix 那套回弹。
+ */
+@Composable
+fun Modifier.hyperScrollHaptic(
+    step: Dp = 40.dp,
+    enabled: Boolean = true,
+): Modifier {
+    val view = LocalView.current
+    val context = LocalContext.current
+    val rich = remember(context) { HyperHaptics.hasRichHaptics(context) }
+    if (!enabled || !rich) return this
+    val stepPx = with(LocalDensity.current) { step.toPx() }
+    val connection = remember(view, stepPx) { SlideHapticConnection(view, stepPx) }
+    return this.nestedScroll(connection)
+}
+
+private class SlideHapticConnection(
+    private val view: View,
+    private val stepPx: Float,
+) : NestedScrollConnection {
+
+    private var accumulated = 0f
+    private var lastTickAt = 0L
+
+    private fun tick(constant: Int) {
+        val now = SystemClock.uptimeMillis()
+        if (now - lastTickAt < 70L) return
+        lastTickAt = now
+        // 和 HyperLight 一样：HyperOS 原生马达优先，拿不到再退回 Android 常量
+        if (!HyperHaptics.performMiuixAsync(view)) {
+            view.performHapticFeedback(constant)
+        }
+    }
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset {
+        if (source == NestedScrollSource.UserInput) {
+            // ① 滑动过程：每滑过 step 震一次
+            if (consumed.y != 0f) {
+                accumulated += abs(consumed.y)
+                if (accumulated >= stepPx) {
+                    accumulated = 0f
+                    tick(HapticFeedbackConstants.CLOCK_TICK)
+                }
+            }
+            // ② 顶到边界还在继续拉：再响一次
+            if (available.y != 0f) {
+                tick(HapticFeedbackConstants.CLOCK_TICK)
+            }
+        }
+        return Offset.Zero
+    }
+
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+        accumulated = 0f
+        return Velocity.Zero
     }
 }

@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
@@ -131,11 +132,12 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .overScrollVertical()
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer()
+                .hyperScrollHaptic(),
                 // 内容层既是要展示的东西，也当顶部实时模糊的采样源。
                 // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
                 // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
-                .hazeSource(state = hazeState)
-                .pageBackdropLayer(),
                 
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
         ) {

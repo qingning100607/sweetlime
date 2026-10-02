@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.qingning.sweetlime.core.i18n.tr
@@ -56,7 +57,8 @@ fun FavoriteScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical(),
+                .overScrollVertical()
+                .hyperScrollHaptic(),
             contentPadding = PaddingValues(
                 top = outerPadding.calculateTopPadding(),
                 bottom = outerPadding.calculateBottomPadding(),
@@ -87,7 +89,8 @@ fun FavoriteScreen(
         state = listState,
         modifier = Modifier
             .fillMaxSize()
-            .overScrollVertical(),
+            .overScrollVertical()
+            .hyperScrollHaptic(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),

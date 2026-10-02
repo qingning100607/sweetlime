@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -130,11 +131,11 @@ fun AboutScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .overScrollVertical()
                 .fillMaxSize()
-                // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
+                .overScrollVertical()
                 .hazeSource(state = hazeState)
-                .overScrollVertical(),
+                .hyperScrollHaptic(),
+                // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {
             item(key = "about_hero") {

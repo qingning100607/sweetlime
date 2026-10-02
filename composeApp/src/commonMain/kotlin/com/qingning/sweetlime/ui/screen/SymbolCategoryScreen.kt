@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
@@ -78,7 +79,8 @@ fun SymbolCategoryScreen(
                 .fillMaxSize()
                 .overScrollVertical()
                 .hazeSource(state = hazeState)
-                .pageBackdropLayer(),
+                .pageBackdropLayer()
+                .hyperScrollHaptic(),
                 
                 
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),

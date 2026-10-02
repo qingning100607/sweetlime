@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -37,7 +38,8 @@ fun ToolsScreen(
         state = listState,
         modifier = Modifier
             .fillMaxSize()
-            .overScrollVertical(),
+            .overScrollVertical()
+            .hyperScrollHaptic(),
         contentPadding = PaddingValues(
             top = outerPadding.calculateTopPadding(),
             bottom = outerPadding.calculateBottomPadding(),

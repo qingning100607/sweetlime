@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -36,8 +37,9 @@ fun DocScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-            .fillMaxSize()
-            .overScrollVertical(),
+                .fillMaxSize()
+                .overScrollVertical()
+                .hyperScrollHaptic(),
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "doc_body") {

@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -116,8 +117,9 @@ fun GroupScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-            .fillMaxSize()
-            .overScrollVertical(),
+                .fillMaxSize()
+                .overScrollVertical()
+                .hyperScrollHaptic(),
             // 顶部让出顶栏高度 —— 写在 contentPadding 里（不是外层占位），
             // 这样滚动时条目能滑到顶栏**下面**被实时糊掉。
             contentPadding = PaddingValues(top = topBarHeight, bottom = 48.dp),

@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.LazyColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -180,7 +181,8 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .overScrollVertical(),
+            .overScrollVertical()
+            .hyperScrollHaptic(),
         // 顶栏是浮层：顶栏高度写进 contentPadding，条目才能滑到顶栏下面被实时糊。
         contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
@@ -236,7 +238,8 @@ internal fun ConverterToolScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .overScrollVertical(),
+            .overScrollVertical()
+            .hyperScrollHaptic(),
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {
