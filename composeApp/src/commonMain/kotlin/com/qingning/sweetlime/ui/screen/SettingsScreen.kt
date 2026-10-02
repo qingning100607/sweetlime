@@ -73,6 +73,7 @@ import top.yukonga.miuix.kmp.icon.extended.Lock
 import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.icon.extended.Sidebar
 import top.yukonga.miuix.kmp.icon.extended.Theme
+import top.yukonga.miuix.kmp.icon.extended.Tune
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.preference.SwitchPreference
@@ -229,6 +230,13 @@ fun SettingsScreen(
                     checked = settings.floatingBottomBar,
                     onCheckedChange = { settings.floatingBottomBar = it },
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
+                )
+                // 震动反馈：控件点击震动 + 列表顶到边震动，全软件总开关。
+                SwitchPreference(
+                    title = tr("震动反馈"),
+                    checked = settings.hapticFeedback,
+                    onCheckedChange = { settings.hapticFeedback = it },
+                    startAction = { RowStartIcon(MiuixIcons.Tune) },
                 )
                 // 流光背景：整屏一层着色器动效。默认关，且需 Android 13+，
                 // 机型不支持时 BgEffectBackground 会自动退化成纯底色。

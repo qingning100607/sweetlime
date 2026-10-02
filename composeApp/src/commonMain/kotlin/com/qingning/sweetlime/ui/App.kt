@@ -81,6 +81,7 @@ import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
+import com.qingning.sweetlime.ui.effect.HyperHaptics
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.nav.Route
 import com.qingning.sweetlime.ui.screen.AboutScreen
@@ -146,6 +147,8 @@ import top.yukonga.miuix.kmp.utils.OverScrollState
 fun SweetLimeApp() {
     val store = remember { createKeyValueStore() }
     val settings = remember(store) { SweetLimeSettings(store) }
+    // 震动总开关：读一次设置就写进 HyperHaptics，设置页一改立刻生效。
+    HyperHaptics.enabled = settings.hapticFeedback
     val favorites = remember(store) { FavoritesStore(store) }
     val recent = remember(store) { RecentStore(store) }
     // 界面语言：在组合期订阅设置里的 code，再用 SideEffect 落到全局 AppLocale 上。
@@ -710,16 +713,22 @@ private fun RootScaffold(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        // 底栏要的是「看得见的一层磨砂玻璃」：底色只留一层很淡的白，
-                        // 模糊半径给大一点，让底下的流光/内容实时透上来。
-                        // （原来 0.62 的底色太实，看着像一条实心白条，不像玻璃。）
-                        .glassBar(
-                            backdrop = backdrop,
-                            blurPx = bottomBlurPx,
-                            tint = glassTint,
-                            fadeFromTop = false,
-                            tintAlpha = 0.42f,
-                        ),
+                        // 底栏玻璃和顶栏走同一条 Haze 逐帧高斯（采样源是内容层，所以是实时模糊）；
+                        // 底色只留一点点，就是一块「低透明的磨砂玻璃」。
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeStyle(
+                                blurRadius = 28.dp,
+                                noiseFactor = 0.15f,
+                                tint = HazeTint(glassTint.copy(alpha = if (flowing) 0.12f else 0.22f)),
+                            ),
+                        ) {
+                            // 上边完全透明、往下逐渐变实：顶边跟内容自然衔接。
+                            progressive = HazeProgressive.verticalGradient(
+                                startIntensity = 0f,
+                                endIntensity = 1f,
+                            )
+                        },
                 )
                 NavigationBar(color = Color.Transparent) {
                     NavigationBarItem(

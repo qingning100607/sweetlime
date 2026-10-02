@@ -63,6 +63,9 @@ object HyperHaptics {
         }
     }
 
+    /** 设置里「震动反馈」的总开关；App 每次组合时把设置同步进来，改了立刻生效。 */
+    var enabled: Boolean = true
+
     /** 设备上有没有 miuix 的 HapticCompat（HyperOS 一般都有）。 */
     fun hasMiuixCompat(): Boolean = compatMethod != null
 
@@ -74,6 +77,7 @@ object HyperHaptics {
 
     /** HyperOS 原生那支：miuix.view.HapticCompat.performHapticFeedbackAsync(view, type)。 */
     fun performMiuixAsync(view: View, type: Int = MIUI_HAPTIC_SLIDE): Boolean {
+        if (!enabled) return false
         val m = compatMethod ?: return false
         return runCatching {
             m.invoke(null, view, type)
@@ -89,6 +93,7 @@ object HyperHaptics {
 
     /** 直接给一个 Android 震动常量。 */
     internal fun performRaw(view: View?, raw: Int): Boolean {
+        if (!enabled) return false
         if (view == null) return false
         val c = constantFor(raw)
         if (c == -1) return false
@@ -187,6 +192,7 @@ private class SlideHapticConnection(
     private var lastTickAt = 0L
 
     private fun tick(constant: Int) {
+        if (!HyperHaptics.enabled) return
         val now = SystemClock.uptimeMillis()
         if (now - lastTickAt < 70L) return
         lastTickAt = now
