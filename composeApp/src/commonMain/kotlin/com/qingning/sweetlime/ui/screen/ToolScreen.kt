@@ -1,5 +1,8 @@
 package com.qingning.sweetlime.ui.screen
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.qingning.sweetlime.ui.effect.LocalTopBarInset
+import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
@@ -86,8 +89,10 @@ fun ToolScreen(
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer(),
         ) {
+            // 顶栏是浮层：把它的高度往下传，各工具页自己把那点高度写进「滚动内容」里。
+            // （写在外层占位里的话，内容永远滑不到顶栏下面 → 顶栏就没有东西可糊。）
+            CompositionLocalProvider(LocalTopBarInset provides topBarHeight) {
             Column(modifier = Modifier.fillMaxSize()) {
-                Spacer(modifier = Modifier.height(topBarHeight))
                 when (toolId) {
             "symbol" -> SymbolCategoryList(onOpen = onOpenSymbolCategory)
             "pinyin" -> ConverterToolScreen(
@@ -105,9 +110,9 @@ fun ToolScreen(
                 onCopyText = onCopyText,
             )
             "daxie" -> DaxieToolScreen(onCopyText = onCopyText)
-            "base64" -> Base64ToolScreen(onCopyText = onCopyText)
-            "url" -> UrlToolScreen(onCopyText = onCopyText)
-            "radix" -> RadixToolScreen(onCopyText = onCopyText)
+            "base64" -> ScrollableToolPage { Base64ToolScreen(onCopyText = onCopyText) }
+            "url" -> ScrollableToolPage { UrlToolScreen(onCopyText = onCopyText) }
+            "radix" -> ScrollableToolPage { RadixToolScreen(onCopyText = onCopyText) }
             "color" -> ColorToolScreen(onCopyText = onCopyText)
             "currency" -> CurrencyToolScreen(onCopyText = onCopyText)
             "bmi" -> BmiToolScreen(onCopyText = onCopyText)
@@ -117,6 +122,7 @@ fun ToolScreen(
             // 连顶栏都没有，用户只能靠系统返回键退出。
             else -> UnknownTool()
                 }
+            }
             }
         }
 
@@ -165,14 +171,29 @@ fun ToolScreen(
 /* -------------------------------------------------------------------------- */
 /* 特殊符号：分类目录（竖向）                                                    */
 /* -------------------------------------------------------------------------- */
+/** 给「自己没有滚动容器」的工具页套一层：能滚 + 弹性回弹 + 让出顶栏高度。 */
+@Composable
+private fun ScrollableToolPage(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()).overScrollVertical(),
+    ) {
+        TopBarInsetSpacer()
+        content()
+    }
+}
+
 @Composable
 private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     val categories = SYMBOL_CATEGORIES
+    val topInset = LocalTopBarInset.current
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .overScrollVertical(),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 48.dp),
+        // 顶栏是浮层：顶栏高度写进 contentPadding，条目才能滑到顶栏下面被实时糊。
+        contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
         item(key = "symbol_hint") {
             Text(
@@ -230,6 +251,8 @@ internal fun ConverterToolScreen(
             .verticalScroll(rememberScrollState()).overScrollVertical()
             .padding(horizontal = 12.dp),
     ) {
+        // 顶栏是浮层：这点高度写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
+        TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = input,

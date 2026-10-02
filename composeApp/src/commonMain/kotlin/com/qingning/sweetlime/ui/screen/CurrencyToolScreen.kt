@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.Box
@@ -75,6 +76,8 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             .verticalScroll(rememberScrollState()).overScrollVertical()
             .padding(horizontal = 12.dp),
     ) {
+        // 顶栏是浮层：这点高度必须写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
+        TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = amountText,
