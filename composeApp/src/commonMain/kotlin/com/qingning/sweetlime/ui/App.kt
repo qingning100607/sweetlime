@@ -557,7 +557,11 @@ private fun RootScaffold(
                         Modifier.flowingPageLayer()
                     } else {
                         // 不能在 lambda 里读主题（drawBehind 不是 @Composable 作用域），先取出来。
-                        val plainBg = MiuixTheme.colorScheme.background
+                        // 这里必须是 surface（#F7F7F7），**不能**用 colorScheme.background
+                        // （那是纯白 #FFFFFF）：这三页的卡片/列表容器本身就是白卡，铺白底
+                        // 会让卡片、列表的边缘和背景糊成一片白 —— 主页/工具/收藏「边缘混成白色」
+                        // 就是这一句造成的。全软件其它页铺的都是 surface，这里跟着统一。
+                        val plainBg = MiuixTheme.colorScheme.surface
                         Modifier.drawBehind { drawRect(plainBg) }
                     },
                 ),
