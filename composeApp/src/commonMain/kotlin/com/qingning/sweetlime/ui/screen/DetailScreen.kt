@@ -103,12 +103,17 @@ fun DetailScreen(
     ) {
         // 内容层 = Haze 的采样源。整页铺满，滚动时卡片从顶栏**下面穿过去**并被实时糊掉
         // —— 这就是主页顶栏那种模糊。以前这里只铺了一层底，没东西可糊，所以看着没模糊。
+        // 采样层单独一层、不参与滚动：和工具页（Base64 那套）结构完全一致。
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .hazeSource(state = hazeState)
+                .pageBackdropLayer(),
+        ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical()
-                .hazeSource(state = hazeState)
-                .pageBackdropLayer(),
+                .overScrollVertical(),
                 
                 
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
@@ -223,8 +228,9 @@ SmallTitle(text = tr("原文"))
                 }
             }
         }
+        }
 
-        // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。卡片从它下面穿过去时逐帧被糊掉。
+        // 顶栏浮层：实时模糊（Haze）+标题 +返回。卡片从它下面穿过去时逐帧被糊掉。
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
