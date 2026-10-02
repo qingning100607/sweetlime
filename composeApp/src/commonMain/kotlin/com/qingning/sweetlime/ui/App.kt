@@ -441,6 +441,8 @@ fun SweetLimeApp() {
                         toolId = route.id,
                         onBack = { goBack() },
                         onCopyText = ::copyRaw,
+                        // 工具页里需要一句提示（比如「已保存到下载」）时弹 Snackbar。
+                        onMessage = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
                         onOpenSymbolCategory = { push(Route.Symbols(it)) },
                     )
                 }

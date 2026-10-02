@@ -173,6 +173,23 @@ object ResourceSniffer {
         return out.values.toList()
     }
 
+    /**
+     * 从地址里猜一个保存用的文件名：取最后一段；最后一段是空的（以 / 结尾）
+     * 就退回主机名；都拿不到就给个兜底名。
+     *
+     * 真正的「去掉非法字符 / 重名加序号」由各平台的下载实现负责。
+     */
+    fun suggestFileName(url: String): String {
+        val path = url.substringBefore('#').substringBefore('?').trimEnd('/')
+        val last = path.substringAfterLast('/')
+        if (last.isNotEmpty()) {
+            // 有些地址最后一段自带查询串残留（比如 img.png%3Fv=2），清一下常见的编码
+            return last.replace("%3F", "").replace("%3f", "")
+        }
+        val host = url.substringAfter("://", "").substringBefore('/')
+        return host.ifEmpty { "resource" }
+    }
+
     /** 按扩展名猜类型。 */
     fun classify(url: String): Kind {
         val path = url.substringBefore('#').substringBefore('?')

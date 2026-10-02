@@ -119,4 +119,14 @@ class ResourceSnifferTest {
         val many = (1..20).joinToString("") { "<img src=\"i$it.png\">" }
         assertEquals(3, ResourceSniffer.sniffHtml(many, base, limit = 3).size)
     }
+
+    @Test
+    fun suggestsSaveFileName() {
+        assertEquals("logo.png", ResourceSniffer.suggestFileName("https://a.com/img/logo.png"))
+        assertEquals("logo.png", ResourceSniffer.suggestFileName("https://a.com/img/logo.png?v=2"))
+        assertEquals("a.mp4", ResourceSniffer.suggestFileName("https://cdn.a.com/v/a.mp4#t=1"))
+        // 以 / 结尾（目录式地址）就取最后一段当名字
+        assertEquals("img", ResourceSniffer.suggestFileName("https://a.com/img/"))
+        assertEquals("a.com", ResourceSniffer.suggestFileName("https://a.com"))
+    }
 }

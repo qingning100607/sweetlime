@@ -197,6 +197,23 @@ expect suspend fun httpGetDocument(url: String): HttpResponse?
 expect suspend fun loadImageBitmap(url: String, maxPixels: Int = 1200): ImageBitmap?
 
 /**
+ * 把网络上的图片 / 视频等文件下载到系统「下载」目录下的 `SweetLime/` 里。
+ *
+ * - [fileName] 只是建议名，重名时由系统自动加 `(1)`、`(2)`；
+ * - [referer] 用来绕过图床的防盗链（不少站点校验 Referer，空着可能 403）；
+ * - [onProgress] 是 0..1 的进度，拿不到总大小时不会回调；
+ * - 成功返回**最终保存的完整路径**（能用文件管理器直接找到），失败返回 null。
+ *
+ * 实现走 MediaStore，所以 API 29+ 不需要任何存储权限。
+ */
+expect suspend fun downloadToDownloads(
+    url: String,
+    fileName: String,
+    referer: String? = null,
+    onProgress: (Float) -> Unit = {},
+): String?
+
+/**
  * 按指定编码把文本编回字节。
  *
  * 保存回原文件时必须用它，而不是默认 UTF-8 —— 否则一个 GBK 的老文件

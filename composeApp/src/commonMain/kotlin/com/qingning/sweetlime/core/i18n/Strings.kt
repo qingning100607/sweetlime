@@ -459,6 +459,10 @@ internal val EN: Map<String, String> = mapOf(
     "复制链接" to "Copy link",
     "关闭" to "Close",
     "点击查看大图" to "Tap to view larger",
+    "下载" to "Download",
+    "下载中…" to "Downloading…",
+    "已保存到 {}" to "Saved to {}",
+    "下载失败，检查网络或换个地址试试。" to "Download failed. Check your network or try another link.",
 )
 
 internal val TW: Map<String, String> = mapOf(
@@ -911,6 +915,10 @@ internal val TW: Map<String, String> = mapOf(
     "复制链接" to "複製連結",
     "关闭" to "關閉",
     "点击查看大图" to "點擊檢視大圖",
+    "下载" to "下載",
+    "下载中…" to "下載中…",
+    "已保存到 {}" to "已儲存到 {}",
+    "下载失败，检查网络或换个地址试试。" to "下載失敗，檢查網路或換個位址試試。",
 )
 
 private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {

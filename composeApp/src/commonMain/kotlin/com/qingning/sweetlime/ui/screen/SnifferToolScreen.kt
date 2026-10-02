@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.core.downloadToDownloads
 import com.qingning.sweetlime.core.httpGetDocument
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
@@ -53,6 +54,7 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Copy
+import top.yukonga.miuix.kmp.icon.extended.Download
 import top.yukonga.miuix.kmp.icon.extended.Paste
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -72,7 +74,10 @@ private const val PREVIEW_PIXELS = 1600
  * 2. 再跟进页面里的 CSS，把 CSS 里 `url()` 指的图片、字体也扒出来。
  */
 @Composable
-internal fun SnifferToolScreen(onCopyText: (String, String) -> Unit) {
+internal fun SnifferToolScreen(
+    onCopyText: (String, String) -> Unit,
+    onMessage: (String) -> Unit,
+) {
     var url by rememberSaveable { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var stage by remember { mutableStateOf("") }
@@ -80,6 +85,10 @@ internal fun SnifferToolScreen(onCopyText: (String, String) -> Unit) {
     var found by remember { mutableStateOf<List<ResourceSniffer.Resource>>(emptyList()) }
     var scannedCss by remember { mutableStateOf(0) }
     var preview by remember { mutableStateOf<ResourceSniffer.Resource?>(null) }
+    // 正在下载的地址（同一时刻同一个地址不允许重复点）
+    var downloading by remember { mutableStateOf<Set<String>>(emptySet()) }
+    // 嗅探出来的页面地址：下载时当 Referer 用，能过掉不少图床的防盗链
+    var pageUrl by remember { mutableStateOf<String?>(null) }
     // 是否已经嗅探过（用于区分「还没开始」和「扫了但没东西」两种空态）
     var done by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -107,6 +116,7 @@ internal fun SnifferToolScreen(onCopyText: (String, String) -> Unit) {
                 stage = ""
                 return@launch
             }
+            pageUrl = page.finalUrl
             val collected = ResourceSniffer.sniffHtml(page.text, page.finalUrl).toMutableList()
 
             // 第二层：跟进样式表。浏览器嗅探器之所以能列出背景图、字体，就是靠这一步。
@@ -127,6 +137,28 @@ internal fun SnifferToolScreen(onCopyText: (String, String) -> Unit) {
             done = true
             stage = ""
             busy = false
+        }
+    }
+
+    // 下载：图片和视频走的是同一条路（MediaStore 写进「下载/SweetLime」）。
+    fun download(resource: ResourceSniffer.Resource) {
+        val target = resource.url
+        if (downloading.contains(target)) return
+        downloading = downloading + target
+        scope.launch {
+            val saved = downloadToDownloads(
+                url = target,
+                fileName = ResourceSniffer.suggestFileName(target),
+                referer = pageUrl,
+            )
+            downloading = downloading - target
+            onMessage(
+                if (saved != null) {
+                    trf("已保存到 {}", saved)
+                } else {
+                    tr("下载失败，检查网络或换个地址试试。")
+                },
+            )
         }
     }
 
@@ -241,8 +273,10 @@ internal fun SnifferToolScreen(onCopyText: (String, String) -> Unit) {
                             ResourceRow(
                                 resource = resource,
                                 previewable = kind == Kind.IMAGE,
-                                onCopy = { onCopyText(resource.url, fileNameOf(resource.url)) },
+                                downloading = downloading.contains(resource.url),
+                                onCopy = { onCopyText(resource.url, ResourceSniffer.suggestFileName(resource.url)) },
                                 onPreview = { preview = resource },
+                                onDownload = { download(resource) },
                             )
                         }
                     }
@@ -309,13 +343,19 @@ internal fun SnifferToolScreen(onCopyText: (String, String) -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         TextButton(
+                            text = tr("下载"),
+                            onClick = { download(target) },
+                            enabled = !downloading.contains(target.url),
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.textButtonColorsPrimary(),
+                        )
+                        TextButton(
                             text = tr("复制链接"),
                             onClick = {
-                                onCopyText(target.url, fileNameOf(target.url))
+                                onCopyText(target.url, ResourceSniffer.suggestFileName(target.url))
                                 preview = null
                             },
                             modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.textButtonColorsPrimary(),
                         )
                         TextButton(
                             text = tr("关闭"),
@@ -340,11 +380,7 @@ private fun kindLabel(kind: Kind): String = when (kind) {
     Kind.OTHER -> tr("其它")
 }
 
-/** 从地址里取个短名字当标题；取不到（比如以 / 结尾）就用主机名。 */
-private fun fileNameOf(url: String): String {
-    val name = url.substringBefore('#').substringBefore('?').trimEnd('/').substringAfterLast('/')
-    return name.ifEmpty { url.substringAfter("://").substringBefore('/') }
-}
+
 
 /**
  * 一行资源。
@@ -356,8 +392,10 @@ private fun fileNameOf(url: String): String {
 private fun ResourceRow(
     resource: ResourceSniffer.Resource,
     previewable: Boolean,
+    downloading: Boolean,
     onCopy: () -> Unit,
     onPreview: () -> Unit,
+    onDownload: () -> Unit,
 ) {
     val thumb = if (previewable) rememberRemoteImage(resource.url, THUMB_PIXELS) else null
     Row(
@@ -394,7 +432,7 @@ private fun ResourceRow(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = fileNameOf(resource.url),
+                text = ResourceSniffer.suggestFileName(resource.url),
                 style = MiuixTheme.textStyles.body1,
                 color = MiuixTheme.colorScheme.onSurfaceContainer,
                 maxLines = 1,
@@ -407,6 +445,22 @@ private fun ResourceRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+        if (downloading) {
+            Text(
+                text = tr("下载中…"),
+                style = MiuixTheme.textStyles.footnote1,
+                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+        } else {
+            IconButton(onClick = onDownload) {
+                Icon(
+                    imageVector = MiuixIcons.Download,
+                    contentDescription = tr("下载"),
+                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                )
+            }
         }
         IconButton(onClick = onCopy) {
             Icon(

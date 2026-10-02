@@ -4,9 +4,12 @@ import com.qingning.sweetlime.core.i18n.tr
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
 import android.provider.Settings
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
@@ -673,3 +676,107 @@ actual suspend fun loadImageBitmap(url: String, maxPixels: Int): ImageBitmap? =
             }
         }.getOrNull()
     }
+
+/** 去掉文件名里的路径分隔符与非法字符：从 URL 里抠出来的名字不一定干净。 */
+private fun sanitizeFileName(raw: String): String {
+    val cleaned = raw
+        .substringBefore('?')
+        .substringBefore('#')
+        .replace('\\', '_')
+        .replace('/', '_')
+        .trim()
+    val safe = cleaned.ifEmpty { "sweetlime_file" }
+    // 太长（有些站点的名字带一大串 hash）就截一段，保留扩展名。
+    if (safe.length <= 96) return safe
+    val dot = safe.lastIndexOf('.')
+    val ext = if (dot in 1..10) safe.substring(dot) else ""
+    return safe.take(90 - ext.length) + ext
+}
+
+/** 「下载/SweetLime/<名字>」的完整路径，给用户提示用（只是拼字符串，不需要任何权限）。 */
+private fun downloadFilePath(name: String): String = File(
+    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+    "SweetLime/$name",
+).absolutePath
+
+actual suspend fun downloadToDownloads(
+    url: String,
+    fileName: String,
+    referer: String?,
+    onProgress: (Float) -> Unit,
+): String? = withContext(Dispatchers.IO) {
+    runCatching {
+        val context = AppContext.get()
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10000
+            readTimeout = 30000
+            instanceFollowRedirects = true
+            setRequestProperty("User-Agent", BROWSER_UA)
+            // 很多图床 / 视频站会校验 Referer，带上页面地址才给下载。
+            if (!referer.isNullOrEmpty()) setRequestProperty("Referer", referer)
+        }
+        try {
+            if (connection.responseCode !in 200..299) return@runCatching null
+            val total = connection.contentLengthLong
+            val mime = connection.contentType?.substringBefore(';')?.trim().orEmpty()
+            val resolver = context.contentResolver
+            val name = sanitizeFileName(fileName)
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                put(
+                    MediaStore.MediaColumns.MIME_TYPE,
+                    mime.ifEmpty { "application/octet-stream" },
+                )
+                put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOWNLOADS + "/SweetLime",
+                )
+                // IS_PENDING：写到一半的文件先不对外可见，写完再放出去。
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                ?: return@runCatching null
+            try {
+                connection.inputStream.use { input ->
+                    val output = resolver.openOutputStream(uri)
+                        ?: throw IllegalStateException("openOutputStream failed")
+                    output.use { out ->
+                        val buffer = ByteArray(64 * 1024)
+                        var done = 0L
+                        var lastPercent = -1
+                        while (true) {
+                            val read = input.read(buffer)
+                            if (read < 0) break
+                            out.write(buffer, 0, read)
+                            done += read
+                            if (total > 0) {
+                                val percent = (done * 100 / total).toInt()
+                                // 只在整数百分比变化时回调，别让进度刷爆重组。
+                                if (percent != lastPercent) {
+                                    lastPercent = percent
+                                    onProgress(percent / 100f)
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                // 失败就把这条半成品删掉，别在「下载」里留个打不开的文件。
+                runCatching { resolver.delete(uri, null, null) }
+                throw t
+            }
+            values.clear()
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+            // 重名时 MediaStore 会自动加「(1)」，所以要把系统里真实的名字查回来，
+            // 不然提示给用户的路径是不存在的。
+            val actualName = runCatching {
+                resolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)
+                    ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+            }.getOrNull() ?: name
+            downloadFilePath(actualName)
+        } finally {
+            connection.disconnect()
+        }
+    }.getOrNull()
+}

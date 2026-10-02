@@ -71,6 +71,8 @@ fun ToolScreen(
     toolId: String,
     onBack: () -> Unit,
     onCopyText: (String, String) -> Unit,
+    /** 需要给用户一句提示（比如「已保存到下载」）时调它，由外层弹 Snackbar。 */
+    onMessage: (String) -> Unit = {},
     onOpenSymbolCategory: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -115,7 +117,7 @@ fun ToolScreen(
             "daxie" -> DaxieToolScreen(onCopyText = onCopyText)
             "base64" -> Base64ToolScreen(onCopyText = onCopyText)
             "md5" -> Md5ToolScreen(onCopyText = onCopyText)
-            "sniff" -> SnifferToolScreen(onCopyText = onCopyText)
+            "sniff" -> SnifferToolScreen(onCopyText = onCopyText, onMessage = onMessage)
             "level" -> LevelToolScreen()
             "url" -> UrlToolScreen(onCopyText = onCopyText)
             "radix" -> RadixToolScreen(onCopyText = onCopyText)
