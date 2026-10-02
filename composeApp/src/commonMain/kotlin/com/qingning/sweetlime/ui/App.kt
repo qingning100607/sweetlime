@@ -98,6 +98,7 @@ import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
+import com.qingning.sweetlime.ui.components.rememberTabPagerState
 import com.qingning.sweetlime.ui.effect.HyperHaptics
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.nav.Route
@@ -564,23 +565,28 @@ private fun RootScaffold(
     // 三个 Tab 的横向分页：手指左右滑换页；点底栏则是带动画滚过去 ——
     // 这就是 KernelSU 的切换方式（它的 miuix 里也是 Pager + animateToPage 那一套）。
     val tabPagerState = rememberPagerState(pageCount = { 3 })
-    // KernelSU 的 MainPagerState.animateToPage：点底栏时直接带动画滚过去，
-    // 连点会先取消上一段（navJob?.cancel()），不靠「改 state 再等副作用」那条有竞态的链路。
+    // KernelSU 的 MainPagerState（见 ui/components/TabPagerState.kt）：
+    // 底栏「图标选中的页」和 Pager 的真实页分开管 —— 点一下图标立刻过去，
+    // 动画在另一条协程里跑；只有不在导航中，才允许 pager 回写选中态。
+    // 之前把两者混用，连点时会互相回写，表现就是「画面和图标不跟手」。
     val pagerScope = rememberCoroutineScope()
-    var navJob by remember { mutableStateOf<Job?>(null) }
-    val goToTab: (Int) -> Unit = { index ->
-        if (index != selectedTab) {
-            navJob?.cancel()
-            onTabSelected(index)
-            navJob = pagerScope.launch { tabPagerState.springAnimateToPage(index) }
-        }
+    val tabState = rememberTabPagerState(pagerState = tabPagerState, coroutineScope = pagerScope)
+
+    // 和 KernelSU 一样：currentPage 变了才 syncPage（导航中它自己会拒绝回写）。
+    val pagerCurrentPage = tabState.pagerState.currentPage
+    LaunchedEffect(pagerCurrentPage) {
+        tabState.syncPage()
     }
-    // 手滑翻页 → 停下来之后回写选中态（等价 KernelSU 的 syncPage）。
-    LaunchedEffect(tabPagerState) {
-        snapshotFlow { tabPagerState.settledPage }.collect { page ->
-            if (page != selectedTab) onTabSelected(page)
-        }
+    // 停稳后同步给外部状态（各页面/其它逻辑用的 selectedTab）。
+    val pagerSettledPage = tabState.pagerState.settledPage
+    LaunchedEffect(pagerSettledPage) {
+        if (selectedTab != pagerSettledPage) onTabSelected(pagerSettledPage)
     }
+
+    // KernelSU 的做法：一开始只组合当前页（启动快），第一帧之后把所有页都留在组合里，
+    // 这样切页时目标页内容已经画好，滑动不会先卡一下。
+    var allPagesReady by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { allPagesReady = true }
     val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
@@ -635,7 +641,7 @@ private fun RootScaffold(
                         mode = PagerInterceptionMode.CrossAxisInterceptor,
                         enabled = true,
                     ),
-                beyondViewportPageCount = 1,
+                beyondViewportPageCount = if (allPagesReady) 3 else 0,
                 overscrollEffect = null,
                 // 和 KernelSU 一样：内置手滑关掉，手势只走上面那个拦截器。
                 userScrollEnabled = false,
@@ -759,14 +765,14 @@ private fun RootScaffold(
                             bottom = 12.dp +
                                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
                         ),
-                        selectedIndex = selectedTab,
-                        onSelected = goToTab,
+                        selectedIndex = tabState.selectedPage,
+                        onSelected = { tabState.animateToPage(it) },
                         backdrop = backdrop,
                         tabsCount = 3,
                     ) { activateTab ->
-                        LiquidBarItem(0, selectedTab, activateTab, MiuixIcons.ConvertFile, tr("转换"))
-                        LiquidBarItem(1, selectedTab, activateTab, MiuixIcons.Tune, tr("工具"))
-                        LiquidBarItem(2, selectedTab, activateTab, MiuixIcons.Favorites, tr("收藏"))
+                        LiquidBarItem(0, tabState.selectedPage, activateTab, MiuixIcons.ConvertFile, tr("转换"))
+                        LiquidBarItem(1, tabState.selectedPage, activateTab, MiuixIcons.Tune, tr("工具"))
+                        LiquidBarItem(2, tabState.selectedPage, activateTab, MiuixIcons.Favorites, tr("收藏"))
                     }
                 }
             } else {
@@ -774,20 +780,20 @@ private fun RootScaffold(
                 // 不铺玻璃、不做模糊、不浮起（那套液态玻璃只在「悬浮底栏」打开时才用）。
                 NavigationBar {
                     NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { goToTab(0) },
+                        selected = tabState.selectedPage == 0,
+                        onClick = { tabState.animateToPage(0) },
                         icon = MiuixIcons.ConvertFile,
                         label = tr("转换"),
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { goToTab(1) },
+                        selected = tabState.selectedPage == 1,
+                        onClick = { tabState.animateToPage(1) },
                         icon = MiuixIcons.Tune,
                         label = tr("工具"),
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { goToTab(2) },
+                        selected = tabState.selectedPage == 2,
+                        onClick = { tabState.animateToPage(2) },
                         icon = MiuixIcons.Favorites,
                         label = tr("收藏"),
                     )
