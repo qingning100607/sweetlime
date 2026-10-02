@@ -114,6 +114,7 @@ import com.qingning.sweetlime.ui.screen.SymbolCategoryScreen
 import com.qingning.sweetlime.ui.screen.ToolScreen
 import com.qingning.sweetlime.ui.screen.ToolsScreen
 import com.qingning.sweetlime.ui.theme.SweetLimeTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -583,10 +584,20 @@ private fun RootScaffold(
         if (selectedTab != pagerSettledPage) onTabSelected(pagerSettledPage)
     }
 
-    // KernelSU 的做法：一开始只组合当前页（启动快），第一帧之后把所有页都留在组合里，
-    // 这样切页时目标页内容已经画好，滑动不会先卡一下。
-    var allPagesReady by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { allPagesReady = true }
+    // 预热策略（防「刚进软件前几次点击掉帧」）：
+    // KernelSU 是先把所有页组合好再让你进主界面（它有启动闪屏吃掉这笔开销）。
+    // 我们没有闪屏，如果在第一帧就把三个 Tab 页全组合出来，这笔开销就全压在用户
+    // 刚进软件、正要开始点的那几帧上 -> 前几次点击掉帧。
+    // 所以错峰：先只组合当前页，闲下来之后再陆续把邻居页 / 全部页放进组合。
+    var warmPages by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        // 顺手把几处「首次用到才初始化」的东西提前备好（都是毫秒级，但要避开点击）。
+        HyperHaptics.hasMiuixCompat()
+        delay(1_200)
+        warmPages = 1   // 左右邻居各一页（切页时目标页内容已就绪）
+        delay(3_000)
+        warmPages = 2   // 三页全在组合里
+    }
     val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
@@ -641,7 +652,7 @@ private fun RootScaffold(
                         mode = PagerInterceptionMode.CrossAxisInterceptor,
                         enabled = true,
                     ),
-                beyondViewportPageCount = if (allPagesReady) 3 else 0,
+                beyondViewportPageCount = warmPages,
                 overscrollEffect = null,
                 // 和 KernelSU 一样：内置手滑关掉，手势只走上面那个拦截器。
                 userScrollEnabled = false,
