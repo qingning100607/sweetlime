@@ -36,9 +36,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.ui)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
 
             implementation(libs.miuix.ui)
             implementation(libs.miuix.icons)
