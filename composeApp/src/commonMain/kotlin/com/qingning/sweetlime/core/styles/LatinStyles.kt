@@ -46,7 +46,7 @@ private fun mathStyle(
     lower: Int,
     digits: Int? = null,
     exceptions: Map<Char, String> = emptyMap(),
-): TextTransform = transform(id, title, StyleGroup.LATIN) { input ->
+): TextTransform = nativeStyle(id, title, StyleGroup.LATIN) { input ->
     mapEach(input, mathRange(upper, lower, digits, exceptions))
 }
 
@@ -137,17 +137,17 @@ internal val latinStyles: List<TextTransform>
         "latin_double_struck", "双线体", 0x1D538, 0x1D552, 0x1D7D8,
         exceptions = DOUBLE_STRUCK_EXCEPTIONS,
     ),
-    transform("latin_circled", "圆圈体", StyleGroup.LATIN) { input ->
+    nativeStyle("latin_circled", "圆圈体", StyleGroup.LATIN) { input ->
         mapEach(input) { circledTransform(it) }
     },
-    transform("latin_small_caps", "小型大写", StyleGroup.LATIN) { input ->
+    nativeStyle("latin_small_caps", "小型大写", StyleGroup.LATIN) { input ->
         mapEach(input) { SMALL_CAPS[it]?.toString() }
     },
     mathStyle("latin_monospace", "等宽体", 0x1D670, 0x1D68A, 0x1D7F6),
-    transform("latin_bold_circled", "粗圆圈", StyleGroup.LATIN) { input ->
+    nativeStyle("latin_bold_circled", "粗圆圈", StyleGroup.LATIN) { input ->
         mapEach(input) { boldCircledTransform(it) }
     },
-    transform("latin_upside_down", "倒置字", StyleGroup.LATIN) { input ->
+    nativeStyle("latin_upside_down", "倒置字", StyleGroup.LATIN) { input ->
         input.split('\n').joinToString("\n") { line ->
             val reversed = reverseCodePoints(line)
             buildString(reversed.length) {

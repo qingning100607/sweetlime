@@ -53,7 +53,7 @@ object PrivacyPolicy {
  * 仍然是中文，本页的标题也一并给英文，和正文保持一致。
  */
 object OpenSourceLicenses {
-    val TITLE: String get() = tr("Open Source Licenses")
+    val TITLE: String get() = tr("开源许可")
 
     val SECTIONS: List<Doc> = listOf(
         Doc(

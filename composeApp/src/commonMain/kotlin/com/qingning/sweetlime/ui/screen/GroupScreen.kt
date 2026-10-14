@@ -22,7 +22,7 @@ import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
-import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import com.qingning.sweetlime.ui.effect.flowingPageBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -87,7 +87,7 @@ fun GroupScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
+            .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
         // 内容层：Haze 的采样源。顶部空出顶栏高度，滚动时卡片从顶栏下面穿过去并被实时糊。
         Column(

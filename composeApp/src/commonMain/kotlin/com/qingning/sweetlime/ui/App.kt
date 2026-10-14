@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui
 
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -70,7 +71,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformItem
+import com.qingning.sweetlime.core.BackAction
+import com.qingning.sweetlime.core.PlatformBackHandler
 import com.qingning.sweetlime.core.TransformRegistry
+import com.qingning.sweetlime.core.resolveBackAction
 import com.qingning.sweetlime.core.UpdateChecker
 import com.qingning.sweetlime.core.OpenSourceLicenses
 import com.qingning.sweetlime.core.PrivacyPolicy
@@ -95,6 +99,7 @@ import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
 import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import com.qingning.sweetlime.ui.effect.glassBarBackdrop
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.components.rememberTabPagerState
 import com.qingning.sweetlime.ui.effect.HyperHaptics
@@ -254,6 +259,8 @@ fun SweetLimeApp() {
 
     LaunchedEffect(Unit) { checkUpdate() }
 
+
+
     // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
     fun goBack() {
@@ -369,6 +376,9 @@ fun SweetLimeApp() {
                 entry<Route.Home> {
                     RootScaffold(
                         favorites = favorites,
+                        // 返回栈里只剩 Home 时才算「根级」：那时返回键才该管底栏页，
+                        // 否则先退二级页。见 resolveBackAction。
+                        atRoot = backStack.size <= 1,
                         selectedTab = selectedTab,
                         onTabSelected = { selectedTab = it },
                         input = input,
@@ -527,6 +537,8 @@ fun SweetLimeApp() {
 @Composable
 private fun RootScaffold(
     favorites: FavoritesStore,
+    /** 返回栈是否只剩根页；返回键逻辑要用（见 resolveBackAction）。 */
+    atRoot: Boolean,
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
     input: String,
@@ -565,6 +577,17 @@ private fun RootScaffold(
     // 之前把两者混用，连点时会互相回写，表现就是「画面和图标不跟手」。
     val pagerScope = rememberCoroutineScope()
     val tabState = rememberTabPagerState(pagerState = tabPagerState, coroutineScope = pagerScope)
+
+    /*
+     * 返回键（对齐 KernelSU 的观感）：
+     *   有二级页 → 让 miuix-nav 自己退（这里 enabled=false，不拦）；
+     *   在根级但不在「转换」页 → 回到「转换」页（带动画，和点底栏同一套）；
+     *   已经在「转换」页 → 不拦，系统照常退出应用。
+     */
+    val backAction = resolveBackAction(atRoot = atRoot, selectedTab = tabState.selectedPage)
+    PlatformBackHandler(enabled = backAction == BackAction.ToConvertTab) {
+        tabState.animateToPage(0)
+    }
 
     // 和 KernelSU 一样：currentPage 变了才 syncPage（导航中它自己会拒绝回写）。
     val pagerCurrentPage = tabState.pagerState.currentPage
@@ -616,7 +639,7 @@ private fun RootScaffold(
                 // 这里把同一帧的流光（或纯主题底色）也铺进来，背板就永远有东西可采。
                 .then(
                     if (flowing) {
-                        Modifier.flowingPageLayer()
+                        Modifier.glassBarBackdrop()
                     } else {
                         // 不能在 lambda 里读主题（drawBehind 不是 @Composable 作用域），先取出来。
                         // 这里必须是 surface（#F7F7F7），**不能**用 colorScheme.background

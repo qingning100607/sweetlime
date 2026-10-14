@@ -46,7 +46,6 @@ fun ToolsScreen(
         ),
     ) {
         item(key = "tool_title") {
-            SmallTitle(text = tr("工具箱 · 点一条进入"))
         }
         item(key = "tool_list") {
             Card(

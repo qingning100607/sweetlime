@@ -17,7 +17,7 @@ import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
-import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import com.qingning.sweetlime.ui.effect.flowingPageBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -100,7 +100,7 @@ fun DetailScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
+            .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
         // 内容层 = Haze 的采样源。整页铺满，滚动时卡片从顶栏**下面穿过去**并被实时糊掉
         // —— 这就是主页顶栏那种模糊。以前这里只铺了一层底，没东西可糊，所以看着没模糊。

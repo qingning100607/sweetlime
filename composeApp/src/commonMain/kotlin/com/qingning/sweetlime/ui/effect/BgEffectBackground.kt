@@ -93,7 +93,10 @@ fun BgEffectBackground(
         Canvas(modifier = Modifier.fillMaxSize()) {
             // 底色：不管开不开流光，这层都要铺满，它就是界面的背景。
             drawRect(surface)
-            if (drawEffect) {
+            // 整层完全透明时（例如「关于页」上滑把流光淡到 0）就别再跑着色器了 ——
+            // 画了也看不见，纯粹白烧一遍全屏像素。
+            val layerAlpha = alpha()
+            if (drawEffect && layerAlpha > 0f) {
                 // 光点按「屏幕高度的 78%」那块区域来分布，剩下的留给顶部大标题区，
                 // 免得光斑糊在标题上。
                 val drawHeight = size.height * 0.78f
@@ -116,7 +119,7 @@ fun BgEffectBackground(
                 // 配色插值在 painter 内部的预分配缓冲里做，避免每帧新建 FloatArray。
                 painter.updateColors(start, end, fraction)
                 painter.updateAnimTime(animTime())
-                drawRect(painter.brush, alpha = alpha())
+                drawRect(painter.brush, alpha = layerAlpha)
             }
         }
         // 把这一帧的「流光画刷 + 底色」交给下面的内容：二级页 / 设置页拿它给自己

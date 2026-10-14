@@ -11,7 +11,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
-import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import com.qingning.sweetlime.ui.effect.flowingPageBackground
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -83,7 +83,7 @@ fun ToolScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
+            .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
         // 内容层：Haze 的采样源。顶部先空出顶栏高度，滚动时内容从顶栏下面穿过去并被实时糊。
         Box(
@@ -100,6 +100,7 @@ fun ToolScreen(
             Column(modifier = Modifier.fillMaxSize()) {
                 when (toolId) {
             "symbol" -> SymbolCategoryList(onOpen = onOpenSymbolCategory)
+            "kaomoji" -> KaomojiToolScreen(onCopyText = onCopyText)
             "pinyin" -> ConverterToolScreen(
                 placeholder = tr("输入汉字，例如：你好世界"),
                 hint = tr("查不到的字（标点、英文、数字）会原样保留。多音字取字典里靠前的那一个读音。"),
@@ -118,6 +119,7 @@ fun ToolScreen(
             "base64" -> Base64ToolScreen(onCopyText = onCopyText)
             "md5" -> Md5ToolScreen(onCopyText = onCopyText)
             "sniff" -> SnifferToolScreen(onCopyText = onCopyText, onMessage = onMessage)
+            "qqname" -> QqNameToolScreen(onCopyText = onCopyText)
             "level" -> LevelToolScreen()
             "url" -> UrlToolScreen(onCopyText = onCopyText)
             "radix" -> RadixToolScreen(onCopyText = onCopyText)

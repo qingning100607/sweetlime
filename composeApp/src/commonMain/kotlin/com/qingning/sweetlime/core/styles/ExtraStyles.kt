@@ -21,7 +21,12 @@ internal val superSubStyles: List<TextTransform>
 )
 
 /**
- * 彩色字母：源站实际输出的是 Unicode 区域指示符字母（Regional Indicator，U+1F1E6 起）。
+ * 彩色字母：源站那一类叫「彩色字母」，实际输出的是 Unicode 区域指示符字母
+ * （Regional Indicator，U+1F1E6 起，两个连起来会渲染成国旗）。
+ *
+ * 名字按用户要求统一叫「彩色字母」——之前这条叫「区域指示符」，而它所在的分组也叫
+ * 「彩色字母」，用户点进去看到的是另一个名字，像是点错了页。分组名与条目名保持一致之后就没这个歧义了。
+ *
  * 它在增补平面，必须用 codePointToString 拼出代理对，否则会变成乱码。
  */
 private fun regionalIndicator(ch: Char): String? = when {
@@ -32,7 +37,7 @@ private fun regionalIndicator(ch: Char): String? = when {
 
 internal val colorStyles: List<TextTransform>
     get() = listOf(
-    transform("color_ri", "区域指示符", StyleGroup.COLOR) { input ->
+    transform("color_ri", "彩色字母", StyleGroup.COLOR) { input ->
         buildString(input.length * 3) {
             input.forEach { ch ->
                 val ri = regionalIndicator(ch)

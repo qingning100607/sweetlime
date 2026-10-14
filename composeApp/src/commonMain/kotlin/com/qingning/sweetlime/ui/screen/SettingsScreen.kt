@@ -8,7 +8,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
-import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import com.qingning.sweetlime.ui.effect.flowingPageBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -127,7 +127,7 @@ fun SettingsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MiuixTheme.colorScheme.surface).flowingPageLayer(),
+            .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
         // 采样层单独一层、不参与滚动：和详情页/工具页同一套结构（解决下拉露灰条）。
         Box(

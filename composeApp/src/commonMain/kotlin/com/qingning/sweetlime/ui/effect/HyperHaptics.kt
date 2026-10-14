@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
 import android.content.Context
-import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
@@ -69,10 +69,17 @@ object HyperHaptics {
     /** 设备上有没有 miuix 的 HapticCompat（HyperOS 一般都有）。 */
     fun hasMiuixCompat(): Boolean = compatMethod != null
 
-    /** HyperLight 的入口判断：马达是否支持 CLICK(1) / QUICK_FALL(7) / TICK(2)。 */
+    /**
+     * HyperLight 的入口判断：马达是否支持 CLICK(1) / QUICK_FALL(7) / TICK(2)。
+     *
+     * 走 `VibratorManager`（API 31+，本项目 minSdk 33）：旧的
+     * `Context.VIBRATOR_SERVICE` 静态字段在 31 起已经标废弃，用它会多一条编译告警。
+     */
     fun hasRichHaptics(context: Context): Boolean = runCatching {
-        (context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator)
-            ?.areAllPrimitivesSupported(1, 7, 2) == true
+        // minSdk 33 ⇒ VibratorManager 一定在，直接走它，不去碰已废弃的 VIBRATOR_SERVICE 字段。
+        val vibrator = (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)
+            ?.defaultVibrator
+        vibrator?.areAllPrimitivesSupported(1, 7, 2) == true
     }.getOrDefault(false)
 
     /** HyperOS 原生那支：miuix.view.HapticCompat.performHapticFeedbackAsync(view, type)。 */

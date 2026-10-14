@@ -4,7 +4,7 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
-import com.qingning.sweetlime.ui.effect.flowingPageLayer
+import com.qingning.sweetlime.ui.effect.flowingPageBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -61,7 +61,7 @@ fun GlassTopBarScaffold(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(tint).flowingPageLayer(),
+            .flowingPageBackground(tint),
     ) {
         // 内容层：Haze 的采样源。顶栏是它的**兄弟**节点（不是子节点），
         // 所以列表从顶栏下面滑过去时会被实时糊掉。

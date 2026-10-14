@@ -58,4 +58,12 @@ class UrlCodecTest {
         assertEquals("hello world", UrlCodec.decode("hello world"))
         assertEquals("", UrlCodec.decode(""))
     }
+
+    @Test
+    fun decodeKeepsAstralCharacters() {
+        // 增补平面字符（emoji）是两个 UTF-16 单元，解码时不能被拆碎。
+        // 这条是「Kotlin ↔ 原生对拍」抓出来的：以前 🎉 会变成两个替换字符。
+        assertEquals("🎉", UrlCodec.decode("🎉"))
+        assertEquals("SweetLime ✨🎉 中文", UrlCodec.decode("SweetLime%20✨🎉%20中文"))
+    }
 }

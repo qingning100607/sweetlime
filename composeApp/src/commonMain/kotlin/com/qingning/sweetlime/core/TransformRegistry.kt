@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core
 
+import com.qingning.sweetlime.core.styles.aliasStyles
 import com.qingning.sweetlime.core.styles.extendedStyles
 import com.qingning.sweetlime.core.styles.latinStyles
 import com.qingning.sweetlime.core.styles.overlayStyles
@@ -15,7 +16,7 @@ object TransformRegistry {
      * 这里是 `val`，样式对象只构造一次 —— 之所以切语言还能生效，是因为
      * [TextTransform.title] 是「读时才翻译」的 getter，而不是构造时定死的字符串。
      */
-    val all: List<TextTransform> = latinStyles + overlayStyles + extendedStyles
+    val all: List<TextTransform> = latinStyles + overlayStyles + extendedStyles + aliasStyles
 
     /** 按分组归好类的样式，顺序与 [StyleGroup] 声明顺序一致。 */
     val grouped: List<Pair<StyleGroup, List<TextTransform>>> =

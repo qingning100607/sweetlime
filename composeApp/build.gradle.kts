@@ -27,6 +27,10 @@ kotlin {
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
+            // expect/actual 的「类」形式（NativeText / PlatformBackHandler 这些 object）
+            // 在 Kotlin 里仍是 Beta：功能一直是好的，只是编译器每次都要提醒一句。
+            // 压掉它，让构建输出保持干净 —— 真出问题时反而更容易看见。
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 
@@ -78,8 +82,8 @@ android {
         applicationId = "com.qingning.sweetlime"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2915
-        versionName = "2.9.15"
+        versionCode = 2940
+        versionName = "2.9.40"
     }
     // 正式签名（打包用）。密钥文件与口令都从 local.properties 取：
     //   sweetlime.storeFile     密钥路径（相对 composeApp/，默认 sweetlime-release.jks）
@@ -101,6 +105,15 @@ android {
             }
         }
     }
+
+    defaultConfig {
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
+    }
+    // 原生库（自己编译，见文件末尾的 buildNativeLib 任务）放在这里。
+    // 注意：AGP 的 SourceSet API 不吃 Provider，这里得传路径。
+    sourceSets["main"].jniLibs.srcDir("${layout.buildDirectory.get().asFile}/nativeLibs")
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
@@ -135,3 +148,89 @@ android {
         }
     }
 }
+
+
+/*
+ * ---------------------------------------------------------------------------
+ * 原生库：libsweetlime.so（arm64-v8a）
+ *
+ * 为什么不用 CMake / NDK 自带工具链：Google 的 NDK 预编译包只有 **linux-x86_64**，
+ * 本机是 arm64 —— 那份 clang 起不来（报 "required file not found"），CMake 直接失败。
+ * 所以这里用**系统 clang**（Ubuntu 自带 18）配上 NDK 的 sysroot 与 compiler-rt 交叉编译，
+ * 产物丢进 build/nativeLibs/arm64-v8a，再由上面的 jniLibs 打进 APK。
+ *
+ * 找不到 NDK / clang 时这个任务会自己跳过 —— 那 App 就整体走 Kotlin 实现，
+ * 功能不受影响（NativeText.available = false），只是慢一点。
+ */
+val nativeLibsDir = layout.buildDirectory.dir("nativeLibs/arm64-v8a")
+
+val ndkDir: File? = run {
+    val sdk = System.getenv("ANDROID_HOME")
+        ?: System.getenv("ANDROID_SDK_ROOT")
+        ?: "/root/Android"
+    File(sdk, "ndk").listFiles()?.filter { it.isDirectory }?.maxByOrNull { it.name }
+}
+val ndkSysroot: File? = ndkDir?.resolve("toolchains/llvm/prebuilt/linux-x86_64/sysroot")
+val ndkClangResource: File? = ndkDir
+    ?.resolve("toolchains/llvm/prebuilt/linux-x86_64/lib/clang")
+    ?.listFiles()
+    ?.filter { it.isDirectory }
+    ?.maxByOrNull { it.name }
+
+tasks.register<Exec>("buildNativeLib") {
+    description = "交叉编译 libsweetlime.so（arm64-v8a）"
+    group = "build"
+
+    val outDir = nativeLibsDir.get().asFile
+    val cppDir = file("src/androidMain/cpp")
+
+    onlyIf {
+        val ok = ndkSysroot?.exists() == true && ndkClangResource != null
+        if (!ok) logger.warn("⚠️ 没有可用的 NDK sysroot，跳过原生库：本次构建全部走 Kotlin 实现")
+        ok
+    }
+
+    inputs.dir(cppDir)
+    outputs.dir(outDir)
+
+    doFirst { outDir.mkdirs() }
+
+    // 注意：--target / --sysroot / -resource-dir 缺一不可，否则 apt 的 clang 会去找宿主的
+    // libgcc（错误信息是 "unable to find library -lgcc"）。
+    commandLine(
+        listOf(
+            "clang++",
+            "--target=aarch64-linux-android33",
+            "--rtlib=compiler-rt",
+            "--unwindlib=libunwind",
+            "-resource-dir=${ndkClangResource?.absolutePath}",
+            "-fPIC",
+            "-shared",
+            "-O2",
+            "-fno-rtti",
+            "-fvisibility=hidden",
+            "-fuse-ld=lld",
+            "-stdlib=libc++",
+            "-DANDROID",
+            "--sysroot=${ndkSysroot?.absolutePath}",
+            "-o",
+            "${outDir.absolutePath}/libsweetlime.so",
+            "${cppDir.absolutePath}/native_text.cpp",
+            "-lc++_shared",
+        ),
+    )
+
+    doLast {
+        // libc++ 用的是共享版，这个 .so 也得一起打进 APK，否则运行时加载不到。
+        val libcxx = ndkSysroot?.resolve("usr/lib/aarch64-linux-android/libc++_shared.so")
+        if (libcxx?.exists() == true) {
+            libcxx.copyTo(File(outDir, "libc++_shared.so"), overwrite = true)
+        } else {
+            logger.warn("⚠️ 没找到 libc++_shared.so，原生库运行时可能加载失败")
+        }
+        logger.lifecycle("原生库已生成：${outDir.listFiles()?.joinToString { it.name }}")
+    }
+}
+
+// 打进 APK 之前先编好原生库。
+tasks.matching { it.name == "preBuild" }.configureEach { dependsOn("buildNativeLib") }

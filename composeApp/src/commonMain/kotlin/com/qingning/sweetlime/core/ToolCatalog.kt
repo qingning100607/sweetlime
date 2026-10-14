@@ -17,12 +17,14 @@ class ToolEntry(
 val TOOL_ENTRIES: List<ToolEntry>
     get() = listOf(
     ToolEntry("symbol", tr("特殊符号"), tr("44 个分类、2797 个符号，点一下即复制")),
+    ToolEntry("kaomoji", tr("颜文字"), tr("常见颜文字，按分类挑，点一下即复制")),
     ToolEntry("pinyin", tr("汉字拼音"), tr("整句转带声调拼音：你好世界 → nǐ hǎo shì jiè")),
     ToolEntry("chai", tr("汉字拆分"), tr("把汉字拆成部件：卧项功 → 臣卜工页工力")),
     ToolEntry("daxie", tr("数字大写"), tr("金额「小写 ↔ 大写」双向转换，自动补整")),
     ToolEntry("base64", tr("Base64 编解码"), tr("文字 ↔ Base64 双向转换，UTF-8")),
     ToolEntry("md5", tr("MD5 计算"), tr("文字算 32 位 MD5，附大写与 16 位形式")),
     ToolEntry("sniff", tr("资源嗅探"), tr("输入网页地址，列出页面引用的图片 / 样式 / 脚本等资源")),
+    ToolEntry("qqname", tr("QQ 昵称美化"), tr("给群昵称上色 + 加尾巴")),
     ToolEntry("url", tr("URL 编解码"), tr("文字 ↔ URL 百分号编码（%XX）双向转换")),
     ToolEntry("radix", tr("进制转换"), tr("2–36 进制任意互转，一次给出二 / 八 / 十 / 十六进制")),
     ToolEntry("color", tr("颜色代码转换"), tr("#FF5722 ↔ rgb / hsl，附色块预览")),

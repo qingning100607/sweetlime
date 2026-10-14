@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.core.tools
 
+import com.qingning.sweetlime.core.NativeText
 import kotlin.math.abs
 import kotlin.math.sin
 
@@ -40,6 +41,16 @@ object Md5 {
 
     /** 32 位小写十六进制 MD5（对原始字节，不做任何编码转换）。 */
     fun hash(bytes: ByteArray): String {
+        // Android arm64 上走 C++（逐字节循环）；拿不到原生结果就回落下面这份 Kotlin 实现。
+        NativeText.md5Hex(bytes)?.let { return it }
+        return hashKotlin(bytes)
+    }
+
+    /**
+     * Kotlin 版实现 —— **原样保留**：既是非 Android 平台的兜底，
+     * 也是设备上「原生 ↔ Kotlin 对拍」的参照。
+     */
+    internal fun hashKotlin(bytes: ByteArray): String {
         // 1) 补位：先塞一个 0x80，再补 0 到「长度 % 64 == 56」，最后 8 字节放小端的比特长度。
         //    这个写法把「补 0 后还要不要多一个块」两种情况一起算了。
         val bitLength = bytes.size.toLong() * 8L

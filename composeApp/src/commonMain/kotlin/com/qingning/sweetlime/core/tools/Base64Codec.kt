@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.core.tools
 
+import com.qingning.sweetlime.core.NativeText
+
 /**
  * Base64 编解码（UTF-8）。
  *
@@ -15,6 +17,14 @@ object Base64Codec {
 
     /** 文本 → Base64（UTF-8）。空串返回空串。 */
     fun encode(text: String): String {
+        if (text.isEmpty()) return ""
+        // Android arm64 上走 C++；拿不到原生结果就回落下面那份 Kotlin 实现。
+        NativeText.base64Encode(text.encodeToByteArray())?.let { return it }
+        return encodeKotlin(text)
+    }
+
+    /** Kotlin 版实现（兜底 + 对拍参照）。 */
+    internal fun encodeKotlin(text: String): String {
         if (text.isEmpty()) return ""
         val bytes = text.encodeToByteArray()
         val out = StringBuilder((bytes.size + 2) / 3 * 4)
@@ -38,6 +48,16 @@ object Base64Codec {
      * 允许缺省 padding，也允许中间插换行 —— 这些在别处复制来的 Base64 里很常见。
      */
     fun decode(text: String): String? {
+        if (NativeText.available) {
+            // 原生只做「Base64 → 字节」；UTF-8 合法性交回 Kotlin 判断，两边结论一致。
+            val bytes = NativeText.base64Decode(text) ?: return null
+            return runCatching { bytes.decodeToString() }.getOrNull()
+        }
+        return decodeKotlin(text)
+    }
+
+    /** Kotlin 版实现（兜底 + 对拍参照）。 */
+    internal fun decodeKotlin(text: String): String? {
         val clean = text.filterNot { it.isWhitespace() }
             .replace('-', '+')
             .replace('_', '/')
