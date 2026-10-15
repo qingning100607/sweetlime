@@ -42,6 +42,19 @@ class AliasStylesTest {
         assertTrue(out[1].isHighSurrogate() && out[2].isLowSurrogate(), "代理对应当紧挨着出现")
     }
 
+    /* ---------------- 插入型：分隔符必须落在码点之间 ---------------- */
+    @Test
+    fun spacingInsertsBetweenCodePointsNotSurrogates() {
+        // 🎉 = 代理对。分隔符要插在整个字符**之后**，不能插进两个代理中间。
+        val dot = byId("alias_dot_spacing").transform("a\uD83C\uDF89")
+        assertEquals("a\u00B7\uD83C\uDF89", dot)
+        assertTrue(dot[2].isHighSurrogate() && dot[3].isLowSurrogate(), "emoji 必须完整")
+
+        val star = byId("alias_star_spacing").transform("a\uD83C\uDF89")
+        assertEquals("a\u22C6\uD83C\uDF89", star)
+        assertTrue(star[2].isHighSurrogate() && star[3].isLowSurrogate(), "emoji 必须完整")
+    }
+
     /* ---------------- 反写（方向翻转） ---------------- */
 
     @Test

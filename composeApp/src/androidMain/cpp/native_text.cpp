@@ -443,15 +443,21 @@ bool mapStyle(const std::string &id, const u16 &in, u16 &out) {
         const char16_t mark = id == "alias_dot_spacing" ? u'\u00B7' : u'\u22C6';
         out.reserve(in.size() * 2);
         bool first = true;
-        for (char16_t ch : in) {
-            if (ch == u'\n' || ch == u'\r') {
+        // 按**码点**走：emoji / 增补平面字符是代理对，按 code unit 走会把分隔符
+        // 插进两个代理中间，产出非法 UTF-16（渲染成 �）。与 Kotlin 侧保持一致。
+        for (size_t i = 0; i < in.size();) {
+            const char16_t ch = in[i];
+            const size_t len = (ch >= 0xD800 && ch <= 0xDBFF && i + 1 < in.size() &&
+                                in[i + 1] >= 0xDC00 && in[i + 1] <= 0xDFFF) ? 2 : 1;
+            if (len == 1 && (ch == u'\n' || ch == u'\r')) {
                 out.push_back(ch);
                 first = true;
             } else {
                 if (!first) out.push_back(mark);
-                out.push_back(ch);
+                for (size_t k = 0; k < len; ++k) out.push_back(in[i + k]);
                 first = false;
             }
+            i += len;
         }
         return true;
     }

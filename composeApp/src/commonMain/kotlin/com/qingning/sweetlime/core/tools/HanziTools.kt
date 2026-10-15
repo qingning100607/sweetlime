@@ -2,6 +2,7 @@ package com.qingning.sweetlime.core.tools
 
 import com.qingning.sweetlime.core.mapping.CHAI_MAP
 import com.qingning.sweetlime.core.mapping.PINYIN_MAP
+import com.qingning.sweetlime.core.forEachCodePoint
 
 /**
  * 汉字 → 带声调拼音。字典里查不到的字（标点、英文、数字）原样保留，
@@ -30,8 +31,9 @@ internal fun hanziToChai(input: String): String {
 
 /** 飞鸟文：每个非换行字符后面追加组合字符 ོ（U+0F7C）。 */
 internal fun toFlyingBird(input: String): String = buildString(input.length * 2) {
-    input.forEach { ch ->
+    // 按码点走：组合符要跟在整个字符后面，不能插进代理对中间。
+    input.forEachCodePoint { ch ->
         append(ch)
-        if (ch != '\n' && ch != '\r') append('\u0F7C')
+        if (ch != "\n" && ch != "\r") append('\u0F7C')
     }
 }

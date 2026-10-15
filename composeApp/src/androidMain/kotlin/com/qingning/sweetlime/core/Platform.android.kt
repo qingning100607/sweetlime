@@ -55,6 +55,7 @@ import androidx.compose.runtime.setValue
 import kotlin.math.atan2
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import android.content.pm.PackageManager.PackageInfoFlags
 @Composable
 actual fun rememberLimeLogo(): Painter = painterResource(R.drawable.lime)
 @Composable
@@ -156,6 +157,13 @@ actual suspend fun downloadApkToPrivateDir(
         val dir = File(AppContext.get().filesDir, "update").apply { mkdirs() }
         val part = File(dir, "$fileName.part")
         val dest = File(dir, fileName)
+        // 旧包和半截包会一直堆在这个目录里（在 filesDir，系统「清除缓存」不会动），
+        // 重下之前顺手清一遍，免得无上限增长。
+        dir.listFiles()?.forEach { f ->
+            val stale = f.name != fileName && f.name != "$fileName.part" &&
+                (f.name.endsWith(".apk") || f.name.endsWith(".part"))
+            if (stale) f.delete()
+        }
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             connectTimeout = 10000
             readTimeout = 20000
@@ -167,10 +175,11 @@ actual suspend fun downloadApkToPrivateDir(
         try {
             if (connection.responseCode !in 200..299) return@runCatching null
             val total = connection.contentLengthLong
+            // done 要在两个 use 之外可见：下面要用它跟 total 对账。
+            var done = 0L
             connection.inputStream.use { input ->
                 part.outputStream().use { output ->
                     val buffer = ByteArray(64 * 1024)
-                    var done = 0L
                     // 只在整数百分比变化时回调：几 MB 的包能少掉上千次无谓的状态更新。
                     var lastPercent = -2
                     while (true) {
@@ -189,15 +198,41 @@ actual suspend fun downloadApkToPrivateDir(
                     output.flush()
                 }
             }
+            // 完整性校验：HttpURLConnection 在对端提前断开时**不抛异常**，
+            // 只读到 read <= 0 就退出 —— 于是「半截包」和「完整包」在这里长得一模一样。
+            // 光靠改名保护不了什么，必须自己把字节数对上。
+            if (total > 0 && done != total) {
+                part.delete()
+                return@runCatching null
+            }
             // 只有一个完整的包才会被改名成正式文件名 —— 半截的留在 .part，不会拿去安装。
             if (dest.exists()) dest.delete()
             if (!part.renameTo(dest)) return@runCatching null
+            // 字节数对上了也再让系统解析一遍：截断、内容根本不是 APK、包名不对，全挡在这。
+            if (!isInstallableApk(dest.absolutePath)) {
+                dest.delete()
+                return@runCatching null
+            }
             onProgress(1f)
             dest.absolutePath
         } finally {
             connection.disconnect()
         }
     }.getOrNull()
+}
+
+actual fun isInstallableApk(path: String): Boolean = runCatching {
+    val context = AppContext.get()
+    val file = File(path)
+    if (!file.exists() || file.length() == 0L) return false
+    // 让系统把包解析一遍：能解析、且包名是本应用，才算「下好了」。
+    val info = context.packageManager
+        .getPackageArchiveInfo(file.absolutePath, PackageInfoFlags.of(0L))
+    info != null && info.packageName == context.packageName
+}.getOrDefault(false)
+
+actual fun deleteUpdateFile(path: String) {
+    runCatching { File(path).delete() }
 }
 
 actual fun installApkFile(path: String): Boolean {

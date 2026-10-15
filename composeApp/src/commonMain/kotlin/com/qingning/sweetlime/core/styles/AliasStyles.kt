@@ -3,6 +3,7 @@ package com.qingning.sweetlime.core.styles
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.transform
+import com.qingning.sweetlime.core.forEachCodePoint
 
 /*
  * 「字符置换 / 排版」类样式：文字还是那些字，但一个字符换成一个字符，
@@ -82,14 +83,14 @@ private val halfwidthStyle: TextTransform =
 
 /**
  * 点间隔：字与字之间插入「间隔符 · (U+00B7)」，首尾不加，换行原样保留。
- * 中英文都生效（逐 Char 处理）。
+ * 中英文都生效（按**码点**处理，emoji 不会被分隔符劈开）。
  */
 private val dotSpacingStyle: TextTransform =
     nativeStyle("alias_dot_spacing", "点间隔", StyleGroup.LATIN) { input ->
         buildString(input.length * 2) {
             var first = true
-            input.forEach { ch ->
-                if (ch == '\n' || ch == '\r') {
+            input.forEachCodePoint { ch ->
+                if (ch == "\n" || ch == "\r") {
                     append(ch)
                     first = true
                 } else {
@@ -103,14 +104,14 @@ private val dotSpacingStyle: TextTransform =
 
 /**
  * 星间隔：字与字之间插入「间隔符 ⋆ (U+22C6)」，首尾不加，换行原样保留。
- * 中英文都生效（逐 Char 处理）。
+ * 中英文都生效（按**码点**处理，emoji 不会被分隔符劈开）。
  */
 private val starSpacingStyle: TextTransform =
     nativeStyle("alias_star_spacing", "星间隔", StyleGroup.LATIN) { input ->
         buildString(input.length * 2) {
             var first = true
-            input.forEach { ch ->
-                if (ch == '\n' || ch == '\r') {
+            input.forEachCodePoint { ch ->
+                if (ch == "\n" || ch == "\r") {
                     append(ch)
                     first = true
                 } else {

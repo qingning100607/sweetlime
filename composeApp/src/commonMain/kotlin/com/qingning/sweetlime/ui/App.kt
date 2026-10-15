@@ -151,6 +151,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.LocalOverScrollState
 import top.yukonga.miuix.kmp.utils.MiuixOverscrollFactory
 import top.yukonga.miuix.kmp.utils.OverScrollState
+import com.qingning.sweetlime.core.deleteUpdateFile
+import com.qingning.sweetlime.core.isInstallableApk
 
 /**
  * 应用外壳。
@@ -219,7 +221,16 @@ fun SweetLimeApp() {
             is UpdateDownloadState.Downloading -> Unit
 
             // 已经下好了：再点一下就是重新拉起系统安装器。
-            is UpdateDownloadState.Ready -> startInstall(state.path)
+            // 但包也可能已经不在了、或者根本是坏的（安装器只会报「解析软件包时出现问题」，
+            // 点一次报一次，再也回不到「重新下载」）：那就把它清掉、退回可重下的状态。
+            is UpdateDownloadState.Ready -> {
+                if (isInstallableApk(state.path)) {
+                    startInstall(state.path)
+                } else {
+                    deleteUpdateFile(state.path)
+                    downloadState = UpdateDownloadState.Failed
+                }
+            }
 
             // 上次点的时候没权限：再点一下要么装上，要么再去授权页。
             is UpdateDownloadState.NeedsPermission -> startInstall(state.path)

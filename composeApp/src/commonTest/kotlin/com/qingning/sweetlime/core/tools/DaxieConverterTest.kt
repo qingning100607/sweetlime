@@ -34,6 +34,15 @@ class DaxieConverterTest {
     }
 
     @Test
+    fun keepsZeroYuan() {
+        // 整数部分是零时也必须写出「零元」，否则 0.5 会变成「人民币伍角」这种缺元的错值。
+        assertEquals("人民币零元整", DaxieConverter.toUpper("0.00"))
+        assertEquals("人民币零元整", DaxieConverter.toUpper("0"), "0 是合法金额，不该判非法")
+        assertEquals("人民币零元零壹分", DaxieConverter.toUpper("0.01"))
+        assertEquals("人民币零元伍角", DaxieConverter.toUpper("0.5"))
+    }
+
+    @Test
     fun rejectsGarbage() {
         assertNull(DaxieConverter.toUpper(""))
         assertNull(DaxieConverter.toUpper("abc"))

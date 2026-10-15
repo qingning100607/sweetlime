@@ -48,6 +48,15 @@ expect suspend fun downloadApkToPrivateDir(
  * @return true = 系统安装器已经拉起来了；false = 缺权限或没有安装器能接（已弹授权页）。
  */
 expect fun installApkFile(path: String): Boolean
+/**
+ * 这个文件还在、系统能把它当成 APK 解析出来、且包名是本应用 —— 才允许拿去安装。
+ *
+ * 为什么要多这一步：下载断流时 `HttpURLConnection` 不抛异常，半截包会被当成完整的，
+ * 交给系统安装器只会弹「解析软件包时出现问题」，用户点一次报一次，永远回不到「重新下载」。
+ */
+expect fun isInstallableApk(path: String): Boolean
+/** 删掉更新目录里的一个文件（重下之前清干净残留）。 */
+expect fun deleteUpdateFile(path: String)
 
 /** 极简的键值持久化抽象，避免为一件小事引入整套 DataStore。 */
 interface KeyValueStore {

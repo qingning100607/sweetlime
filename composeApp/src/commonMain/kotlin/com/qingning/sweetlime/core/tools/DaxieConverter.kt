@@ -36,9 +36,12 @@ internal object DaxieConverter {
      * 例：`1234.5` → `人民币壹仟贰佰叁拾肆元伍角`。
      */
     fun toUpper(input: String): String? {
-        var text = input.trim().replace(",", "")
-        text = text.trimStart('0')
-        if (text.isEmpty()) return null
+        val raw = input.trim().replace(",", "")
+        if (raw.isEmpty()) return null
+        // 这里过去直接 trimStart('0')，顺手把「整数部分是不是零」这个人信息也丢了 ——
+        // 于是 0.00 输出「人民币整」、0.5 输出「人民币伍角」，都缺「元」。
+        // 全零时保留一位 "0"，让下面还能判断出来。
+        var text = raw.trimStart('0').ifEmpty { "0" }
         if (text.any { it != '.' && !it.isDigit() }) return null
         val value = text.toDoubleOrNull() ?: return null
         if (value < 0 || value > MAXIMUM_NUMBER) return null
@@ -63,7 +66,8 @@ internal object DaxieConverter {
         val decimal = if (dot < 0) "" else cents.toString().padStart(2, '0')
 
         val sb = StringBuilder()
-        if ((integral.toLongOrNull() ?: 0L) > 0L) {
+        val integralIsZero = (integral.toLongOrNull() ?: 0L) == 0L
+        if (!integralIsZero) {
             var zeroCount = 0
             for (i in integral.indices) {
                 val p = integral.length - i - 1
@@ -83,6 +87,9 @@ internal object DaxieConverter {
                 }
             }
             sb.append("元")
+        } else {
+            // 整数部分是零：中文金额一样要写出「零元」，不能只剩「整」/「伍角」。
+            sb.append("零元")
         }
 
         if (decimal.isNotEmpty()) {

@@ -3,6 +3,7 @@ package com.qingning.sweetlime.core.styles
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.transform
+import com.qingning.sweetlime.core.forEachCodePoint
 
 /**
  * 给每个可见字符后面追加一个“组合字符”（combining mark），
@@ -13,8 +14,10 @@ import com.qingning.sweetlime.core.transform
  */
 private fun combineEach(input: String, mark: Char): String =
     buildString(input.length * 2) {
-        input.forEach { char ->
-            if (char == '\n' || char == '\r' || char.isWhitespace()) {
+        // 按码点走：组合符要加在**整个字符**之后，加在代理对中间会毁掉 emoji。
+        input.forEachCodePoint { char ->
+            val isWhitespace = char.length == 1 && char[0].isWhitespace()
+            if (char == "\n" || char == "\r" || isWhitespace) {
                 append(char)
             } else {
                 append(char)

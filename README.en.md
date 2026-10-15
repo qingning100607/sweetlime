@@ -48,7 +48,7 @@ Limitations (by design): zip only (no rar / 7z / tar.gz); writes are not atomic,
 | AGP / Gradle | **9.1.0** / **9.3.1** |
 | Dependencies | androidx activity-compose 1.13.0 |
 | SDK | compileSdk **37**, minSdk **33** (floor for blur and predictive back), targetSdk **36** |
-| Version | versionCode **2940** / versionName **2.9.40** |
+| Version | versionCode **2941** / versionName **2.9.41** |
 
 > compileSdk has to be 37: the AAR metadata of Miuix 0.9.4 and androidx.compose 1.12.1 requires it;
 > compose 1.12.1 requires AGP ≥ 9.1.0, and AGP 9.1.0 requires Gradle ≥ 9.3.1.

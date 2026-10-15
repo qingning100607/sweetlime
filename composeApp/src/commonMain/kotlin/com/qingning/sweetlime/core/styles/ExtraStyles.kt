@@ -8,6 +8,7 @@ import com.qingning.sweetlime.core.mapping.codePointToString
 import com.qingning.sweetlime.core.mapping.mapEach
 import com.qingning.sweetlime.core.tools.toFlyingBird
 import com.qingning.sweetlime.core.transform
+import com.qingning.sweetlime.core.forEachCodePoint
 
 /** 通用字符映射样式。 */
 private fun mapStyle(id: String, title: String, group: StyleGroup, table: Map<Char, String>): TextTransform =
@@ -59,9 +60,10 @@ internal val birdStyles: List<TextTransform>
 private fun blankAppend(id: String, title: String, mark: String): TextTransform =
     transform(id, title, StyleGroup.BLANK) { input ->
         buildString(input.length * 2) {
-            input.forEach { ch ->
+            // 按码点走：填充字符不能插进代理对中间。
+            input.forEachCodePoint { ch ->
                 append(ch)
-                if (ch != '\n' && ch != '\r') append(mark)
+                if (ch != "\n" && ch != "\r") append(mark)
             }
         }
     }

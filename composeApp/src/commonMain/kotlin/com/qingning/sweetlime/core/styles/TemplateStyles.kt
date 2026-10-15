@@ -3,6 +3,7 @@ package com.qingning.sweetlime.core.styles
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.forEachCodePoint
 
 /**
  * 「装饰模板」样式：在原文前、以及每个字符之间 / 文字之后插入固定图案。
@@ -31,7 +32,8 @@ internal class TemplateStyle(
     override fun transform(input: String): String = buildString(input.length * 3) {
         append(prefix)
         var first = true
-        input.forEach { ch ->
+        // 按码点走：between 插在**码点之间**，不能落进代理对中间。
+        input.forEachCodePoint { ch ->
             if (!first) append(between)
             append(ch)
             first = false
