@@ -508,6 +508,11 @@ internal val EN: Map<String, String> = mapOf(
     "只有昵称" to "Nickname only",
     "美化结果" to "Styled result",
     "语言" to "Language",
+    "无衬线体" to "Sans-serif",
+    "粗无衬线" to "Sans-serif Bold",
+    "无衬线斜体" to "Sans-serif Italic",
+    "粗无衬线斜体" to "Sans-serif Bold Italic",
+    "粗哥特体" to "Bold Fraktur",
 )
 
 internal val TW: Map<String, String> = mapOf(
@@ -1009,6 +1014,11 @@ internal val TW: Map<String, String> = mapOf(
     "只有昵称" to "只有暱稱",
     "美化结果" to "美化結果",
     "语言" to "語言",
+    "无衬线体" to "無襯線體",
+    "粗无衬线" to "粗無襯線",
+    "无衬线斜体" to "無襯線斜體",
+    "粗无衬线斜体" to "粗無襯線斜體",
+    "粗哥特体" to "粗哥特體",
 )
 
 private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {

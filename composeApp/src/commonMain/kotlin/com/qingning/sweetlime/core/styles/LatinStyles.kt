@@ -133,10 +133,17 @@ internal val latinStyles: List<TextTransform>
         "latin_fraktur", "哥特体", 0x1D504, 0x1D51E,
         exceptions = FRAKTUR_EXCEPTIONS,
     ),
+    // Mathematical Bold Fraktur（无空洞）
+    mathStyle("latin_bold_fraktur", "粗哥特体", 0x1D56C, 0x1D586),
     mathStyle(
         "latin_double_struck", "双线体", 0x1D538, 0x1D552, 0x1D7D8,
         exceptions = DOUBLE_STRUCK_EXCEPTIONS,
     ),
+    // 无衬线家族：数字只有 sans-serif / sans-serif bold 两套，斜体家族 Unicode 没给数字
+    mathStyle("latin_sans_serif", "无衬线体", 0x1D5A0, 0x1D5BA, 0x1D7E2),
+    mathStyle("latin_sans_serif_bold", "粗无衬线", 0x1D5D4, 0x1D5EE, 0x1D7EC),
+    mathStyle("latin_sans_serif_italic", "无衬线斜体", 0x1D608, 0x1D622),
+    mathStyle("latin_sans_serif_bold_italic", "粗无衬线斜体", 0x1D63C, 0x1D656),
     nativeStyle("latin_circled", "圆圈体", StyleGroup.LATIN) { input ->
         mapEach(input) { circledTransform(it) }
     },
