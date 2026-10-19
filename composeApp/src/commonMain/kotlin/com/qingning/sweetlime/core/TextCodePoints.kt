@@ -10,6 +10,17 @@ package com.qingning.sweetlime.core
  * 所以：置换型（一个字符换一个字符）可以继续用 forEach；
  * 插入型必须用这个。
  */
+/** 按码点数长度：emoji 算 1 个字，而不是 UTF-16 单元数的 2 个。 */
+internal fun String.codePointLength(): Int {
+    var n = 0
+    var i = 0
+    while (i < length) {
+        i += if (this[i].isHighSurrogate() && i + 1 < length && this[i + 1].isLowSurrogate()) 2 else 1
+        n++
+    }
+    return n
+}
+
 internal inline fun String.forEachCodePoint(action: (String) -> Unit) {
     var i = 0
     while (i < length) {

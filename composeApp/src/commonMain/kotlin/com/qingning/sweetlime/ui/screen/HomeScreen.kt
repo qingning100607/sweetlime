@@ -38,6 +38,7 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Clear
 import top.yukonga.miuix.kmp.icon.extended.Paste
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.core.codePointLength
 
 /** 主页上的一个分类条目。 */
 private class GroupEntry(
@@ -181,11 +182,14 @@ fun HomeScreen(
                     .padding(horizontal = 18.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // 字数按**码点**算，不用 input.length：后者是 UTF-16 单元数，
+                // 一个 emoji 会算成 2 个字（🎉🎉🎉 显示 6 字），平台限长提示就失真了。
+                val charCount = remember(input) { input.codePointLength() }
                 Text(
-                    text = if (input.length > NICKNAME_SOFT_LIMIT) {
-                        trf("{} 字 · 偏长，部分平台会截断", input.length)
+                    text = if (charCount > NICKNAME_SOFT_LIMIT) {
+                        trf("{} 字 · 偏长，部分平台会截断", charCount)
                     } else {
-                        trf("{} 字", input.length)
+                        trf("{} 字", charCount)
                     },
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceContainerVariant,

@@ -1,6 +1,7 @@
 package com.qingning.sweetlime.core
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -32,6 +33,15 @@ class SurrogateSafetyTest {
             }
         }
         return bad
+    }
+
+    @Test
+    fun codePointLengthCountsEmojiAsOne() {
+        assertEquals(3, "abc".codePointLength())
+        assertEquals(1, "\uD83C\uDF89".codePointLength(), "一个 emoji 是 1 个字")
+        assertEquals(3, "\uD83C\uDF89\uD83C\uDF89\uD83C\uDF89".codePointLength())
+        assertEquals(4, "a\uD83C\uDF89b\u597D".codePointLength())
+        assertEquals(0, "".codePointLength())
     }
 
     @Test
