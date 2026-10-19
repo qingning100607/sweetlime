@@ -508,18 +508,6 @@ internal val EN: Map<String, String> = mapOf(
     "只有昵称" to "Nickname only",
     "美化结果" to "Styled result",
     "语言" to "Language",
-    "自定义装饰" to "Custom decoration",
-    "给文字加前后缀，并在字间插符号" to "Add a prefix and suffix, and insert a mark between characters",
-    "全部样式" to "All styles",
-    "一次把全部样式铺开，点一条即复制" to "Lay out every style at once; tap one to copy",
-    "输入要装饰的文字" to "Enter the text to decorate",
-    "前缀 / 字间 / 后缀都可以留空；换行处不会插符号。" to "Prefix, between and suffix can all be left empty; nothing is inserted at line breaks.",
-    "装饰结果" to "Decorated text",
-    "前缀" to "Prefix",
-    "字间" to "Between",
-    "后缀" to "Suffix",
-    "输入要预览的文字" to "Enter text to preview",
-    "（在上面输入文字后这里会显示效果）" to "(The result shows here once you type above)",
 )
 
 internal val TW: Map<String, String> = mapOf(
@@ -1021,18 +1009,6 @@ internal val TW: Map<String, String> = mapOf(
     "只有昵称" to "只有暱稱",
     "美化结果" to "美化結果",
     "语言" to "語言",
-    "自定义装饰" to "自訂裝飾",
-    "给文字加前后缀，并在字间插符号" to "給文字加前後綴，並在字間插入符號",
-    "全部样式" to "全部樣式",
-    "一次把全部样式铺开，点一条即复制" to "一次把全部樣式鋪開，點一條即複製",
-    "输入要装饰的文字" to "輸入要裝飾的文字",
-    "前缀 / 字间 / 后缀都可以留空；换行处不会插符号。" to "前綴 / 字間 / 後綴都可以留空；換行處不會插入符號。",
-    "装饰结果" to "裝飾結果",
-    "前缀" to "前綴",
-    "字间" to "字間",
-    "后缀" to "後綴",
-    "输入要预览的文字" to "輸入要預覽的文字",
-    "（在上面输入文字后这里会显示效果）" to "（在上面輸入文字後這裡會顯示效果）",
 )
 
 private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {

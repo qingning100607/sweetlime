@@ -61,9 +61,6 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.basic.Check
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import com.qingning.sweetlime.core.TransformRegistry
-import com.qingning.sweetlime.core.tools.decorate
-import androidx.compose.foundation.lazy.items
 
 internal fun toolTitle(id: String): String =
     TOOL_ENTRIES.firstOrNull { it.id == id }?.title ?: tr("工具")
@@ -130,8 +127,6 @@ fun ToolScreen(
             "currency" -> CurrencyToolScreen(onCopyText = onCopyText)
             "bmi" -> BmiToolScreen(onCopyText = onCopyText)
             "editor" -> CodeEditorToolScreen(onCopyText = onCopyText)
-            "decorate" -> DecorateToolScreen(onCopyText = onCopyText)
-            "allstyles" -> AllStylesToolScreen(onCopyText = onCopyText)
             // 兜底：toolId 正常只可能来自路由，走到这里说明 id 对不上
             // （路由恢复异常、版本调整过工具表等）。没有这个分支就是一整页空白，
             // 连顶栏都没有，用户只能靠系统返回键退出。
@@ -397,121 +392,6 @@ private fun UnknownTool() {
                 title = tr("这个工具不存在"),
                 summary = tr("可能是版本更新后工具列表调整过。返回上一页重新进一次就好。"),
             )
-        }
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 自定义装饰                                                                  */
-/* -------------------------------------------------------------------------- */
-@Composable
-private fun DecorateToolScreen(onCopyText: (String, String) -> Unit) {
-    // 三段装饰只活在这一次会话里：它们属于「临时凑一个效果」，
-    // 存盘反而会让下次打开时莫名其妙多出上次的符号。
-    var prefix by rememberSaveable { mutableStateOf("") }
-    var between by rememberSaveable { mutableStateOf("") }
-    var suffix by rememberSaveable { mutableStateOf("") }
-    ConverterToolScreen(
-        placeholder = tr("输入要装饰的文字"),
-        hint = tr("前缀 / 字间 / 后缀都可以留空；换行处不会插符号。"),
-        resultLabel = tr("装饰结果"),
-        convert = { text -> decorate(text, prefix, between, suffix) },
-        onCopyText = onCopyText,
-        extra = {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    TextField(
-                        value = prefix,
-                        onValueChange = { prefix = it },
-                        label = tr("前缀"),
-                        useLabelAsPlaceholder = true,
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        value = between,
-                        onValueChange = { between = it },
-                        label = tr("字间"),
-                        useLabelAsPlaceholder = true,
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        value = suffix,
-                        onValueChange = { suffix = it },
-                        label = tr("后缀"),
-                        useLabelAsPlaceholder = true,
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-        },
-    )
-}
-
-/* -------------------------------------------------------------------------- */
-/* 全部样式                                                                    */
-/* -------------------------------------------------------------------------- */
-@Composable
-private fun AllStylesToolScreen(onCopyText: (String, String) -> Unit) {
-    var input by rememberSaveable { mutableStateOf("") }
-    val all = TransformRegistry.all
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .overScrollVertical()
-            .hyperScrollHaptic(),
-        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
-    ) {
-        item {
-            Column {
-                TopBarInsetSpacer()
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    value = input,
-                    onValueChange = { input = it },
-                    label = tr("输入要预览的文字"),
-                    useLabelAsPlaceholder = true,
-                    maxLines = 2,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = tr("一次把全部样式铺开，点一条即复制"),
-                    style = MiuixTheme.textStyles.footnote1,
-                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-        // 每一条样式都是独立的 item：只组合可见的那十几条。
-        // （项目里另几处把整张列表塞进一个 item，任何 invalidate 都要全量重跑，这里不跟那种写法。）
-        items(items = all, key = { style -> style.id }, contentType = { "style" }) { style ->
-            val out = remember(style.id, input) {
-                if (input.isEmpty()) "" else style.transform(input)
-            }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 3.dp),
-            ) {
-                BasicComponent(
-                    title = style.title,
-                    summary = out.ifEmpty { tr("（在上面输入文字后这里会显示效果）") },
-                    onClick = { if (out.isNotEmpty()) onCopyText(out, style.title) },
-                    endActions = {
-                        Icon(
-                            imageVector = MiuixIcons.Basic.ArrowRight,
-                            contentDescription = null,
-                            tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                        )
-                    },
-                )
-            }
         }
     }
 }

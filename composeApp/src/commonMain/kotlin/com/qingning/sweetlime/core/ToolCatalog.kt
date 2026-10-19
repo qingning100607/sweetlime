@@ -32,6 +32,4 @@ val TOOL_ENTRIES: List<ToolEntry>
     ToolEntry("bmi", tr("身体 BMI"), tr("身高体重算 BMI，附健康体重范围")),
     ToolEntry("level", tr("水平仪"), tr("重力感应看水平，气泡居中即平，可校准归零")),
     ToolEntry("editor", tr("代码编辑器"), tr("等宽字体 + 行号，写代码 / 长文本用")),
-    ToolEntry("decorate", tr("自定义装饰"), tr("给文字加前后缀，并在字间插符号")),
-    ToolEntry("allstyles", tr("全部样式"), tr("一次把全部样式铺开，点一条即复制")),
 )
