@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import com.qingning.sweetlime.core.KeyValueStore
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 
-/** 深色模式选项。 */
+/** 主题模式选项：跟随系统 / 浅色 / 深色。 */
 object ThemeMode {
     const val SYSTEM = 0
     const val LIGHT = 1
@@ -19,7 +19,7 @@ object ThemeMode {
  */
 class SweetLimeSettings(private val store: KeyValueStore) {
     private var monetState by mutableStateOf(store.getBoolean(KEY_MONET, false))
-    private var themeModeState by mutableStateOf(store.getInt(KEY_THEME_MODE, ThemeMode.LIGHT))
+    private var themeModeState by mutableStateOf(store.getInt(KEY_THEME_MODE, ThemeMode.SYSTEM))
     // 默认关闭：保持原有的贴底导航栏，想要的自己去设置里开。
     private var floatingBarState by mutableStateOf(store.getBoolean(KEY_FLOATING_BAR, false))
     // 主页「发现新版本」提示被点掉的那个版本号：同一个版本不再打扰，
@@ -31,7 +31,7 @@ class SweetLimeSettings(private val store: KeyValueStore) {
     // 流光风格：0=跟随系统（按 HyperOS 大版本）、1=OS2、2=OS3。见 HyperOsStyle。
     // 默认直接选 **OS3**（配色在三组色板间流动的那一代），不跟随系统 ——
     // 这样不管机器上是哪个 HyperOS 版本，首装看到的都是最新的那套观感。
-    private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.OS3))
+    private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.AUTO))
     // 震动反馈：默认开（与上游 HyperLight 一致，它也有个总开关）。
     private var hapticState by mutableStateOf(store.getBoolean(KEY_HAPTIC, true))
     // 界面语言：zh=简体 / en=英文 / tw=繁体。存 code，认不出来回落简体。

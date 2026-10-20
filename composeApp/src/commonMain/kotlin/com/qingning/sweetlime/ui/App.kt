@@ -177,7 +177,7 @@ fun SweetLimeApp() {
     // 界面语言：在组合期订阅设置里的 code，再用 SideEffect 落到全局 AppLocale 上。
     // 这样改语言 = 改一个 State，整个界面按新语言重组，不用重启 Activity。
     val languageCode = settings.language
-    SideEffect { AppLocale.apply(AppLanguage.fromCode(languageCode)) }
+    SideEffect { AppLocale.applyStored(languageCode) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }

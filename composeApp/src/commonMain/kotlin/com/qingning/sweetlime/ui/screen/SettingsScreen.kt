@@ -168,7 +168,7 @@ fun SettingsScreen(
                 )
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
-                        title = tr("深色模式"),
+                        title = tr("主题模式"),
                         onClick = { showThemePopup = true },
                         startAction = { RowStartIcon(MiuixIcons.Hide) },
                         endActions = {
@@ -324,8 +324,9 @@ fun SettingsScreen(
                         startAction = { RowStartIcon(rememberLanguageIcon()) },
                         endActions = {
                             Text(
-                                // 语言名一律用它自己的写法，不跟着翻译走
-                                text = AppLocale.current.label,
+                                // 具体语言一律用它自己的写法，不跟着翻译走；
+                                // 「跟随系统」才翻译。
+                                text = languageRowLabel(settings.language),
                                 style = MiuixTheme.textStyles.body2,
                                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                             )
@@ -343,14 +344,21 @@ fun SettingsScreen(
                         onDismissRequest = { showLanguagePopup = false },
                     ) {
                         ListPopupColumn {
-                            AppLanguage.entries.forEachIndexed { index, language ->
+                            // 第一项是「跟随系统」，后面才是具体语言。
+                            val options: List<Pair<String, String>> = buildList {
+                                add(AppLanguage.AUTO_CODE to tr("跟随系统"))
+                                AppLanguage.entries.forEach { add(it.code to it.label) }
+                            }
+                            options.forEachIndexed { index, (code, label) ->
                                 DropdownImpl(
-                                    text = language.label,
-                                    optionSize = AppLanguage.entries.size,
-                                    isSelected = AppLocale.current == language,
+                                    text = label,
+                                    optionSize = options.size,
+                                    // 比的是「选中的那一项」，不是生效后的语言：
+                                    // 选了跟随系统时，生效语言会和某一项同名。
+                                    isSelected = settings.language == code,
                                     index = index,
                                     onSelectedIndexChange = {
-                                        settings.language = language.code
+                                        settings.language = code
                                         showLanguagePopup = false
                                     },
                                 )
@@ -524,6 +532,10 @@ private fun themeLabel(mode: Int): String = when (mode) {
     ThemeMode.DARK -> tr("深色")
     else -> tr("跟随系统")
 }
+
+/** 「语言」这一行右侧的值：跟随系统 / 简体中文 / English / 繁體中文。 */
+private fun languageRowLabel(code: String): String =
+    if (code == AppLanguage.AUTO_CODE) tr("跟随系统") else AppLanguage.fromCode(code).label
 
 /** 「流光风格」当前值：跟随系统 / OS 2 / OS 3。 */
 private fun flowStyleLabel(style: Int): String = when (style) {

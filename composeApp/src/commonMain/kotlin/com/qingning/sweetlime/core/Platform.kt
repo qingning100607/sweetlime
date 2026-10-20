@@ -25,6 +25,13 @@ expect fun openUrl(url: String)
 expect fun softBlurEffect(radiusPx: Float, saturation: Float, brightness: Float): RenderEffect
 
 /** 拉一段纯文本（用于「检查更新」），失败返回 null。 */
+/**
+ * 系统界面语言：设置里选「跟随系统」时用它决定实际语言。
+ *
+ * 只认简体 / 繁体 / 英文三类，其余一律落到简体（词表就只有这三套）。
+ */
+expect fun systemUiLanguage(): com.qingning.sweetlime.core.i18n.AppLanguage
+
 expect suspend fun httpGetText(url: String): String?
 
 /**

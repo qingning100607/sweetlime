@@ -12,9 +12,10 @@ import kotlin.test.assertTrue
  *
  * 首装的四个开关是产品决定，不是随手写下的初值：
  * - 流光背景 **关**（首帧/每帧的着色器开销不该让新用户先扛）
+ * - 流光风格 **跟随系统**
  * - 震动反馈 **开**
  * - 悬浮底栏 **关**（默认用贴底的标准导航栏）
- * - 主题 **浅色**
+ * - 主题 **跟随系统**
  *
  * 这里的 store 是「什么都没有」的状态，正好等价于刚安装完的 SharedPreferences。
  */
@@ -39,11 +40,11 @@ class SweetLimeSettingsTest {
         assertFalse(settings.flowingBackground, "流光背景首装应该是关的")
         assertTrue(settings.hapticFeedback, "震动反馈首装应该是开的")
         assertFalse(settings.floatingBottomBar, "悬浮底栏首装应该是关的（用贴底标准底栏）")
-        assertEquals(ThemeMode.LIGHT, settings.themeMode, "首装应该是浅色模式")
+        assertEquals(ThemeMode.SYSTEM, settings.themeMode, "首装应该是跟随系统")
         // 顺带钉住其余几项，免得以后误改
         assertEquals("zh", settings.language)
         assertFalse(settings.monet)
-        assertEquals(HyperOsStyle.OS3, settings.flowingStyle)
+        assertEquals(HyperOsStyle.AUTO, settings.flowingStyle)
         assertEquals("", settings.dismissedUpdate)
     }
 

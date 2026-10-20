@@ -1,5 +1,7 @@
 package com.qingning.sweetlime.core
 
+import java.util.Locale
+import com.qingning.sweetlime.core.i18n.AppLanguage
 import com.qingning.sweetlime.core.i18n.tr
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -146,6 +148,20 @@ actual suspend fun httpGetText(url: String): String? = withContext(Dispatchers.I
             connection.disconnect()
         }
     }.getOrNull()
+}
+
+actual fun systemUiLanguage(): AppLanguage {
+    // 繁体判断：脚本是 Hant，或者国家/地区属于港澳台。Locale.script 要 API 21+，我们最低 33。
+    val locale = Locale.getDefault()
+    return when {
+        locale.language == "zh" -> {
+            val traditional = locale.script == "Hant" ||
+                locale.country.uppercase() in setOf("TW", "HK", "MO")
+            if (traditional) AppLanguage.TW else AppLanguage.ZH
+        }
+        locale.language == "en" -> AppLanguage.EN
+        else -> AppLanguage.ZH
+    }
 }
 
 actual suspend fun downloadApkToPrivateDir(
