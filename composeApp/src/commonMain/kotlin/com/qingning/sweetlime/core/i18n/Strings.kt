@@ -513,6 +513,9 @@ internal val EN: Map<String, String> = mapOf(
     "无衬线斜体" to "Sans-serif Italic",
     "粗无衬线斜体" to "Sans-serif Bold Italic",
     "粗哥特体" to "Bold Fraktur",
+    "复制颜色" to "Copy color",
+    "颜色昵称" to "Color nickname",
+    "点击单独复制颜色昵称，加在群昵称内即可" to "Tap to copy the color-only nickname, then paste it into your group nickname.",
 )
 
 internal val TW: Map<String, String> = mapOf(
@@ -1019,6 +1022,9 @@ internal val TW: Map<String, String> = mapOf(
     "无衬线斜体" to "無襯線斜體",
     "粗无衬线斜体" to "粗無襯線斜體",
     "粗哥特体" to "粗哥特體",
+    "复制颜色" to "複製顏色",
+    "颜色昵称" to "顏色暱稱",
+    "点击单独复制颜色昵称，加在群昵称内即可" to "點擊單獨複製顏色暱稱，加在群暱稱內即可",
 )
 
 private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {

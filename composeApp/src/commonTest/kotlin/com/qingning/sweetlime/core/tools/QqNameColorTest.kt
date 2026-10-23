@@ -12,9 +12,8 @@ import kotlin.test.assertEquals
  */
 class QqNameColorTest {
 
-    private val filler = '\u1160'
     private val isolate = '\u2067'
-    private val lro = '\u202D'
+    private val lri = '\u2066'
 
     @Test
     fun colorTagEncodesChannelsAsCodePoints() {
@@ -43,7 +42,7 @@ class QqNameColorTest {
     fun buildsFullString() {
         // 尾巴 `喵~`：结尾的 `~` 被切下来倒序后拼到最前 → `~喵`
         assertEquals(
-            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + filler + isolate + "~喵" + isolate + lro,
+            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + isolate + "~喵" + lri,
             QqNameColor.build("洛铭酱", "喵~"),
         )
     }
@@ -52,16 +51,29 @@ class QqNameColorTest {
     fun emptyTailStillKeepsControlChars() {
         // 尾巴留空时，三个控制字符依然要在：少了它们 QQ 那边的整串方向会乱。
         assertEquals(
-            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + filler + isolate + isolate + lro,
+            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + isolate + lri,
             QqNameColor.build("洛铭酱", ""),
         )
     }
 
     @Test
-    fun nicknameIsTrimmedButTailIsNot() {
+    fun nicknameAndTailEndsAreTrimmed() {
+        // 昵称和尾巴的首尾空白都去掉：尾巴前面多一个空格会在名字和尾巴之间留空档。
+        // 中间的空格照旧保留（那是用户自己排的版）。
         assertEquals(
-            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭" + filler + isolate + " 喵" + isolate + lro,
-            QqNameColor.build("  洛铭  ", " 喵"),
+            "<&\u00FF\u00FF\u0000\u0000>" + "洛 铭" + isolate + "喵 喵" + lri,
+            QqNameColor.build("  洛 铭  ", "  喵 喵   "),
+        )
+    }
+
+
+    @Test
+    fun emptyNicknameWithColorGivesJustColorTag() {
+        // 昵称留空、只开颜色：结果就是「颜色标记 + 三个控制字符」，
+        // 用户把它粘到群昵称最前面，就给自己现在的昵称上色（不用重打名字）。
+        assertEquals(
+            "<&\u00FF\u00FF\u0000\u0000>" + isolate + lri,
+            QqNameColor.build("", ""),
         )
     }
 
@@ -69,7 +81,7 @@ class QqNameColorTest {
     fun customColorGoesIntoTag() {
         // 绿=255、蓝=255、不透明：青
         assertEquals(
-            "<&\u00FF\u0000\u00FF\u00FF>" + "洛" + filler + isolate + isolate + lro,
+            "<&\u00FF\u0000\u00FF\u00FF>" + "洛" + isolate + lri,
             QqNameColor.build("洛", "", 255, 0, 255, 255),
         )
     }
@@ -80,7 +92,7 @@ class QqNameColorTest {
     fun colorOnlyEqualsUpstreamEmptyTail() {
         // 只开颜色：控制字符照样要在（和上游把尾巴留空时的产出一样）。
         assertEquals(
-            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + filler + isolate + isolate + lro,
+            "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + isolate + lri,
             QqNameColor.build("洛铭酱", "喵~", useTail = false),
         )
     }
@@ -89,7 +101,7 @@ class QqNameColorTest {
     fun tailOnlyDropsColorTag() {
         // 只开尾巴：颜色标记没了，尾巴的标点倒序照旧。
         assertEquals(
-            "洛铭酱" + filler + isolate + "~喵" + isolate + lro,
+            "洛铭酱" + isolate + "~喵" + lri,
             QqNameColor.build("洛铭酱", "喵~", useColor = false),
         )
     }

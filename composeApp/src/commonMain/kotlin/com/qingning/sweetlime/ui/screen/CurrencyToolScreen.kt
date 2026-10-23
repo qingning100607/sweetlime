@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.rememberClickHaptic
 import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -181,11 +182,16 @@ private fun CurrencyPickRow(
     onDismiss: () -> Unit,
     onPick: (String) -> Unit,
 ) {
+    // 弹二级菜单时响一下。
+    val clickHaptic = rememberClickHaptic()
     Box(modifier = Modifier.fillMaxWidth()) {
         BasicComponent(
             title = title,
             summary = CurrencyApi.displayName(code),
-            onClick = onExpand,
+            onClick = {
+                clickHaptic()
+                onExpand()
+            },
             endActions = {
                 Text(
                     text = code,
@@ -215,7 +221,10 @@ private fun CurrencyPickRow(
                         optionSize = options.size,
                         isSelected = entry.second == code,
                         index = index,
-                        onSelectedIndexChange = { onPick(entry.second) },
+                        onSelectedIndexChange = {
+                            clickHaptic()
+                            onPick(entry.second)
+                        },
                     )
                 }
             }

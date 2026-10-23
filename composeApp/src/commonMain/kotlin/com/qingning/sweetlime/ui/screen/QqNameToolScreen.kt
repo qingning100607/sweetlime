@@ -176,13 +176,33 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+        // 开了颜色时，昵称留空也能复制：这时复制的就是「颜色标记」本身，
+        // 粘到群昵称的最前面就能给自己现在的昵称上色（不用把昵称再打一遍）。
+        val canCopy = nickname.isNotBlank() || useColor
         TextButton(
-            text = if (nickname.isBlank()) tr("先填昵称") else tr("复制结果"),
-            onClick = { onCopyText(result, tr("美化结果")) },
-            enabled = nickname.isNotBlank(),
+            text = when {
+                nickname.isNotBlank() -> tr("复制结果")
+                useColor -> tr("复制颜色")
+                else -> tr("先填昵称")
+            },
+            onClick = {
+                onCopyText(
+                    result,
+                    if (nickname.isNotBlank()) tr("美化结果") else tr("颜色昵称"),
+                )
+            },
+            enabled = canCopy,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
+        if (nickname.isBlank() && useColor) {
+            Text(
+                text = tr("点击单独复制颜色昵称，加在群昵称内即可"),
+                style = MiuixTheme.textStyles.footnote1,
+                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+            )
+        }
 
         SmallTitle(text = tr("生成结果"))
         Card(modifier = Modifier.fillMaxWidth()) {

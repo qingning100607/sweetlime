@@ -1,4 +1,5 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.bleedHorizontal
 import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageBackground
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -146,6 +148,7 @@ fun ToolScreen(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .bleedHorizontal()
                     .hazeEffect(
                         state = hazeState,
                         style = HazeStyle(
@@ -159,6 +162,20 @@ fun ToolScreen(
                             endIntensity = 0f,
                         )
                     },
+            )
+            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
+            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
+            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
+            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0.0f to MiuixTheme.colorScheme.surface.copy(alpha = 0.55f),
+                            0.6f to Color.Transparent,
+                        ),
+                    ),
             )
             SmallTopAppBar(
                 // 顶栏自己不铺底：背景已经由外层铺好了。

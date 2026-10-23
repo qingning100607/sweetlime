@@ -92,6 +92,19 @@ object HyperHaptics {
         }.getOrDefault(false)
     }
 
+    /**
+     * 点击类反馈（弹二级菜单 / 下拉项选中）：**照 KernelSU 的做法**，
+     * 直接给 `View.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)`。
+     *
+     * 不走 [performMiuixAsync]：那条用的是 MIUI_HAPTIC_SLIDE（0x1000000D），是「滑动」档，
+     * 落在这种点上明显偏轻；KSU 用的就是系统 VIRTUAL_KEY，震感比它扎实得多。
+     */
+    fun performClick(view: View?): Boolean {
+        if (!enabled) return false
+        if (view == null) return false
+        return runCatching { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
+            .getOrDefault(false)
+    }
     /** HyperLight 的映射表：只放行下面这些值，未知值不震。 */
     private fun constantFor(raw: Int): Int = when (raw) {
         16, 6, 13, 23, 3, 0, 17, 27, 26, 9, 22, 21, 1 -> raw
@@ -121,6 +134,7 @@ private class HyperHapticFeedback(private val view: View) : HapticFeedback {
 
 /** Compose 的震动类型 -> Android 常量；没列到的按 CONTEXT_CLICK 处理。 */
 private fun rawConstantOf(type: HapticFeedbackType): Int = when (type) {
+    HapticFeedbackType.VirtualKey -> HapticFeedbackConstants.VIRTUAL_KEY
     HapticFeedbackType.LongPress -> HapticFeedbackConstants.LONG_PRESS
     HapticFeedbackType.TextHandleMove -> HapticFeedbackConstants.TEXT_HANDLE_MOVE
     else -> HapticFeedbackConstants.CONTEXT_CLICK

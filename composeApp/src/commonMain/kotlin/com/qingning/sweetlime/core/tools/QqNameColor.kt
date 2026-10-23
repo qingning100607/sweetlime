@@ -16,8 +16,6 @@ package com.qingning.sweetlime.core.tools
  *    （顺序是 alpha、red、green、blue，各 0..255）—— QQ 读这个标记给昵称上色；
  * 2. **昵称**本体；
  * 3. **三个控制字符**：
- *    - `U+1160` HANGUL JUNGSEONG FILLER：占位，把后面内容与昵称隔开（自己不显示）；
- *    - `U+2067` RIGHT-TO-LEFT ISOLATE：把「尾巴」这段隔离起来，
  *      免得 QQ 把尾巴当成昵称的一部分去做方向 / 样式处理；
  *    - `U+202D` LEFT-TO-RIGHT OVERRIDE：把整串方向钉成从左到右，
  *      否则上面的隔离符在某些客户端上会把整行显示方向搞乱。
@@ -41,14 +39,13 @@ object QqNameColor {
     /** 尾巴结尾的「标点 / 符号」连续串。`\p{P}` 标点、`\p{S}` 符号，与上游正则一致。 */
     private val TRAILING_PUNCT = Regex("[\\p{P}\\p{S}]+$")
 
-    /** U+1160：占位，隔开昵称与尾巴。 */
-    private const val FILLER = '\u1160'
 
     /** U+2067：把尾巴隔离起来。 */
     private const val ISOLATE = '\u2067'
 
-    /** U+202D：整串强制从左到右。 */
-    private const val LTR_OVERRIDE = '\u202D'
+    /** U+2066 LRI：整串的收尾符（用户实例里那个 ⁦）。 */
+    private const val LRI = '\u2066'
+
 
     /** 颜色标记：`<&` + 四个「码点 = 通道值」的字符 + `>`。 */
     fun colorTag(alpha: Int, red: Int, green: Int, blue: Int): String = buildString(7) {
@@ -74,14 +71,14 @@ object QqNameColor {
      * 生成完整的美化串。
      *
      * [nickname] 会去掉首尾空白（对齐上游的 `value.trim()`）；
-     * [tail] **原样**使用（上游不 trim，尾巴开头的空格是要保留的）。
+     * [tail] 会去掉**首尾**空白（上游不 trim；实测尾巴开头多一个空格会在名字和尾巴之间
      *
      * [useColor] / [useTail] 是两个**可以独立开关**的部分 —— 上游网页只能一起用，
      * 这里按需求拆开了，四种组合：
      *
      * | 颜色 | 尾巴 | 产出 |
      * |---|---|---|
-     * | 开 | 开 | 与上游**逐字节一致**（默认值走的就是这条，老行为不变） |
+     * | 开 | 开 | 昵称 + 尾巴（结构按用户实测实例：去掉 U+1160，收尾用 U+2066） |
      * | 开 | 关 | 等于上游「尾巴留空」时的产出 |
      * | 关 | 开 | 昵称 + 尾巴；这是把上游结构里的颜色标记去掉，
      *             上游没有这种输出，实际效果得在 QQ 群里实测 |
@@ -104,8 +101,10 @@ object QqNameColor {
         if (!useColor && !hasTail) return name
 
         // 尾巴部分：结尾连续的标点会被切下来、倒序后拼到最前（上游行为）。
+        // 首尾空白先去掉：昵称和尾巴之间本来就会被拼得紧贴，
+        // 用户多打（或从别处粘过来带上）的空格会变成一道看得见的空档，属于多余。
         val tailBody = if (hasTail) {
-            val (puncts, body) = splitTrailingPuncts(tail)
+            val (puncts, body) = splitTrailingPuncts(tail.trim())
             puncts.reversed() + body
         } else {
             ""
@@ -114,11 +113,9 @@ object QqNameColor {
         return buildString {
             if (useColor) append(colorTag(alpha, red, green, blue))
             append(name)
-            append(FILLER)
             append(ISOLATE)
             append(tailBody)
-            append(ISOLATE)
-            append(LTR_OVERRIDE)
+            append(LRI)
         }
     }
 

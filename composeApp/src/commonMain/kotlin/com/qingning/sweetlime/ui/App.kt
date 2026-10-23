@@ -104,6 +104,7 @@ import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.components.rememberTabPagerState
 import com.qingning.sweetlime.ui.effect.HyperHaptics
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
+import com.qingning.sweetlime.ui.effect.bleedHorizontal
 import com.qingning.sweetlime.ui.nav.Route
 import com.qingning.sweetlime.ui.screen.AboutScreen
 import com.qingning.sweetlime.ui.screen.DetailScreen
@@ -732,6 +733,7 @@ private fun RootScaffold(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .bleedHorizontal()
                     .hazeEffect(
                         state = hazeState,
                         style = HazeStyle(
@@ -746,6 +748,20 @@ private fun RootScaffold(
                             endIntensity = 0f,
                         )
                     },
+            )
+            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
+            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
+            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
+            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0.0f to MiuixTheme.colorScheme.surface.copy(alpha = 0.55f),
+                            0.6f to Color.Transparent,
+                        ),
+                    ),
             )
             TopAppBar(
                 // 大标题会随内容上滑收起、下滑展开（HyperOS 那种），

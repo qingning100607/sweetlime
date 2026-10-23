@@ -1,5 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 
+import com.qingning.sweetlime.ui.effect.rememberClickHaptic
 import com.qingning.sweetlime.core.downloadToDownloads
 import com.qingning.sweetlime.core.httpGetDocument
 import com.qingning.sweetlime.core.i18n.tr
@@ -85,6 +86,8 @@ internal fun SnifferToolScreen(
     var found by remember { mutableStateOf<List<ResourceSniffer.Resource>>(emptyList()) }
     var scannedCss by remember { mutableStateOf(0) }
     var preview by remember { mutableStateOf<ResourceSniffer.Resource?>(null) }
+    // 弹出大图预览时响一下。
+    val clickHaptic = rememberClickHaptic()
     // 正在下载的地址（同一时刻同一个地址不允许重复点）
     var downloading by remember { mutableStateOf<Set<String>>(emptySet()) }
     // 嗅探出来的页面地址：下载时当 Referer 用，能过掉不少图床的防盗链
@@ -275,7 +278,10 @@ internal fun SnifferToolScreen(
                                 previewable = kind == Kind.IMAGE,
                                 downloading = downloading.contains(resource.url),
                                 onCopy = { onCopyText(resource.url, ResourceSniffer.suggestFileName(resource.url)) },
-                                onPreview = { preview = resource },
+                                onPreview = {
+                                    clickHaptic()
+                                    preview = resource
+                                },
                                 onDownload = { download(resource) },
                             )
                         }

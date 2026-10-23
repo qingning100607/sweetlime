@@ -66,34 +66,11 @@ object OpenSourceLicenses {
             "Copyright compose-miuix-ui contributors\nLicense: Apache License 2.0",
         ),
         Doc(
-            "lyricon",
-            "Copyright 2026 Proify, Tomakino\n" +
-                "License: Apache License 2.0\n" +
-                "https://github.com/kifranei/lyricon\n\n" +
-                "The \"Flowing Background\" option in Settings uses its AGSL shaders and\n" +
-                "color presets (app/src/main/kotlin/io/github/proify/lyricon/app/compose/effect/).\n" +
-                "Files taken from that project: OS2BgFrag.kt, OS3BgFrag.kt, BgEffectConfig.kt,\n" +
-                "BgEffectPainter.kt, FrameTimeSeconds.kt, BgEffectBackground.kt,\n" +
-                "HyperOsDetector.kt (ported as HyperOsStyle.kt).\n\n" +
-                "Modified, as declared under section 4(b) of the Apache License 2.0:\n" +
-                "- preference handling was removed; the enabled flag and the shader style are\n" +
-                "  now passed in as parameters from the settings screen;\n" +
-                "- HyperOsStyle.kt keeps only the HyperOS major-version lookup and the\n" +
-                "  follow-system / OS 2 / OS 3 resolution, accesses android.os.* via\n" +
-                "  reflection so it can live in commonMain, and drops the upstream\n" +
-                "  \"draw nothing on HyperOS 1\" branch (the switch is binary here);\n" +
-                "- package renamed to com.qingning.sweetlime.ui.effect;\n" +
-                "- com.qingning.sweetlime.ui.effect.FlowingSurface.kt and\n" +
-                "  com.qingning.sweetlime.ui.effect.FlowingLayer.kt are new work added by this\n" +
-                "  project and are not part of the original repository. FlowingSurface.kt\n" +
-                "  overrides the surfaceContainer family with the same alphas as upstream\n" +
-                "  (AppComposable.kt) and hides the divider; FlowingLayer.kt lets a page paint\n" +
-                "  the very same flow layer as its own opaque background, reusing the single\n" +
-                "  shader brush of BgEffectBackground (the upstream About screen does the same\n" +
-                "  with a second BgEffectBackground instance; here one instance is shared).",
+            "Haze",
+            "Copyright Chris Banes\nLicense: Apache License 2.0\nhttps://github.com/chrisbanes/haze\n\nUsed for the live frosted glass on the top bar, the bottom bar and the\nfloating capsule (HazeState / hazeSource / hazeEffect with a progressive\nvertical gradient). No source files were copied; only the published API\nis used.",
         ),
         Doc(
-            "AndroidX",
+            "AndroidX (activity-compose)",
             "Copyright The Android Open Source Project\nLicense: Apache License 2.0",
         ),
         Doc(

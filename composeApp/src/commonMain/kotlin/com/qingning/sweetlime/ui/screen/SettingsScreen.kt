@@ -1,4 +1,6 @@
 package com.qingning.sweetlime.ui.screen
+import com.qingning.sweetlime.ui.effect.rememberClickHaptic
+import com.qingning.sweetlime.ui.effect.bleedHorizontal
 import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -118,6 +121,8 @@ fun SettingsScreen(
     var showFlowStylePopup by remember { mutableStateOf(false) }
     var showLanguagePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
+    // 弹二级菜单时响一下（miuix 的 BasicComponent 自己不带这个反馈）。
+    val clickHaptic = rememberClickHaptic()
     val density = LocalDensity.current
     // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect，滚动时逐帧真高斯。
     val hazeState = remember { HazeState() }
@@ -169,7 +174,10 @@ fun SettingsScreen(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
                         title = tr("主题模式"),
-                        onClick = { showThemePopup = true },
+                        onClick = {
+ clickHaptic()
+ showThemePopup = true
+ },
                         startAction = { RowStartIcon(MiuixIcons.Hide) },
                         endActions = {
                             Text(
@@ -197,6 +205,8 @@ fun SettingsScreen(
                                 isSelected = settings.themeMode == ThemeMode.SYSTEM,
                                 index = 0,
                                 onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                     settings.themeMode = ThemeMode.SYSTEM
                                     showThemePopup = false
                                 },
@@ -207,6 +217,8 @@ fun SettingsScreen(
                                 isSelected = settings.themeMode == ThemeMode.LIGHT,
                                 index = 1,
                                 onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                     settings.themeMode = ThemeMode.LIGHT
                                     showThemePopup = false
                                 },
@@ -217,6 +229,8 @@ fun SettingsScreen(
                                 isSelected = settings.themeMode == ThemeMode.DARK,
                                 index = 2,
                                 onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                     settings.themeMode = ThemeMode.DARK
                                     showThemePopup = false
                                 },
@@ -251,7 +265,10 @@ fun SettingsScreen(
                     Box(modifier = Modifier.fillMaxWidth()) {
                         BasicComponent(
                             title = tr("流光风格"),
-                            onClick = { showFlowStylePopup = true },
+                            onClick = {
+ clickHaptic()
+ showFlowStylePopup = true
+ },
                             startAction = { RowStartIcon(MiuixIcons.Image) },
                             endActions = {
                                 Text(
@@ -279,6 +296,8 @@ fun SettingsScreen(
                                     isSelected = settings.flowingStyle == HyperOsStyle.AUTO,
                                     index = 0,
                                     onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                         settings.flowingStyle = HyperOsStyle.AUTO
                                         showFlowStylePopup = false
                                     },
@@ -289,6 +308,8 @@ fun SettingsScreen(
                                     isSelected = settings.flowingStyle == HyperOsStyle.OS2,
                                     index = 1,
                                     onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                         settings.flowingStyle = HyperOsStyle.OS2
                                         showFlowStylePopup = false
                                     },
@@ -299,6 +320,8 @@ fun SettingsScreen(
                                     isSelected = settings.flowingStyle == HyperOsStyle.OS3,
                                     index = 2,
                                     onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                         settings.flowingStyle = HyperOsStyle.OS3
                                         showFlowStylePopup = false
                                     },
@@ -320,7 +343,10 @@ fun SettingsScreen(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
                         title = tr("语言"),
-                        onClick = { showLanguagePopup = true },
+                        onClick = {
+ clickHaptic()
+ showLanguagePopup = true
+ },
                         startAction = { RowStartIcon(rememberLanguageIcon()) },
                         endActions = {
                             Text(
@@ -358,6 +384,8 @@ fun SettingsScreen(
                                     isSelected = settings.language == code,
                                     index = index,
                                     onSelectedIndexChange = {
+                                   clickHaptic()
+                                    clickHaptic()
                                         settings.language = code
                                         showLanguagePopup = false
                                     },
@@ -474,6 +502,7 @@ fun SettingsScreen(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .bleedHorizontal()
                     // 顶栏的实时模糊（Haze）：下面内容滚过去时逐帧被糊，
                 // progressive 让「贴着最顶上最糊、往下渐隐到 0」。
                 .hazeEffect(
@@ -489,6 +518,20 @@ fun SettingsScreen(
                         endIntensity = 0f,
                     )
                 },
+            )
+            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
+            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
+            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
+            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0.0f to MiuixTheme.colorScheme.surface.copy(alpha = 0.55f),
+                            0.6f to Color.Transparent,
+                        ),
+                    ),
             )
             SmallTopAppBar(
                 title = tr("设置"),
