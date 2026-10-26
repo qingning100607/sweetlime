@@ -12,7 +12,6 @@ class MainActivity : ComponentActivity() {
         // 注意：这里**不调** enableEdgeToEdge()。
         // 系统栏外观跟着 App 自己的深浅色走，而且是「深浅色一变就重新应用」——
         // 这件事放在 Compose 侧做（见 ui/effect/SystemBarAppearance.android.kt），
-        // 写法与 KernelSU 的 MainActivity 一致。
         setContent {
             SweetLimeApp()
         }

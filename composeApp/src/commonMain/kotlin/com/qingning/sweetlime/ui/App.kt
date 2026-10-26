@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui
 
-
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -9,7 +8,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.ui.platform.LocalHapticFeedback
-
 
 import com.qingning.sweetlime.ui.effect.rememberHyperHapticFeedback
 
@@ -279,8 +277,6 @@ fun SweetLimeApp() {
 
     LaunchedEffect(Unit) { checkUpdate() }
 
-
-
     // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
     // 输入法：切 Tab、进出二级页（进详情 / 返回主页等）都把手势键盘收起来，
@@ -334,7 +330,6 @@ fun SweetLimeApp() {
         // 换的是 CompositionLocal，所以整个软件里所有 LazyColumn / verticalScroll 都自动生效，
         // 不用一页一页去挂 modifier。
         val overScrollState = remember { OverScrollState() }
-        // 震动逻辑（移植自 HyperLight）：把 Compose 的 HapticFeedback 全局换掉 ——
         // 所有控件（按钮/开关/滑块/长按/文本选择）都先走 HyperOS 原生马达，
         // 拿不到再按 HyperLight 的映射表转发 Android 常量；下面再挂「顶到边还在拉」的边界震动。
         val hyperHaptic = rememberHyperHapticFeedback()
@@ -372,7 +367,6 @@ fun SweetLimeApp() {
             // （见 FlowingLayer.kt / flowingPageLayer()），
             // 所以二级页 / 设置页的背景就是「和主页一模一样的实流光」，完全不透。
             // 不开则完全原样（连一层 MiuixTheme 都不套），观感和以前一模一样。
-            // 滑动手势方向跟系统布局方向走（与 KernelSU 一致）：RTL 语言下从右往左退。
             val navSwipeDismiss = if (LocalLayoutDirection.current == LayoutDirection.Rtl) {
                 NavSwipeDirection.RightToLeft
             } else {
@@ -384,10 +378,8 @@ fun SweetLimeApp() {
                 onBack = { goBack() },
                 // 大 R 角 + 轻微压暗：过渡中两张页面（滑进来的新的、以及底下被揭开的上一级）
                 // 四角都是圆角，露出底下那层背景色，就是 HyperOS 那种「卡片」观感。
-                // 圆角半径跟 KernelSU 一样取**系统圆角**（本机是多少就用多少），
                 // 不是我们自己瞎定的数字。
                 effects = if (!settings.flowingBackground) {
-                    // 不开流光：跟 KernelSU 一模一样 —— 只给系统圆角，其它全用默认。
                     NavDisplayEffects(cornerClipRadius = rememberNavSystemCornerRadius())
                 } else {
                     NavDisplayEffects(
@@ -395,10 +387,8 @@ fun SweetLimeApp() {
                     cornerClipRadius = rememberNavSystemCornerRadius(),
                     cornerClipMode = NavCornerClipMode.All,
                     // 开着流光时不要压暗：这层压暗是画在「页面之下、流光之上」的，
-                    // 二级页/设置页本身是透明的（对齐上游 lyricon：页面不铺自己的底色），
                     // 于是这层 0.35 的黑纱直接盖在流光上 —— 页面背景就变成一片灰，
                     // 实测左边距从 (242,242,247) 掉到 (141,142,162)，正好是 0.65 倍。
-                    // 上游没有这层压暗，所以那边二级页的流光是亮的。
                     dimAmount = if (settings.flowingBackground) 0f else 0.35f,
                     // 这层是「页面圆角外露出来的底色」。开着流光时必须透明，
                     // 否则它会把最底下那层流光整个盖住（页圆角也就露不出流光了）。
@@ -606,28 +596,19 @@ private fun RootScaffold(
     val scrollBehavior = MiuixScrollBehavior()
 
     // 三个 Tab 的横向分页：手指左右滑换页；点底栏则是带动画滚过去 ——
-    // 这就是 KernelSU 的切换方式（它的 miuix 里也是 Pager + animateToPage 那一套）。
     val tabPagerState = rememberPagerState(pageCount = { 3 })
-    // KernelSU 的 MainPagerState（见 ui/components/TabPagerState.kt）：
     // 底栏「图标选中的页」和 Pager 的真实页分开管 —— 点击图标立刻过去，
     // 动画在另一条协程里跑；只有不在导航中，才允许 pager 回写选中态。
     // 之前把两者混用，连点时会互相回写，表现就是「画面和图标不跟手」。
     val pagerScope = rememberCoroutineScope()
     val tabState = rememberTabPagerState(pagerState = tabPagerState, coroutineScope = pagerScope)
 
-    /*
-     * 返回键（对齐 KernelSU 的观感）：
-     *   有二级页 → 让 miuix-nav 自己退（这里 enabled=false，不拦）；
-     *   在根级但不在「转换」页 → 回到「转换」页（带动画，和点底栏同一套）；
-     *   已经在「转换」页 → 不拦，系统照常退出应用。
-     */
+    
     val backAction = resolveBackAction(atRoot = atRoot, selectedTab = tabState.selectedPage)
     //
-    // 返回键用 KernelSU 那一套：androidx.navigationevent 的 [NavigationBackHandler]。
     // activity-compose 的 BackHandler 走的是 OnBackPressedDispatcher 的**无预览**回调，
     // 只要它 enabled，系统就不再播预测性返回动画（只有一次回弹，没有跟手的预览页）。
     // NavigationBackHandler 是 OnBackInvokedCallback + 进度事件，系统手势拖到一半
-    // 就能看到底下那一页被拉开 —— 也就是 KernelSU 的效果。
     val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
     NavigationBackHandler(
         state = backEventState,
@@ -637,7 +618,6 @@ private fun RootScaffold(
         },
     )
 
-    // 和 KernelSU 一样：currentPage 变了才 syncPage（导航中它自己会拒绝回写）。
     val pagerCurrentPage = tabState.pagerState.currentPage
     LaunchedEffect(pagerCurrentPage) {
         tabState.syncPage()
@@ -649,7 +629,6 @@ private fun RootScaffold(
     }
 
     // 预热策略（防「刚进软件前几次点击掉帧」）：
-    // KernelSU 是先把所有页组合好再让你进主界面（它有启动闪屏吃掉这笔开销）。
     // 我们没有闪屏，如果在第一帧就把三个 Tab 页全组合出来，这笔开销就全压在用户
     // 刚进软件、正要开始点的那几帧上 -> 前几次点击掉帧。
     // 所以错峰：先只组合当前页，闲下来之后再陆续把邻居页 / 全部页放进组合。
@@ -665,7 +644,6 @@ private fun RootScaffold(
     val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
     // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
     // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
-    // 但流光模式下不铺这层玻璃（对齐上游 lyricon 的 hazeState = null）：顶栏保持透明，
     // 让底层流光直接透上来。
     val glassTint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
@@ -713,7 +691,6 @@ private fun RootScaffold(
                 // （一滑直接切到工具页）。改用 HorizontalPager 自己的滑动：
                 // 手指在横向列表上时先滚列表，滚到头才切页；落在别处就正常切页。                beyondViewportPageCount = warmPages,
                 overscrollEffect = null,
-                // 和 KernelSU 一样：内置手滑关掉，手势只走上面那个拦截器。
                 userScrollEnabled = true,
                 pageNestedScrollConnection = PagerGestureNestedScrollConnection,
                 flingBehavior = PagerDefaults.flingBehavior(
@@ -824,7 +801,6 @@ private fun RootScaffold(
         //
         // 两种形态（由设置里的「悬浮底栏」切换）：
         // - 普通：贴底整条，玻璃矩形铺满整个宽度，上沿用渐变淡出；
-        // - 悬浮：抄 KernelSU 那种浮起来的小圆角胶囊（miuix 自带的 FloatingNavigationBar），
         //   玻璃直接画在胶囊自己身上（同形状同尺寸），不做渐隐，左右留白。
         Box(
             modifier = Modifier
@@ -833,7 +809,6 @@ private fun RootScaffold(
                 .onSizeChanged { bottomBarHeight = with(density) { it.height.toDp() } },
         ) {
             if (floatingBottomBar) {
-                // KernelSU 那套「液态玻璃」胶囊（移植自它的 FloatingBottomBar，见
                 // ui/components/FloatingBottomBar.kt）：玻璃、随重力转的高光反光、
                 // 按下放大、以及那枚**能跟着手指拖动的指示器**，全部由组件自己画。
                 // 我们只负责把「内容那一层」的 backdrop 递进去当采样源，并按它的规矩留边距。
@@ -845,7 +820,6 @@ private fun RootScaffold(
                         modifier = Modifier.padding(
                             start = 28.dp,
                             end = 28.dp,
-                            // 胶囊浮在系统手势条之上：KernelSU 是 8dp + 系统内边距，
                             // 这里给得略松一点（12dp + 内边距），观感更透气。
                             bottom = 12.dp +
                                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
@@ -861,10 +835,7 @@ private fun RootScaffold(
                     }
                 }
             } else {
-                // 非悬浮形态 = KernelSU 的 BlurredBar + 透明 NavigationBar：
                 // 栏本身不画实心底色，而是把「下面内容那一层」做一次高斯模糊，
-                // 再压一层很淡的主题色（KernelSU 是 surface@0.87，这里 0.62 → 比它更透）。
-                // 形状是矩形、铺满整条宽度，模糊半径与 KernelSU 相同（25）。
                 val barTint = MiuixTheme.colorScheme.surface
                 Box(
                     modifier = Modifier.textureBlur(
@@ -904,15 +875,6 @@ private fun RootScaffold(
     }
 }
 
-/**
- * 液态玻璃底栏里的单个入口：图标 + 一行小字，跟 KernelSU 那边一致。
- *
- * 之所以把「图标 + 文字」都按 KernelSU 的写法直接塞进去（而不是用 miuix 现成的 item）：
- * 拖动那枚指示器时，玻璃会把胶囊**内部的这一层内容**重新着色成强调色 —— 前提是图标和文字
- * 都取 `LocalContentColor`，组件自己会在指示器滑过来时把 LocalContentColor 换成强调色。
- *
- * [activateTab] 来自 [FloatingBottomBar] 的 content lambda：点击就带动画地滑过去。
- */
 @Composable
 private fun RowScope.LiquidBarItem(
     index: Int,

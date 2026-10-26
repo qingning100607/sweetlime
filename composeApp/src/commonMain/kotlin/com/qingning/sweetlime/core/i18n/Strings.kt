@@ -1,14 +1,5 @@
 package com.qingning.sweetlime.core.i18n
 
-/**
- * 三语词表（简体中文 = 源语言，不在表里）。
- *
- * key 就是源码里写的简体中文原文；模板串用 `{}` 占位（见 [trf]）。
- * 查不到的 key 一律回落成源语言，所以漏翻只会显示中文，不会崩。
- *
- * 表由 /root/gen_strings.py 从 /root/t_table.tsv 生成，译文用词对齐 lyricon。
- */
-
 internal val EN: Map<String, String> = mapOf(
     "按 URL 组件编码（同 encodeURIComponent）：中文、空格、& = ? / 等都会写成 %XX，空格是 %20。" to "Encodes like encodeURIComponent: Chinese characters, spaces and & = ? / all become %XX; a space is %20.",
     "导入 zip 会自动解压铺成目录，点里面的文件就地打开；普通文件改完能存回原文件，包内文件改完能存回原压缩包。" to "Importing a zip extracts it into a folder so you can tap a file to open it in place; plain files save back to the file, files inside a zip save back into the archive.",

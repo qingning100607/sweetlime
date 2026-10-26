@@ -65,26 +65,6 @@ import top.yukonga.miuix.kmp.icon.extended.Notes
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-/**
- * 「关于」页（二级页）。
- *
- * 排版照上游 lyricon 的 About 页来：顶部一整块居中的 **青柠 + 应用名 + 版本号**，
- * 下面按「关于项目 / 关于作者 / 致谢」分组成圆角卡片，正文一律沉在卡片里。
- *
- * 顶部那颗青柠用的是**暗色版**：只有青柠本身（不含绿底、不含白底方块），
- * 果肉与果皮都被压成暗色，见 `res/drawable-nodpi/lime.png`。
- *
- * ## 滚动行为（对齐上游 lyricon 的关于页）
- *
- * 这一页是**滚动驱动**的：`scrollProgress` 从 0（还在顶部）涨到 1（已经滑过顶部的
- * 青柠区），然后
- *
- *  * 整页那层流光按 `1 - scrollProgress` 淡出 —— 也就是说上滑之后流光会褪掉，
- *    露出底下的 `surface`（浅色主题下就是白底）；
- *  * 顶栏反过来按 `scrollProgress` 浮出同样的 `surface`。
- *
- * 没有开流光时行为和以前一样（顶栏铺玻璃），只是滚动时顶栏同样会跟着浮出来。
- */
 @Composable
 fun AboutScreen(
     onBack: () -> Unit,
@@ -94,6 +74,8 @@ fun AboutScreen(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+    // 于是「关于」这个大标题跟着手指收起、往回滑又展开。
+    val topAppBarScrollBehavior = MiuixScrollBehavior()
     var topBarHeight by remember { mutableStateOf(0.dp) }
     //顶部青柠那一块的高度（px）：滚动进度就是拿它当分母算出来的。
     var heroSpanPx by remember { mutableIntStateOf(0) }
@@ -125,7 +107,6 @@ fun AboutScreen(
             .fillMaxSize()
             .background(surface)
             // 流光跟着滚动淡出：滑过顶部的青柠区之后整页就是纯 surface，
-            // 也就是上游 lyricon 那句 `BgEffectBackground(alpha = { 1f - scrollProgress })`。
             .flowingPageLayer { 1f - scrollProgress },
     ) {
         LazyColumn(
@@ -134,7 +115,8 @@ fun AboutScreen(
                 .fillMaxSize()
                 .overScrollVertical()
                 .hazeSource(state = hazeState)
-                .hyperScrollHaptic(),
+                .hyperScrollHaptic()
+                .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                 // 内容层当顶栏实时模糊的采样源（列表从顶栏下面穿过去）。
             contentPadding = PaddingValues(top = topBarHeight, bottom = 24.dp),
         ) {
@@ -223,7 +205,6 @@ fun AboutScreen(
                 }
             }
 
-            // 列表末尾留白（上游 lyricon 同样这么干，取的是 0.72 个视口高）。
             // 关于页内容本来就短，不留这一截的话整页根本没有可滚动区间，
             // 上面那套「流光淡出 / 顶栏浮出」也就永远不会走到头。
             item(key = "about_bottom_space") {
@@ -261,7 +242,13 @@ fun AboutScreen(
             )
             SmallTopAppBar(
                 title = tr("关于"),
-                color = Color.Transparent,
+                // 滑到底（scrollProgress == 1）那一瞬间换成 surface —— 浅色主题下就是白底。
+                color = if (scrollProgress == 1f) surface else Color.Transparent,
+                scrollBehavior = topAppBarScrollBehavior,
+                // 标题同理：0.35 之前完全透明，0.35 → 1 之间渐显，滑到底就是清楚的白底 + 黑字。
+                titleColor = MiuixTheme.colorScheme.onSurface.copy(
+                    alpha = ((scrollProgress - 0.35f) / 0.65f).coerceIn(0f, 1f),
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

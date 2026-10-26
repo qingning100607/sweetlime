@@ -2,12 +2,6 @@ package com.qingning.sweetlime.core.tools
 
 import kotlin.math.roundToLong
 
-/**
- * 人民币金额大小写互转。
- *
- * 算法移植自 qiwangming.com 数字大写页的 `dx.js`（`convertCurrency` / `convertToNumber`），
- * 保持完全离线的纯函数实现，不依赖任何网络。
- */
 internal object DaxieConverter {
 
     private val DIGITS = arrayOf("零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖")

@@ -171,11 +171,6 @@ expect suspend fun writeZipBackPickedFile(handle: String, entries: List<ArchiveE
 @Composable
 expect fun rememberLimeLogo(): Painter
 
-/**
- * 「语言」那一行前面的地球图标（矢量图取自上游 lyricon 的 `ic_language`）。
- *
- * 和 [rememberLimeLogo] 一样走 expect：资源在 androidMain，commonMain 里拿不到 R。
- */
 @Composable
 expect fun rememberLanguageIcon(): Painter
 

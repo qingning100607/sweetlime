@@ -32,7 +32,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
     // 默认直接选 **OS3**（配色在三组色板间流动的那一代），不跟随系统 ——
     // 这样不管机器上是哪个 HyperOS 版本，首装看到的都是最新的那套观感。
     private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.AUTO))
-    // 震动反馈：默认开（与上游 HyperLight 一致，它也有个总开关）。
     private var hapticState by mutableStateOf(store.getBoolean(KEY_HAPTIC, true))
     // 界面语言：zh=简体 / en=英文 / tw=繁体。存 code，认不出来回落简体。
     private var languageState by mutableStateOf(store.getString(KEY_LANGUAGE, "zh"))
@@ -51,7 +50,7 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putInt(KEY_THEME_MODE, value)
         }
 
-    /** 悬浮底栏：抄 KernelSU 那种「浮起来的小圆角胶囊」。 */
+    
     var floatingBottomBar: Boolean
         get() = floatingBarState
         set(value) {

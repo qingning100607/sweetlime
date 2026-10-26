@@ -26,12 +26,6 @@ private fun Context.findActivity(): Activity? {
     return ctx as? Activity
 }
 
-/**
- * 系统栏（状态栏 / 导航栏）图标颜色 —— 与 KernelSU 一致：
- * 在 setContent 内部用 DisposableEffect(dark) 调 enableEdgeToEdge，
- * 并把 detectDarkMode 绑死成 App 自己的深浅色（不读系统夜间模式），
- * 这样之后每次 insets 变化系统重算也不会把图标改回黑色。
- */
 @Composable
 actual fun ApplySystemBarAppearance(dark: Boolean) {
     val context = LocalContext.current

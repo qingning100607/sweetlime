@@ -238,7 +238,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-                // 悬浮底栏：直接照搬 KernelSU 那种浮在底部的小圆角胶囊。
                 SwitchPreference(
                     title = tr("悬浮底栏"),
                     checked = settings.floatingBottomBar,
@@ -464,7 +463,6 @@ fun SettingsScreen(
                 // 设置页不再重复一份。
             }
 
-            // 关于：作者 / 交流群 / 仓库等信息全部收进独立的「关于」页（仿上游 lyricon），
             // 设置页这里只留一行入口，不再把四条信息摊在列表里。
             SmallTitle(text = tr("关于"))
             TiltPressCard(

@@ -25,26 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import top.yukonga.miuix.kmp.utils.OverScrollState
 
-/**
- * 震动逻辑（移植自 HyperLight，对应它反编译出来的 l5 / fw / rb0 / ac0 四个类）：
- *
- * 1. 入口门槛 —— [HyperHaptics.hasRichHaptics]：
- *    `Vibrator.areAllPrimitivesSupported(1, 7, 2)`（CLICK / QUICK_FALL / TICK 三种原语）。
- *    HyperLight 只在支持时启用这套震动，不支持时用的是空实现（完全不动）。
- *
- * 2. 控件震动 —— [HyperHapticFeedback]（对应 fw.java）：
- *    把 Compose 的震动类型值**原值**转发给 `View.performHapticFeedback(constant)`，
- *    映射表与 HyperLight 一致（只放行 0/1/3/4/6/9/13/16/17/21/22/23/26/27，其余不震）。
- *
- * 3. HyperOS 原生优先 —— [HyperHaptics.performMiuixAsync]（对应 ac0.java）：
- *    设备上存在 `miuix.view.HapticCompat` 时先反射调
- *    `performHapticFeedbackAsync(view, 0x1000000D)`，拿 HyperOS 自己的马达手感。
- *
- * 4. 边界震动 —— [EdgeScrollHaptic]（对应 rb0.java）：
- *    列表顶到边还继续拉时响一次 `HapticFeedbackConstants.CLOCK_TICK`。
- *    HyperLight 是在滚动回调里判断，这里挂在 miuix 的 [OverScrollState] 上：
- *    `isOverScrollActive` 变 true（也就是开始回弹）时响一次。
- */
 object HyperHaptics {
 
     /** HyperLight 里写死的那个 miuix 常量（ac0.java 的 268435469）。 */
@@ -92,13 +72,7 @@ object HyperHaptics {
         }.getOrDefault(false)
     }
 
-    /**
-     * 点击类反馈（弹二级菜单 / 下拉项选中）：**照 KernelSU 的做法**，
-     * 直接给 `View.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)`。
-     *
-     * 不走 [performMiuixAsync]：那条用的是 MIUI_HAPTIC_SLIDE（0x1000000D），是「滑动」档，
-     * 落在这种点上明显偏轻；KSU 用的就是系统 VIRTUAL_KEY，震感比它扎实得多。
-     */
+    
     fun performClick(view: View?): Boolean {
         if (!enabled) return false
         if (view == null) return false
@@ -228,7 +202,6 @@ private class SlideHapticConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        // 照抄 HyperLight rb0.java：
         // 顶到顶部还继续下拉（available.y > 0）/ 拉到底部还继续上拉（available.y < 0）各震一下；
         // available == 0f 时不清标志位 —— 贴边慢拉时这个值会抖，清了就会一直震。
         if (available.y > 0f) {

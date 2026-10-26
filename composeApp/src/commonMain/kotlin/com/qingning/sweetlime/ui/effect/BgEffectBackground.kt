@@ -1,13 +1,4 @@
-/*
- * 改自 lyricon（Apache License 2.0）的同名文件：
- *   https://github.com/kifranei/lyricon
- *   app/src/main/kotlin/io/github/proify/lyricon/app/compose/effect/BgEffectBackground.kt
- *
- * 按 Apache-2.0 第 4(b) 条声明修改（这是本项目对上游做的改写，同目录其余 .kt 为原样拷贝）：
- *   1. 去掉 HyperOS 大版本探测（上游的 HyperOsDetector）与 SharedPreferences 偏好读取，
- *      风格改成参数 isOs3 传进来 —— 免得为了一个背景把整套偏好框架也搬进来；
- *   2. 参数改名并收敛：dynamicBackground → animate，effectBackground → enabled。
- */
+
 
 package com.qingning.sweetlime.ui.effect
 

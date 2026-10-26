@@ -39,18 +39,6 @@ import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.core.codePointLength
 
-/**
- * QQ 群昵称美化：给昵称上色 + 加消息尾巴。
- *
- * 功能与上游网页（`rwgtzs.github.io/qq-name-beautify`）一致，但规则是本地实现
- * （见 [QqNameColor]），离线可用，界面也和别的工具页统一。
- *
- * **「颜色」和「尾巴」是两个独立开关**：可以一起用，也可以只用其中一个。
- *
- * 版面顺序按「输入法友好」排：两个开关 → 昵称 / 尾巴输入框 → 颜色（预览 + 滑块）
- * → 复制 → 生成结果。输入框在上半屏，输入法弹出时不会把它们顶掉；
- * 颜色那一坨（预览条 + 四个滑块）最占地方，放下面。
- */
 @Composable
 internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
     var nickname by rememberSaveable { mutableStateOf("") }
@@ -229,7 +217,6 @@ private fun modeLabel(useColor: Boolean, hasTail: Boolean): String = when {
     else -> tr("只有昵称")
 }
 
-/** 一条通道滑块：上方「名称 …… 当前值」，下方滑块，范围 0..255（和上游一致）。 */
 @Composable
 private fun ChannelSlider(label: String, value: Int, onChange: (Int) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -249,7 +236,6 @@ private fun ChannelSlider(label: String, value: Int, onChange: (Int) -> Unit) {
     }
 }
 
-/** 透明度按上游习惯显示成 0..255 的整数，这里只把它换算成 0..1 给预览用。 */
 private fun formatAlpha(alpha: Int): String {
     val ratio = alpha.coerceIn(QqNameColor.CHANNEL_MIN, QqNameColor.CHANNEL_MAX) / 255f
     return ((ratio * 100).roundToInt() / 100f).toString()

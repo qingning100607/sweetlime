@@ -15,28 +15,6 @@ import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.utils.TiltFeedback
 import top.yukonga.miuix.kmp.utils.pressable
 
-/**
- * 「圆角卡片按下去，R 角往屏幕里扎」—— 抄自 lyricon（Apache-2.0）首页顶部那张
- * 「激活状态卡」的手感：
- *
- * ```kotlin
- * Card(pressFeedbackType = PressFeedbackType.Tilt, onClick = {})
- * ```
- *
- * 落到 miuix 里就是 [TiltFeedback]：按在哪半边，就在相反那半边打一个支点，
- * 整块绕支点倾斜 8°（`cameraDistance = 12 * density`，透视很猛），所以手指压住
- * 哪个角，那个 R 角就明显朝屏幕里沉下去。
- *
- * **适用范围（按用户口径收窄过两轮）**：
- * - 只保留：搜索页的**搜索框**、设置页里「外观」以外的**那几张卡片**；
- * - 其余全部回到 miuix 原生手感（`BasicComponent` 走 `LocalIndication` 提供的
- *   `MiuixIndication` 高亮：只压暗 / 提亮一层，不缩也不弹），也就是 miuix_UI 本来的样子。
- *
- * 卡片里的行**不需要**跟卡片共用按压源：miuix 的 `pressable` 用的是
- * `awaitFirstDown(requireUnconsumed = false)`，行自己消费了事件它照样收得到按下，
- * 所以卡片里放普通的 [top.yukonga.miuix.kmp.basic.BasicComponent] 就够了
- * （lyricon 上游那张卡也是这么用的）。
- */
 @Stable
 fun Modifier.tiltOnPress(source: MutableInteractionSource): Modifier =
     this.pressable(

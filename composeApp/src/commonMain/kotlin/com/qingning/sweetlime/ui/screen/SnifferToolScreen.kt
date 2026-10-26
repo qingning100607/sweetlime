@@ -386,8 +386,6 @@ private fun kindLabel(kind: Kind): String = when (kind) {
     Kind.OTHER -> tr("其它")
 }
 
-
-
 /**
  * 一行资源。
  *

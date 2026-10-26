@@ -1,11 +1,4 @@
-/*
- * 取自 lyricon（Apache License 2.0）
- *   https://github.com/kifranei/lyricon
- *   源路径：app/src/main/kotlin/io/github/proify/lyricon/app/compose/effect/BgEffectPainter.kt
- *
- * 按 Apache-2.0 第 4(b) 条在此声明修改：package 改为 com.qingning.sweetlime.ui.effect。
- * 除此之外内容与上游一致；原作者版权声明保留在本文件内（如有）。
- */
+
 package com.qingning.sweetlime.ui.effect
 
 import androidx.compose.ui.graphics.Brush
@@ -94,13 +87,7 @@ class BgEffectPainter(
     /** 配色插值的预分配缓冲：每帧插一次，不新建数组。 */
     private val colorBuffer = FloatArray(16)
 
-    /**
-     * 把 start → end 按 [fraction] 插值成这一帧的配色并推给着色器。
-     *
-     * 上游是在绘制回调里 `FloatArray(16) { ... }` 现造的 —— 每秒 60 次小数组分配，
-     * 单看不贵，但在「着色器 + 高斯模糊」本来就吃满一帧的时候，这点 GC 抖动正好
-     * 容易把某一帧顶过 16.6ms。这里改成复用同一个缓冲。
-     */
+    
     fun updateColors(start: FloatArray, end: FloatArray, fraction: Float) {
         for (i in 0 until 16) {
             colorBuffer[i] = start[i] + (end[i] - start[i]) * fraction

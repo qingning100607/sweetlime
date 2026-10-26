@@ -3,13 +3,6 @@ package com.qingning.sweetlime.core.tools
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * 钉住「美化昵称串」的生成规则。
- *
- * 这套串里除了昵称全是**不可见字符**，肉眼根本看不出顺序错没错，但字符顺序错了
- * QQ 那边就不认（不上色 / 尾巴错位），所以必须靠测试守着 —— 规则来源是上游网页
- * `qq-name-beautify` 的 `_doCopy()`。
- */
 class QqNameColorTest {
 
     private val isolate = '\u2067'
@@ -17,7 +10,6 @@ class QqNameColorTest {
 
     @Test
     fun colorTagEncodesChannelsAsCodePoints() {
-        // 上游默认值：不透明红 → `<&` + chr(255) + chr(255) + chr(0) + chr(0) + `>`
         assertEquals("<&\u00FF\u00FF\u0000\u0000>", QqNameColor.colorTag(255, 255, 0, 0))
         // 换个颜色：不透明青（0,255,255）
         assertEquals("<&\u00FF\u0000\u00FF\u00FF>", QqNameColor.colorTag(255, 0, 255, 255))
@@ -66,7 +58,6 @@ class QqNameColorTest {
         )
     }
 
-
     @Test
     fun emptyNicknameWithColorGivesJustColorTag() {
         // 昵称留空、只开颜色：结果就是「颜色标记 + 三个控制字符」，
@@ -90,7 +81,6 @@ class QqNameColorTest {
 
     @Test
     fun colorOnlyEqualsUpstreamEmptyTail() {
-        // 只开颜色：控制字符照样要在（和上游把尾巴留空时的产出一样）。
         assertEquals(
             "<&\u00FF\u00FF\u0000\u0000>" + "洛铭酱" + isolate + lri,
             QqNameColor.build("洛铭酱", "喵~", useTail = false),

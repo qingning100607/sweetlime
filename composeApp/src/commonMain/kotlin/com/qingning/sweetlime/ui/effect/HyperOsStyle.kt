@@ -1,26 +1,4 @@
-/*
- * Copyright 2026 Proify, Tomakino
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * 本文件移植并修改自开源项目 lyricon（https://github.com/kifranei/lyricon），
- * 原实现是 app/src/main/kotlin/io/github/proify/lyricon/app/compose/effect/HyperOsDetector.kt。
- * 按 Apache-2.0 第 4(b) 条声明修改：
- *   1. 去掉「HyperOS 1 不画流光」这一档 —— SweetLime 的开关只有开 / 关两态，
- *      开了就必须看得见效果，跟随系统时一律落到 OS2 或 OS3；
- *   2. 常量收敛成 AUTO / OS2 / OS3 三个；
- *   3. 本文件在 commonMain，不能直接 import android.os.*，全部改走反射。
- */
+
 package com.qingning.sweetlime.ui.effect
 
 /**

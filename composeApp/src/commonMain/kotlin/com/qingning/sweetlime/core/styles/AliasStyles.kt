@@ -123,10 +123,6 @@ private val starSpacingStyle: TextTransform =
         }
     }
 
-/**
- * 盲文：英文字母按**标准英文盲文点阵**映射到 Braille Patterns（U+2800 区）。
- * 点阵是算出来的（a=1 点、b=12 点、w=2456 点…），不是手抄的字符表。
- */
 private val BRAILLE_MAP: Map<Char, String> = mapOf(
     '\u0061' to "\u2801",
     '\u0062' to "\u2803",

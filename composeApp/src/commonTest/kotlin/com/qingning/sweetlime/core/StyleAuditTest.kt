@@ -3,14 +3,6 @@ package com.qingning.sweetlime.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * 把每个样式的「名字 → 实际输出」全表打出来（走测试 stdout，落进 test-results 的 XML 里）。
- *
- * 起因：有样式叫「彩色字母」，输出却是区域指示符（源站就这么叫，我照抄了名字），
- * 用户看到「名字和东西对不上」。与其一个个猜，不如把全表摊开看。
- *
- * 声明：commonTest 里不能碰 java.io（多平台源码集），所以只打印、不写文件。
- */
 class StyleAuditTest {
 
     /** 取样：大小写、数字、中文、空格、括号各来一点。 */

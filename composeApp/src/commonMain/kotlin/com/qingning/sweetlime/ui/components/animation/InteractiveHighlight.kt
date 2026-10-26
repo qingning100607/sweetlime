@@ -1,6 +1,3 @@
-// 移植自 KernelSU Manager（https://github.com/tiann/KernelSU，Apache-2.0），
-// 上游又改编自 compose-miuix-ui 的 IosLiquidGlassNavigationBar 示例（Apache-2.0）。
-// 按 Apache-2.0 第 4(b) 条声明修改：仅把包名换成 SweetLime 的、去掉对 KernelSU 主题工具的依赖。
 package com.qingning.sweetlime.ui.components.animation
 
 import android.annotation.SuppressLint
