@@ -130,11 +130,14 @@ import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.blur.BlendColorEntry
+import top.yukonga.miuix.kmp.blur.BlurColors
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.drawBackdrop
 import top.yukonga.miuix.kmp.blur.effect
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.textureBlur
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.ConvertFile
 import top.yukonga.miuix.kmp.icon.extended.Favorites
@@ -620,10 +623,9 @@ private fun RootScaffold(
      */
     val backAction = resolveBackAction(atRoot = atRoot, selectedTab = tabState.selectedPage)
     //
-    // 返回键改成 KernelSU 那一套：androidx.navigationevent 的 [NavigationBackHandler]，
-    // 不再用 activity-compose 那个老 [PlatformBackHandler]。
-    // 老 BackHandler 走的是 OnBackPressedDispatcher 的**无预览**回调：只要它 enabled，
-    // 系统就不再播预测性返回动画（只有一次回弹，没有跟手的预览页）。
+    // 返回键用 KernelSU 那一套：androidx.navigationevent 的 [NavigationBackHandler]。
+    // activity-compose 的 BackHandler 走的是 OnBackPressedDispatcher 的**无预览**回调，
+    // 只要它 enabled，系统就不再播预测性返回动画（只有一次回弹，没有跟手的预览页）。
     // NavigationBackHandler 是 OnBackInvokedCallback + 进度事件，系统手势拖到一半
     // 就能看到底下那一页被拉开 —— 也就是 KernelSU 的效果。
     val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
@@ -859,9 +861,24 @@ private fun RootScaffold(
                     }
                 }
             } else {
-                // KernelSU 的默认形态 = miuix 标准 NavigationBar：贴底、主题底色，一条实心栏。
-                // 不铺玻璃、不做模糊、不浮起（那套液态玻璃只在「悬浮底栏」打开时才用）。
-                NavigationBar {
+                // 非悬浮形态 = KernelSU 的 BlurredBar + 透明 NavigationBar：
+                // 栏本身不画实心底色，而是把「下面内容那一层」做一次高斯模糊，
+                // 再压一层很淡的主题色（KernelSU 是 surface@0.87，这里 0.62 → 比它更透）。
+                // 形状是矩形、铺满整条宽度，模糊半径与 KernelSU 相同（25）。
+                val barTint = MiuixTheme.colorScheme.surface
+                Box(
+                    modifier = Modifier.textureBlur(
+                        backdrop = backdrop,
+                        shape = RectangleShape,
+                        blurRadius = 25f,
+                        colors = BlurColors(
+                            blendColors = listOf(
+                                BlendColorEntry(color = barTint.copy(alpha = 0.62f)),
+                            ),
+                        ),
+                    ),
+                ) {
+                    NavigationBar(color = Color.Transparent) {
                     NavigationBarItem(
                         selected = tabState.selectedPage == 0,
                         onClick = { tabState.animateToPage(0) },
@@ -880,6 +897,7 @@ private fun RootScaffold(
                         icon = MiuixIcons.Favorites,
                         label = tr("收藏"),
                     )
+                    }
                 }
             }
         }
