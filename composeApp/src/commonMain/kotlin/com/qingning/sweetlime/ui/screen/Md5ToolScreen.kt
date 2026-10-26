@@ -16,7 +16,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  * MD5 计算：输入一段文字，给出 32 位小写（主结果）、32 位大写与 16 位形式。
  *
  * 三种形式其实是一个结果的不同写法，所以主结果交给转换页的通用骨架，
- * 另外两种（大写 / 16 位）放在输入框下面的卡里，点一下直接复制。
+ * 另外两种（大写 / 16 位）放在输入框下面的卡里，点击直接复制。
  */
 @Composable
 internal fun Md5ToolScreen(onCopyText: (String, String) -> Unit) {

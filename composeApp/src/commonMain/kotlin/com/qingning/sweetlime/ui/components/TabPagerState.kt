@@ -20,11 +20,11 @@ import top.yukonga.miuix.kmp.utils.springAnimateToPage
  * 里的 `MainPagerState`，Apache-2.0，按其第 4(b) 条声明做了修改：仅换包名、去掉对 KernelSU 其它工具的依赖）。
  *
  * 为什么不直接用 `pagerState.currentPage` 当选中态：
- *  - 点一下底栏，图标要**立刻**跟着手指走，而页面还要滑一小段 —— 两者不是同一时刻；
+ *  - 点击底栏，图标要**立刻**跟着手指走，而页面还要滑一小段 —— 两者不是同一时刻；
  *  - 连点（工具→收藏→转换）时，若让 pager 在动画途中回写选中态，
  *    旧值会把图标拽回去，表现就是「画面和图标不跟手」。
  *
- * 所以：点一下先改 [selectedPage]（图标立刻过去），动画在另一条协程里跑（[navJob]，连点先取消上一段），
+ * 所以：点击先改 [selectedPage]（图标立刻过去），动画在另一条协程里跑（[navJob]，连点先取消上一段），
  * 只有**不在导航中**（[isNavigating] = false）时，才允许 pager 把真实页回写进 [selectedPage]。
  */
 class TabPagerState(
@@ -32,7 +32,7 @@ class TabPagerState(
     private val coroutineScope: CoroutineScope,
     private val animatePageChanges: Boolean = true,
 ) {
-    /** 底栏要读的选中页：点一下立刻变，不等动画。 */
+    /** 底栏要读的选中页：点击立刻变，不等动画。 */
     var selectedPage by mutableIntStateOf(pagerState.currentPage)
         private set
 

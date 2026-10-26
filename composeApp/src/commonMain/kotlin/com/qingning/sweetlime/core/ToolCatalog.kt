@@ -16,8 +16,8 @@ class ToolEntry(
  */
 val TOOL_ENTRIES: List<ToolEntry>
     get() = listOf(
-    ToolEntry("symbol", tr("特殊符号"), tr("44 个分类、2797 个符号，点一下即复制")),
-    ToolEntry("kaomoji", tr("颜文字"), tr("常见颜文字，按分类挑，点一下即复制")),
+    ToolEntry("symbol", tr("特殊符号"), tr("44 个分类、2797 个符号，点击即复制")),
+    ToolEntry("kaomoji", tr("颜文字"), tr("常见颜文字，按分类挑，点击即复制")),
     ToolEntry("pinyin", tr("汉字拼音"), tr("整句转带声调拼音：你好世界 → nǐ hǎo shì jiè")),
     ToolEntry("chai", tr("汉字拆分"), tr("把汉字拆成部件：卧项功 → 臣卜工页工力")),
     ToolEntry("daxie", tr("数字大写"), tr("金额「小写 ↔ 大写」双向转换，自动补整")),

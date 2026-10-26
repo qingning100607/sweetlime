@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
@@ -120,7 +122,7 @@ fun HomeScreen(
         // 位置固定成「一直存在」之后，横幅出现只是这一格长高，列表的滚动位置不会被挪动。
         item(key = "home_update_banner") {
             if (newVersion != null) {
-                // 标题和说明跟着下载状态走：发现新版本 → 正在下载 42% → 点一下打开系统安装器。
+                // 标题和说明跟着下载状态走：发现新版本 → 正在下载 42% → 点击打开系统安装器。
                 val banner = updateBannerText(newVersion, updateDownload)
                 Card(
                     modifier = Modifier
@@ -213,20 +215,23 @@ fun HomeScreen(
                 }
             }
         }
-        // 最近使用：有历史才显示，横向一排胶囊，点一下直接进对应样式详情。
+        // 最近使用：有历史才显示，横向一排胶囊，点击直接进对应样式详情。
         if (recentStyles.isNotEmpty()) {
             item(key = "home_recent_title") {
                 SmallTitle(text = tr("最近使用"))
             }
             item(key = "home_recent_list") {
-                LazyRow(
+                // 以前这里是横向 LazyRow：主页外面套着 HorizontalPager（左右滑切页），
+                // 那套「横滑拦截」会先吃掉横向拖动，于是右边还有记录时根本划不过去。
+                // 改成换行排布：最多 12 条（RecentStore.MAX）全都能摆下，不再依赖横向手势。
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(recentStyles.size) { index ->
-                        val style = recentStyles[index]
+                    for (style in recentStyles) {
                         ChipButton(
                             text = style.title,
                             onClick = { onOpenRecent(style.id) },

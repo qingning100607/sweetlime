@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,14 +204,14 @@ fun SweetLimeApp() {
     }
 
     /**
-     * 主页横幅 / 设置页「检查更新」那一行，点一下的统一入口：
+     * 主页横幅 / 设置页「检查更新」那一行，点击的统一入口：
      * 没查到就先查 → 查到了就在应用内下载 → 下好了交给系统安装器。
      *
-     * 下载走应用私有目录，失败会停在 Failed（界面提示"点一下重试"），不会留下半截文件。
+     * 下载走应用私有目录，失败会停在 Failed（界面提示"点击重试"），不会留下半截文件。
      */
     fun onUpdateAction() {
         // 包已经在本地了：交给系统安装器；缺「安装未知应用」权限就标成 NeedsPermission，
-        // 界面会提示"点一下去授权"（installApkFile 内部会把授权页打开）。
+        // 界面会提示"点击去授权"（installApkFile 内部会把授权页打开）。
         fun startInstall(path: String) {
             if (!installApkFile(path)) {
                 downloadState = UpdateDownloadState.NeedsPermission(path)
@@ -221,7 +222,7 @@ fun SweetLimeApp() {
             // 下载中重复点没意义，忽略。
             is UpdateDownloadState.Downloading -> Unit
 
-            // 已经下好了：再点一下就是重新拉起系统安装器。
+            // 已经下好了：再点击就是重新拉起系统安装器。
             // 但包也可能已经不在了、或者根本是坏的（安装器只会报「解析软件包时出现问题」，
             // 点一次报一次，再也回不到「重新下载」）：那就把它清掉、退回可重下的状态。
             is UpdateDownloadState.Ready -> {
@@ -233,7 +234,7 @@ fun SweetLimeApp() {
                 }
             }
 
-            // 上次点的时候没权限：再点一下要么装上，要么再去授权页。
+            // 上次点的时候没权限：再点击要么装上，要么再去授权页。
             is UpdateDownloadState.NeedsPermission -> startInstall(state.path)
 
             else -> {
@@ -275,6 +276,12 @@ fun SweetLimeApp() {
 
     // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
+    // 输入法：切 Tab、进出二级页（进详情 / 返回主页等）都把手势键盘收起来，
+    // 不然在主页输入框打完字再切走，键盘会一直挂在底部。
+    val keyboard = LocalSoftwareKeyboardController.current
+    // 切 Tab / 进出二级页时收键盘（否则在主页打完字切走，键盘会一直挂着）。
+    LaunchedEffect(selectedTab) { keyboard?.hide() }
+    LaunchedEffect(backStack.size) { keyboard?.hide() }
     fun goBack() {
         // 双击返回时也会同一帧跑两次：把栈底那一页也弹掉的话，返回栈就空了。
         if (backStack.size > 1) backStack.removeLastOrNull()
@@ -331,7 +338,7 @@ fun SweetLimeApp() {
         ) {
             // 顶到列表边界还继续拉时响一次（HyperLight rb0.java 那条逻辑）。
         // 外面套一层 miuix 的 Scaffold：它负责提供 LocalPopupStates / LocalRootPopupStates，
-        // 并在最外层渲染 MiuixPopupHost()。设置页里「点一下弹出圆角菜单」的 OverlayListPopup
+        // 并在最外层渲染 MiuixPopupHost()。设置页里「点击弹出圆角菜单」的 OverlayListPopup
         // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
         // contentWindowInsets = 0：边到边由我们自己管，不要再被系统栏内边距顶一次。
         Scaffold(
@@ -584,7 +591,7 @@ private fun RootScaffold(
     // 这就是 KernelSU 的切换方式（它的 miuix 里也是 Pager + animateToPage 那一套）。
     val tabPagerState = rememberPagerState(pageCount = { 3 })
     // KernelSU 的 MainPagerState（见 ui/components/TabPagerState.kt）：
-    // 底栏「图标选中的页」和 Pager 的真实页分开管 —— 点一下图标立刻过去，
+    // 底栏「图标选中的页」和 Pager 的真实页分开管 —— 点击图标立刻过去，
     // 动画在另一条协程里跑；只有不在导航中，才允许 pager 回写选中态。
     // 之前把两者混用，连点时会互相回写，表现就是「画面和图标不跟手」。
     val pagerScope = rememberCoroutineScope()
@@ -864,7 +871,7 @@ private fun RootScaffold(
  * 拖动那枚指示器时，玻璃会把胶囊**内部的这一层内容**重新着色成强调色 —— 前提是图标和文字
  * 都取 `LocalContentColor`，组件自己会在指示器滑过来时把 LocalContentColor 换成强调色。
  *
- * [activateTab] 来自 [FloatingBottomBar] 的 content lambda：点一下就带动画地滑过去。
+ * [activateTab] 来自 [FloatingBottomBar] 的 content lambda：点击就带动画地滑过去。
  */
 @Composable
 private fun RowScope.LiquidBarItem(

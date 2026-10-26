@@ -131,7 +131,7 @@ internal fun autoEdit(old: TextFieldValue, raw: TextFieldValue): TextFieldValue 
     return raw
 }
 
-/** 查找替换面板：平时收起，点一下才铺开。 */
+/** 查找替换面板：平时收起，点击才铺开。 */
 @Composable
 internal fun FindReplaceSection(
     open: Boolean,

@@ -29,7 +29,7 @@ sealed interface UpdateDownloadState {
      * 包已经下好，但系统还没给「安装未知应用」权限。
      *
      * 第一次装的时候基本都会走到这里（点安装就等于"点了没反应"），
-     * 所以单独标一个状态：界面明确告诉用户"点一下去授权"，而不是干等。
+     * 所以单独标一个状态：界面明确告诉用户"点击去授权"，而不是干等。
      */
     data class NeedsPermission(val path: String) : UpdateDownloadState
 
@@ -59,22 +59,22 @@ fun updateBannerText(version: String, state: UpdateDownloadState): UpdateBannerT
         UpdateBannerText(trf("正在下载 {}", version), downloadProgressLabel(state.progress))
 
     is UpdateDownloadState.Ready ->
-        UpdateBannerText(trf("安装 {}", version), tr("已下载好，点一下打开系统安装器"))
+        UpdateBannerText(trf("安装 {}", version), tr("已下载好，点击打开系统安装器"))
 
     is UpdateDownloadState.NeedsPermission ->
-        UpdateBannerText(trf("安装 {}", version), tr("需先允许「安装未知应用」，点一下授权"))
+        UpdateBannerText(trf("安装 {}", version), tr("需先允许「安装未知应用」，点击授权"))
 
     UpdateDownloadState.Failed ->
         UpdateBannerText(
             trf("发现新版本 {}", version),
-            tr("下载失败，点一下重试"),
+            tr("下载失败，点击重试"),
             // 失败十有八九是网络：GitHub 在国内经常连不上/半路断流（实测 TLS 都会掉），
             // 所以这里直接给一条「怎么办」，而不是让用户对着「重试」反复撞墙。
-            tr("下载失败了？国内直连 GitHub 经常抽风（更新源就在 GitHub）。开个代理 / 加速再点一下重试，或者到 GitHub 仓库页手动下载安装包。"),
+            tr("下载失败了？国内直连 GitHub 经常抽风（更新源就在 GitHub）。开个代理 / 加速再点击重试，或者到 GitHub 仓库页手动下载安装包。"),
         )
 
     UpdateDownloadState.Idle ->
-        UpdateBannerText(trf("发现新版本 {}", version), tr("点一下在应用内直接下载"))
+        UpdateBannerText(trf("发现新版本 {}", version), tr("点击在应用内直接下载"))
 }
 
 /**
@@ -91,12 +91,12 @@ fun updateRowText(
 ): String = when {
     checking -> tr("正在检查…")
     state is UpdateDownloadState.Downloading -> downloadProgressLabel(state.progress)
-    state is UpdateDownloadState.Ready -> tr("已下载好，点一下打开系统安装器")
-    state is UpdateDownloadState.NeedsPermission -> tr("需先允许「安装未知应用」，点一下授权")
-    state is UpdateDownloadState.Failed -> tr("下载失败，点一下重试")
+    state is UpdateDownloadState.Ready -> tr("已下载好，点击打开系统安装器")
+    state is UpdateDownloadState.NeedsPermission -> tr("需先允许「安装未知应用」，点击授权")
+    state is UpdateDownloadState.Failed -> tr("下载失败，点击重试")
     result is UpdateChecker.Result.UpToDate -> trf("已是最新版本 {}", currentVersion)
     result is UpdateChecker.Result.NotConfigured -> trf("当前版本 {}（更新源未配置）", currentVersion)
-    result is UpdateChecker.Result.Newer -> trf("发现新版本 {}，点一下直接下载", result.latest)
+    result is UpdateChecker.Result.Newer -> trf("发现新版本 {}，点击直接下载", result.latest)
     result is UpdateChecker.Result.Failed -> tr("检查失败，请稍后再试")
     else -> tr("点击检查是否有新版本")
 }

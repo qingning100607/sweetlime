@@ -31,7 +31,7 @@ sealed interface SearchHit {
         override val summary: String,
     ) : SearchHit
 
-    /** 符号命中：点一下直接复制。 */
+    /** 符号命中：点击直接复制。 */
     data class Symbol(
         val category: String,
         val symbol: String,
@@ -53,7 +53,7 @@ sealed interface SearchHit {
     /** 汉字信息命中（拼音 / 拆分）。 */
     data class Hanzi(
         val char: Char,
-        /** 点一下真正复制走的内容（拼音 / 拆分，多行）。 */
+        /** 点击真正复制走的内容（拼音 / 拆分，多行）。 */
         val payload: String,
         override val title: String,
         override val summary: String,
@@ -122,7 +122,7 @@ object SearchEngine {
                         char = ch,
                         payload = parts.joinToString("\n"),
                         title = "$ch",
-                        summary = parts.joinToString(" · ") + tr("（点一下复制）"),
+                        summary = parts.joinToString(" · ") + tr("（点击复制）"),
                     ),
                 )
             }
@@ -180,7 +180,7 @@ object SearchEngine {
                         category = category.title,
                         symbol = symbol,
                         title = symbol,
-                        summary = trf("{} · 点一下复制", category.title),
+                        summary = trf("{} · 点击复制", category.title),
                     ),
                 )
                 if (symbols.size >= MAX_SYMBOLS) break@outer

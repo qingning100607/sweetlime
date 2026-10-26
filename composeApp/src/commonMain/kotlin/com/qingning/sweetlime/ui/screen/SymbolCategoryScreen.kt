@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -54,7 +55,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/** 特殊符号的某个分类（三级页）：符号网格，点一下即复制。 */
+/** 特殊符号的某个分类（三级页）：符号网格，点击即复制。 */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SymbolCategoryScreen(
@@ -99,7 +100,7 @@ fun SymbolCategoryScreen(
                     // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。
                     Spacer(modifier = Modifier.height(topBarHeight))
                     Text(
-                        text = trf("共 {} 个符号 · 点一下即复制", category.symbols.size),
+                        text = trf("共 {} 个符号 · 点击即复制", category.symbols.size),
                         style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
@@ -109,13 +110,24 @@ fun SymbolCategoryScreen(
             }
             // 每一行单独成一个 item：LazyColumn 只组合可见的那几行。
             items(count = symbolRows.size) { rowIndex ->
-                FlowRow(
+                // 以前用 FlowRow + 内容自适应宽度的 chip：每个符号宽度不一样，
+                // 翅膀 / 表情这类宽字符会把后面的格子顶歪，整片看着就不齐。
+                // 现在每行固定 6 格、每格等宽（weight(1f)），最后一行不满就补空位。
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(bottom = 8.dp),
                 ) {
                     symbolRows[rowIndex].forEach { symbol ->
-                        SymbolChip(symbol = symbol) { onCopyText(symbol, category.title) }
+                        SymbolChip(
+                            symbol = symbol,
+                            onClick = { onCopyText(symbol, category.title) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    repeat(symbolRows[rowIndex].size.let { 6 - it }) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -181,18 +193,21 @@ fun SymbolCategoryScreen(
 }
 
 @Composable
-private fun SymbolChip(symbol: String, onClick: () -> Unit) {
+private fun SymbolChip(symbol: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier
+        modifier = modifier
+            // 等宽 + 固定高：不同宽度的符号（翅膀、表情）也排在一条竖线上。
+            .height(44.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(MiuixTheme.colorScheme.surfaceContainerHigh)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = symbol,
             style = MiuixTheme.textStyles.body1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+            maxLines = 1,
         )
     }
 }

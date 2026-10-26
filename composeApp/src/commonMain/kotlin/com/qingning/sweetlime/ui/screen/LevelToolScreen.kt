@@ -148,7 +148,7 @@ internal fun LevelToolScreen() {
 
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = tr("桌面上先点一下「校准归零」，以后这个位置就显示 0°，量别的平面更准。"),
+                    text = tr("桌面上先点击「校准归零」，以后这个位置就显示 0°，量别的平面更准。"),
                     style = MiuixTheme.textStyles.footnote1,
                     color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     modifier = Modifier.padding(horizontal = 4.dp),

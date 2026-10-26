@@ -92,7 +92,7 @@ internal fun KaomojiToolScreen(onCopyText: (String, String) -> Unit) {
     }
 }
 
-/** 分类小胶囊：点一下换分类。 */
+/** 分类小胶囊：点击换分类。 */
 @Composable
 private fun CategoryChip(text: String, selected: Boolean, onClick: () -> Unit) {
     val scheme = MiuixTheme.colorScheme

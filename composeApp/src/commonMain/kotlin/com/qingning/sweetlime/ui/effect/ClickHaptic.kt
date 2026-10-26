@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 
 /**
- * 点一下的震动反馈：返回一个「响一次就完事」的 lambda。
+ * 点击的震动反馈：返回一个「响一次就完事」的 lambda。
  *
  * 和 KernelSU（Miuix 版）同一套：`performHapticFeedback(HapticFeedbackType.VirtualKey)`。
  * 只是这里直接落到 `View.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)`
