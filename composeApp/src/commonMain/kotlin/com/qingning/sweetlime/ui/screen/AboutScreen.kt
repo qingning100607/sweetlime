@@ -17,12 +17,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode as ComposeBlendMode
@@ -31,7 +34,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -73,7 +78,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 private const val ICON_DETAIL_ALPHA = 0.45f
-private val HERO_TOP_PADDING = 132.dp
+private val HERO_TOP_PADDING = 96.dp
 private val HERO_BOTTOM_PADDING = 96.dp
 private const val BOTTOM_SPACE_FRACTION = 0.72f
 private val BOTTOM_SPACE_MIN = 160.dp
@@ -197,17 +202,48 @@ private fun AboutContent(
         }
     }
 
-    val heroLiftPx = with(density) { 96.dp.toPx() }
     var heroHeightDp by remember { mutableStateOf(220.dp) }
+
+    // 顶部三块各自在窗口里的底边，用来把滚动距离切成三段。
+    var heroAreaY by remember { mutableFloatStateOf(0f) }
+    var iconY by remember { mutableFloatStateOf(0f) }
+    var nameY by remember { mutableFloatStateOf(0f) }
+    var versionY by remember { mutableFloatStateOf(0f) }
+    var initialHeroAreaY by remember { mutableFloatStateOf(0f) }
+
+    var iconProgress by remember { mutableFloatStateOf(0f) }
+    var nameProgress by remember { mutableFloatStateOf(0f) }
+    var versionProgress by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                if (index > 0) {
+                    iconProgress = 1f
+                    nameProgress = 1f
+                    versionProgress = 1f
+                    return@collect
+                }
+                if (initialHeroAreaY == 0f && heroAreaY > 0f) initialHeroAreaY = heroAreaY
+                val refHeroAreaY = if (initialHeroAreaY > 0f) initialHeroAreaY else heroAreaY
+                if (refHeroAreaY <= 0f || iconY <= 0f || nameY <= 0f || versionY <= 0f) return@collect
+
+                val stage1 = (refHeroAreaY - versionY).coerceAtLeast(1f)
+                val stage2 = (versionY - nameY).coerceAtLeast(1f)
+                val stage3 = (nameY - iconY).coerceAtLeast(1f)
+                val versionDelay = stage1 * 0.5f
+
+                versionProgress = ((offset - versionDelay) / (stage1 - versionDelay).coerceAtLeast(1f))
+                    .coerceIn(0f, 1f)
+                nameProgress = ((offset - stage1) / stage2).coerceIn(0f, 1f)
+                iconProgress = ((offset - stage1 - stage2) / stage3).coerceIn(0f, 1f)
+            }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .graphicsLayer {
-                    alpha = (1f - scrollProgress * 1.35f).coerceIn(0f, 1f)
-                    translationY = -heroLiftPx * scrollProgress
-                }
                 .padding(top = topBarHeight + HERO_TOP_PADDING)
                 .onSizeChanged { size ->
                     with(density) { heroHeightDp = size.height.toDp() }
@@ -217,7 +253,16 @@ private fun AboutContent(
             Box(
                 modifier = Modifier
                     .size(96.dp)
-                    .padding(bottom = 6.dp),
+                    .graphicsLayer {
+                        alpha = 1f - iconProgress
+                        scaleX = 1f - iconProgress * 0.05f
+                        scaleY = 1f - iconProgress * 0.05f
+                    }
+                    .onGloballyPositioned { coords ->
+                        if (iconY == 0f) {
+                            iconY = coords.positionInWindow().y + coords.size.height
+                        }
+                    },
             ) {
                 // 下面这层是流光色，上面再盖一层半透明原图，不然瓣会被抹平。
                 if (blurEnable) {
@@ -245,7 +290,17 @@ private fun AboutContent(
             }
             Text(
                 modifier = Modifier
-                    .padding(top = 12.dp, bottom = 5.dp)
+                    .padding(top = 4.dp, bottom = 2.dp)
+                    .onGloballyPositioned { coords ->
+                        if (nameY == 0f) {
+                            nameY = coords.positionInWindow().y + coords.size.height
+                        }
+                    }
+                    .graphicsLayer {
+                        alpha = 1f - nameProgress
+                        scaleX = 1f - nameProgress * 0.05f
+                        scaleY = 1f - nameProgress * 0.05f
+                    }
                     .then(
                         if (blurEnable) {
                             Modifier.textureBlur(
@@ -265,7 +320,18 @@ private fun AboutContent(
                 fontSize = 35.sp,
             )
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coords ->
+                        if (versionY == 0f) {
+                            versionY = coords.positionInWindow().y + coords.size.height
+                        }
+                    }
+                    .graphicsLayer {
+                        alpha = 1f - versionProgress
+                        scaleX = 1f - versionProgress * 0.05f
+                        scaleY = 1f - versionProgress * 0.05f
+                    },
                 color = colorScheme.onSurfaceContainerVariant,
                 text = "v$APP_VERSION",
                 fontSize = 14.sp,
@@ -287,7 +353,11 @@ private fun AboutContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(heroHeightDp + HERO_TOP_PADDING + topBarHeight + HERO_BOTTOM_PADDING)
-                        .onSizeChanged { onHeroHeightChanged(it.height) },
+                        .onSizeChanged { onHeroHeightChanged(it.height) }
+                        .onGloballyPositioned { coords ->
+                            // 这块占位的底边，就是第一张卡片的顶边。
+                            heroAreaY = coords.positionInWindow().y + coords.size.height
+                        },
                 )
             }
 
