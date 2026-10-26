@@ -40,6 +40,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun BgEffectBackground(
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    bgModifier: Modifier = Modifier,
     isOs3: Boolean = true,
     isDarkTheme: Boolean? = null,
     animate: Boolean = true,
@@ -81,7 +82,7 @@ fun BgEffectBackground(
             }
         }
 
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = bgModifier.fillMaxSize()) {
             // 底色：不管开不开流光，这层都要铺满，它就是界面的背景。
             drawRect(surface)
             // 整层完全透明时（例如「关于页」上滑把流光淡到 0）就别再跑着色器了 ——
