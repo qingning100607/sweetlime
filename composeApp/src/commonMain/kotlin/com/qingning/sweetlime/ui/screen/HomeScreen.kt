@@ -47,6 +47,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import top.yukonga.miuix.kmp.icon.extended.ExpandLess
 import top.yukonga.miuix.kmp.icon.extended.ExpandMore
+import androidx.compose.ui.draw.rotate
+import top.yukonga.miuix.kmp.icon.extended.ChevronForward
 
 /** 主页上的一个分类条目。 */
 private class GroupEntry(
@@ -54,9 +56,6 @@ private class GroupEntry(
     val count: Int,
     val preview: String,
 )
-
-/** 「最近使用」收起时一行最多排几个（再多就靠右边的箭头展开）。 */
-private const val RECENT_COLLAPSED_COUNT = 3
 
 /** 昵称类平台的常见长度上限，超了就在字数旁边提醒一下。 */
 private const val NICKNAME_SOFT_LIMIT = 24
@@ -233,40 +232,25 @@ fun HomeScreen(
                 SmallTitle(text = tr("最近使用"))
             }
             item(key = "home_recent_list") {
-                // 收起：一行（最多 3 个）；展开：换行铺开全部。右边那个纯图标按钮切换。
+                // 收起：铺满一行（放不下的裁掉）；展开：换行铺满所有记录。
+                // 右边那个纯图标按钮（V 形箭头）切换，展开时箭头朝上。
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    if (recentExpanded) {
-                        FlowRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 12.dp, end = 56.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            for (style in recentStyles) {
-                                ChipButton(
-                                    text = style.title,
-                                    onClick = { onOpenRecent(style.id) },
-                                )
-                            }
-                        }
-                    } else {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 12.dp, end = 56.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            for (style in recentStyles.take(RECENT_COLLAPSED_COUNT)) {
-                                ChipButton(
-                                    text = style.title,
-                                    onClick = { onOpenRecent(style.id) },
-                                )
-                            }
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, end = 56.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxLines = if (recentExpanded) Int.MAX_VALUE else 1,
+                    ) {
+                        for (style in recentStyles) {
+                            ChipButton(
+                                text = style.title,
+                                onClick = { onOpenRecent(style.id) },
+                            )
                         }
                     }
-                    if (recentStyles.size > RECENT_COLLAPSED_COUNT) {
+                    if (recentStyles.size > 3) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
@@ -274,13 +258,10 @@ fun HomeScreen(
                         ) {
                             IconButton(onClick = { recentExpanded = !recentExpanded }) {
                                 Icon(
-                                    imageVector = if (recentExpanded) {
-                                        MiuixIcons.ExpandLess
-                                    } else {
-                                        MiuixIcons.ExpandMore
-                                    },
+                                    imageVector = MiuixIcons.ChevronForward,
                                     contentDescription = null,
                                     tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                    modifier = Modifier.rotate(if (recentExpanded) 270f else 90f),
                                 )
                             }
                         }
