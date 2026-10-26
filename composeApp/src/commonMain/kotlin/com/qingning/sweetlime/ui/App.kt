@@ -73,7 +73,6 @@ import androidx.compose.ui.unit.sp
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.BackAction
-import com.qingning.sweetlime.core.PlatformBackHandler
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.resolveBackAction
 import com.qingning.sweetlime.core.UpdateChecker
@@ -155,6 +154,11 @@ import top.yukonga.miuix.kmp.utils.MiuixOverscrollFactory
 import top.yukonga.miuix.kmp.utils.OverScrollState
 import com.qingning.sweetlime.core.deleteUpdateFile
 import com.qingning.sweetlime.core.isInstallableApk
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 
 /**
  * 应用外壳。
@@ -365,6 +369,12 @@ fun SweetLimeApp() {
             // （见 FlowingLayer.kt / flowingPageLayer()），
             // 所以二级页 / 设置页的背景就是「和主页一模一样的实流光」，完全不透。
             // 不开则完全原样（连一层 MiuixTheme 都不套），观感和以前一模一样。
+            // 滑动手势方向跟系统布局方向走（与 KernelSU 一致）：RTL 语言下从右往左退。
+            val navSwipeDismiss = if (LocalLayoutDirection.current == LayoutDirection.Rtl) {
+                NavSwipeDirection.RightToLeft
+            } else {
+                NavSwipeDirection.LeftToRight
+            }
             FlowingSurface(enabled = settings.flowingBackground) {
             NavDisplay(
                 backStack = backStack,
@@ -373,7 +383,11 @@ fun SweetLimeApp() {
                 // 四角都是圆角，露出底下那层背景色，就是 HyperOS 那种「卡片」观感。
                 // 圆角半径跟 KernelSU 一样取**系统圆角**（本机是多少就用多少），
                 // 不是我们自己瞎定的数字。
-                effects = NavDisplayEffects(
+                effects = if (!settings.flowingBackground) {
+                    // 不开流光：跟 KernelSU 一模一样 —— 只给系统圆角，其它全用默认。
+                    NavDisplayEffects(cornerClipRadius = rememberNavSystemCornerRadius())
+                } else {
+                    NavDisplayEffects(
                     enableCornerClip = true,
                     cornerClipRadius = rememberNavSystemCornerRadius(),
                     cornerClipMode = NavCornerClipMode.All,
@@ -390,7 +404,8 @@ fun SweetLimeApp() {
                     } else {
                         MiuixTheme.colorScheme.surface
                     },
-                ),
+                    )
+                },
             ) {
                 entry<Route.Home> {
                     RootScaffold(
@@ -421,7 +436,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Group>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                entry<Route.Group>(swipeDismiss = navSwipeDismiss) { route ->
                     val group = StyleGroup.entries.firstOrNull { it.name == route.groupId } ?: StyleGroup.LATIN
                     GroupScreen(
                         group = group,
@@ -434,7 +449,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Item>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                entry<Route.Item>(swipeDismiss = navSwipeDismiss) { route ->
                     val transform = TransformRegistry.byId(route.styleId)
                     if (transform == null) {
                         LaunchedEffect(route) { goBack() }
@@ -456,7 +471,7 @@ fun SweetLimeApp() {
                     }
                 }
 
-                entry<Route.Tool>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                entry<Route.Tool>(swipeDismiss = navSwipeDismiss) { route ->
                     ToolScreen(
                         toolId = route.id,
                         onBack = { goBack() },
@@ -467,7 +482,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Symbols>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
+                entry<Route.Symbols>(swipeDismiss = navSwipeDismiss) { route ->
                     SymbolCategoryScreen(
                         index = route.index,
                         onBack = { goBack() },
@@ -475,7 +490,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Settings>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                entry<Route.Settings>(swipeDismiss = navSwipeDismiss) {
                     SettingsScreen(
                         settings = settings,
                         onBack = { goBack() },
@@ -493,7 +508,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Search>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                entry<Route.Search>(swipeDismiss = navSwipeDismiss) {
                     SearchScreen(
                         onBack = { goBack() },
                         // 搜索页的原文 = 搜索框里那行字，直接带进详情页。
@@ -505,7 +520,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Privacy>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                entry<Route.Privacy>(swipeDismiss = navSwipeDismiss) {
                     DocScreen(
                         title = PrivacyPolicy.TITLE,
                         sections = PrivacyPolicy.SECTIONS,
@@ -513,7 +528,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.About>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                entry<Route.About>(swipeDismiss = navSwipeDismiss) {
                     AboutScreen(
                         onBack = { goBack() },
                         onOpenUrl = ::openUrl,
@@ -522,7 +537,7 @@ fun SweetLimeApp() {
                     )
                 }
 
-                entry<Route.Licenses>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+                entry<Route.Licenses>(swipeDismiss = navSwipeDismiss) {
                     DocScreen(
                         title = OpenSourceLicenses.TITLE,
                         sections = OpenSourceLicenses.SECTIONS,
@@ -604,9 +619,21 @@ private fun RootScaffold(
      *   已经在「转换」页 → 不拦，系统照常退出应用。
      */
     val backAction = resolveBackAction(atRoot = atRoot, selectedTab = tabState.selectedPage)
-    PlatformBackHandler(enabled = backAction == BackAction.ToConvertTab) {
-        tabState.animateToPage(0)
-    }
+    //
+    // 返回键改成 KernelSU 那一套：androidx.navigationevent 的 [NavigationBackHandler]，
+    // 不再用 activity-compose 那个老 [PlatformBackHandler]。
+    // 老 BackHandler 走的是 OnBackPressedDispatcher 的**无预览**回调：只要它 enabled，
+    // 系统就不再播预测性返回动画（只有一次回弹，没有跟手的预览页）。
+    // NavigationBackHandler 是 OnBackInvokedCallback + 进度事件，系统手势拖到一半
+    // 就能看到底下那一页被拉开 —— 也就是 KernelSU 的效果。
+    val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
+    NavigationBackHandler(
+        state = backEventState,
+        isBackEnabled = backAction == BackAction.ToConvertTab,
+        onBackCompleted = {
+            tabState.animateToPage(0)
+        },
+    )
 
     // 和 KernelSU 一样：currentPage 变了才 syncPage（导航中它自己会拒绝回写）。
     val pagerCurrentPage = tabState.pagerState.currentPage

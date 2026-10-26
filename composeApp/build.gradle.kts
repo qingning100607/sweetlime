@@ -53,6 +53,8 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
+            // 预测性返回（跟 KernelSU 同一套）：导航事件驱动的返回回调，带系统手势预览。
+            implementation(libs.androidx.navigationevent.compose)
         }
 
         commonTest.dependencies {
@@ -82,8 +84,8 @@ android {
         applicationId = "com.qingning.sweetlime"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2950
-        versionName = "2.9.50"
+        versionCode = 2951
+        versionName = "2.9.51"
     }
     // 正式签名（打包用）。密钥文件与口令都从 local.properties 取：
     //   sweetlime.storeFile     密钥路径（相对 composeApp/，默认 sweetlime-release.jks）
