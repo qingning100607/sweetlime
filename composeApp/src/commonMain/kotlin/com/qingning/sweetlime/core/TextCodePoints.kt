@@ -34,3 +34,16 @@ internal inline fun String.forEachCodePoint(action: (String) -> Unit) {
         }
     }
 }
+
+/** 列表里只显示前 [max] 个字（按码点切，不会把 emoji 切一半），超出加省略号。 */
+internal fun String.listPreview(max: Int = 100): String {
+    val flat = replace('\n', ' ')
+    var n = 0
+    var i = 0
+    while (i < flat.length) {
+        if (n == max) return flat.substring(0, i) + "…"
+        i += if (flat[i].isHighSurrogate() && i + 1 < flat.length && flat[i + 1].isLowSurrogate()) 2 else 1
+        n++
+    }
+    return flat
+}

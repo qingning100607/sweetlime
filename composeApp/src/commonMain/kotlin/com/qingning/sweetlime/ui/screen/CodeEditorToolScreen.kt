@@ -58,6 +58,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.core.codePointLength
 
 /** 代码编辑用的等宽样式。行号与正文共用，保证两边行高一致、能对齐。 */
 private val CodeTextStyle = TextStyle(
@@ -269,7 +270,7 @@ internal fun CodeEditorToolScreen(onCopyText: (String, String) -> Unit) {
             text = buildString {
                 currentOpenedPath?.let { append("$it · ") }
                     ?: fileName?.let { append("$it · ") }
-                append(trf("{} 行 · {} 字符", lineCount, text.length))
+                append(trf("{} 行 · {} 字符", lineCount, text.codePointLength()))
             },
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,

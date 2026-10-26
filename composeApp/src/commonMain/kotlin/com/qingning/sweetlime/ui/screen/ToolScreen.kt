@@ -63,6 +63,7 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.basic.Check
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.core.codePointLength
 
 internal fun toolTitle(id: String): String =
     TOOL_ENTRIES.firstOrNull { it.id == id }?.title ?: tr("工具")
@@ -311,6 +312,15 @@ internal fun ConverterToolScreen(
                     MiuixTheme.colorScheme.onSurfaceContainer
                 },
                 modifier = Modifier.padding(16.dp),
+            )
+        }
+        // 结果也标一个字数额（按码点算，一个 emoji 算一个字）。
+        if (result.isNotEmpty()) {
+            Text(
+                text = trf("{} 字", result.codePointLength()),
+                style = MiuixTheme.textStyles.footnote1,
+                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
             )
         }
         Spacer(modifier = Modifier.height(12.dp))

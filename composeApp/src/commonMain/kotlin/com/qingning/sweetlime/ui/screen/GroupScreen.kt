@@ -55,6 +55,7 @@ import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.Favorites
 import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.core.listPreview
 
 /**
  * 某个分类的二级页：竖排列出该分类下的全部样式。
@@ -138,7 +139,7 @@ fun GroupScreen(
                     items.forEachIndexed { index, item ->
                         BasicComponent(
                             title = item.styleTitle,
-                            summary = item.output.replace('\n', ' '),
+                            summary = item.output.listPreview(),
                             onClick = { onOpenItem(item) },
                             endActions = {
                                 IconButton(onClick = { onCopy(item) }) {

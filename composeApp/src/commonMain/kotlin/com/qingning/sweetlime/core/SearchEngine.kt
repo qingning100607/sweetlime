@@ -136,7 +136,7 @@ object SearchEngine {
                 matchedGroups.add(style.group)
                 continue
             }
-            val preview = TransformItem.of(style, input)?.output?.replace('\n', ' ').orEmpty()
+            val preview = TransformItem.of(style, input)?.output?.listPreview().orEmpty()
             styles.add(
                 score to SearchHit.Style(
                     transform = style,

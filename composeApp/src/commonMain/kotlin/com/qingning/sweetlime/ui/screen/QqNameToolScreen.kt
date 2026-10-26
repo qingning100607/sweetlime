@@ -37,6 +37,7 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.core.codePointLength
 
 /**
  * QQ 群昵称美化：给昵称上色 + 加消息尾巴。
@@ -211,7 +212,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
                 modifier = Modifier.padding(16.dp),
             )
             Text(
-                text = trf("当前：{}，共{}个字符", modeLabel(useColor, hasTail), result.length.toString()),
+                text = trf("当前：{}，共{}个字符", modeLabel(useColor, hasTail), result.codePointLength().toString()),
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),

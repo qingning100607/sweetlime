@@ -58,6 +58,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Clear
 import top.yukonga.miuix.kmp.icon.extended.Paste
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import com.qingning.sweetlime.core.codePointLength
 
 /**
  * 详情页：一个样式 + 一段原文 = 一个结果。
@@ -149,7 +150,7 @@ SmallTitle(text = tr("原文"))
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = trf("{} 字", text.length),
+                        text = trf("{} 字", text.codePointLength()),
                         style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     )
@@ -203,6 +204,16 @@ SmallTitle(text = tr("原文"))
                 )
             }
 
+            // 输出也标一个字数额（按码点算，一个 emoji 算一个字）。
+            if (text.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = trf("{} 字", output.codePointLength()),
+                    style = MiuixTheme.textStyles.footnote1,
+                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(

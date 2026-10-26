@@ -31,6 +31,7 @@ import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import com.qingning.sweetlime.core.listPreview
 
 /** 收藏页（底层）：竖排的收藏条目，点条目进详情。 */
 @Composable
@@ -129,7 +130,7 @@ private fun FavoriteRow(
 ) {
     BasicComponent(
         title = item.styleTitle,
-        summary = item.output.replace('\n', ' '),
+        summary = item.output.listPreview(),
         onClick = onOpen,
         endActions = {
             IconButton(onClick = onCopy) {

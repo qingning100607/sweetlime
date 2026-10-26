@@ -49,6 +49,7 @@ import top.yukonga.miuix.kmp.icon.extended.ExpandLess
 import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import androidx.compose.ui.draw.rotate
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
+import com.qingning.sweetlime.core.listPreview
 
 /** 主页上的一个分类条目。 */
 private class GroupEntry(
@@ -286,7 +287,7 @@ fun HomeScreen(
                         title = entry.group.label,
                         summary = when {
                             input.isBlank() -> trf("{} 种样式", entry.count)
-                            entry.preview.isNotEmpty() -> entry.preview.replace('\n', ' ')
+                            entry.preview.isNotEmpty() -> entry.preview.listPreview()
                             else -> tr("这段文字在这里没有效果")
                         },
                         onClick = { onOpenGroup(entry.group) },
