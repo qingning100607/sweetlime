@@ -54,6 +54,10 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 
 /** 特殊符号的某个分类（三级页）：符号网格，点击即复制。 */
 @OptIn(ExperimentalLayoutApi::class)
@@ -69,7 +73,25 @@ fun SymbolCategoryScreen(
     // 关键：符号**按行切片**，每一行是一个独立的 lazy item。
     // 以前是「一个 item 里 forEach 全部符号」——等于一进页面就把整页几百个 chip 全组合出来，
     // 内容多的分类（特殊符号那种）必掉帧，LazyColumn 也白用了。
-    val symbolRows = remember(category.symbols) { category.symbols.chunked(6) }
+    // 展示逻辑沿用原来的：chip 宽度跟着符号走（不拉伸到 1/6），
+    // 但同一分类里所有 chip 用**同一个宽度**（取该分类最宽的那个符号 + 固定内边距），
+    // 所以翅膀、表情这些宽字符也不会把后面的格子顶歪，列是齐的。
+    val measurer = rememberTextMeasurer()
+    val chipTextStyle = MiuixTheme.textStyles.body1
+    val glyphDensity = LocalDensity.current
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val maxGlyphWidth = remember(category.symbols, chipTextStyle, glyphDensity) {
+        category.symbols.maxOf { symbol ->
+            with(glyphDensity) {
+                measurer.measure(AnnotatedString(symbol), chipTextStyle).size.width.toDp()
+            }
+        }
+    }
+    val chipWidth = (maxGlyphWidth + 32.dp).coerceAtLeast(48.dp)
+    // 一行能排几个就排几个（最多 8 个），排不够就换行——跟原来一样是流式铺满。
+    val availableWidth = screenWidth - 24.dp
+    val perRow = (((availableWidth + 8.dp) / (chipWidth + 8.dp)).toInt()).coerceIn(2, 8)
+    val symbolRows = remember(category.symbols, perRow) { category.symbols.chunked(perRow) }
     val hazeState = remember { HazeState() }
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
@@ -110,9 +132,7 @@ fun SymbolCategoryScreen(
             }
             // 每一行单独成一个 item：LazyColumn 只组合可见的那几行。
             items(count = symbolRows.size) { rowIndex ->
-                // 以前用 FlowRow + 内容自适应宽度的 chip：每个符号宽度不一样，
-                // 翅膀 / 表情这类宽字符会把后面的格子顶歪，整片看着就不齐。
-                // 现在每行固定 6 格、每格等宽（weight(1f)），最后一行不满就补空位。
+                // 每行按算好的列数排，每个 chip 都同一个宽度，所以列是对齐的。
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -123,11 +143,8 @@ fun SymbolCategoryScreen(
                         SymbolChip(
                             symbol = symbol,
                             onClick = { onCopyText(symbol, category.title) },
-                            modifier = Modifier.weight(1f),
+                            width = chipWidth,
                         )
-                    }
-                    repeat(symbolRows[rowIndex].size.let { 6 - it }) {
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -193,10 +210,11 @@ fun SymbolCategoryScreen(
 }
 
 @Composable
-private fun SymbolChip(symbol: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun SymbolChip(symbol: String, onClick: () -> Unit, width: androidx.compose.ui.unit.Dp) {
     Box(
-        modifier = modifier
-            // 等宽 + 固定高：不同宽度的符号（翅膀、表情）也排在一条竖线上。
+        modifier = Modifier
+            // 宽度由分类里最宽的符号决定 + 固定高度：不同宽度的符号也排在一条竖线上。
+            .width(width)
             .height(44.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(MiuixTheme.colorScheme.surfaceContainerHigh)
