@@ -527,6 +527,7 @@ fun SweetLimeApp() {
                         onOpenUrl = ::openUrl,
                         onCopyText = ::copyRaw,
                         onOpenLicenses = { push(Route.Licenses) },
+                        flowingStyle = settings.flowingStyle,
                     )
                 }
 
