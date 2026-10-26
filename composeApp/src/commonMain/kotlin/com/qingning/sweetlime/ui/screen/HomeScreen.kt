@@ -29,7 +29,6 @@ import com.qingning.sweetlime.core.readClipboard
 import com.qingning.sweetlime.ui.UpdateDownloadState
 import com.qingning.sweetlime.ui.updateBannerText
 import com.qingning.sweetlime.ui.components.ChipButton
-import com.qingning.sweetlime.ui.components.TiltPressTextField
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -50,6 +49,7 @@ import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import androidx.compose.ui.draw.rotate
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
 import com.qingning.sweetlime.core.listPreview
+import top.yukonga.miuix.kmp.basic.TextField
 
 /** 主页上的一个分类条目。 */
 private class GroupEntry(
@@ -175,12 +175,12 @@ fun HomeScreen(
             }
         }
         item(key = "home_input") {
-            // 主页这个输入框（用户口中的「主页搜索框」）保留按角沉下去的手感，
-            // 跟搜索页的搜索框一致；其余地方都是 miuix 原生高亮。
-            TiltPressTextField(
+            // 主页这个输入框走 miuix 原生点击高亮（不再有「按角沉下去」的倾斜反馈）。
+            TextField(
                 value = input,
                 onValueChange = onInputChange,
                 label = tr("输入要转换的文字"),
+                useLabelAsPlaceholder = true,
                 maxLines = 3,
                 modifier = Modifier
                     .fillMaxWidth()
