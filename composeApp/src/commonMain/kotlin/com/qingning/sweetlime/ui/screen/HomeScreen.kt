@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
@@ -41,6 +42,11 @@ import top.yukonga.miuix.kmp.icon.extended.Clear
 import top.yukonga.miuix.kmp.icon.extended.Paste
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.core.codePointLength
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import top.yukonga.miuix.kmp.icon.extended.ExpandLess
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 
 /** 主页上的一个分类条目。 */
 private class GroupEntry(
@@ -48,6 +54,9 @@ private class GroupEntry(
     val count: Int,
     val preview: String,
 )
+
+/** 「最近使用」收起时一行最多排几个（再多就靠右边的箭头展开）。 */
+private const val RECENT_COLLAPSED_COUNT = 3
 
 /** 昵称类平台的常见长度上限，超了就在字数旁边提醒一下。 */
 private const val NICKNAME_SOFT_LIMIT = 24
@@ -67,6 +76,7 @@ private const val NICKNAME_SOFT_LIMIT = 24
  * 启动时查到了更新的版本，最顶上会多一条「发现新版本」提示（[newVersion] 非空时）：
  * 点整行就**在应用内直接下载安装包**（下好自动唤起系统安装器），点右边的「×」忽略这一版。
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     input: String,
@@ -84,6 +94,8 @@ fun HomeScreen(
     /** 点提示右边的「×」：这一版不再提示。 */
     onDismissUpdate: () -> Unit = {},
 ) {
+    // 最近使用：收起时只排一行，右边的图标按钮点一下展开/收起。
+    var recentExpanded by remember { mutableStateOf(false) }
     val entries = remember(input) {
         TransformRegistry.grouped.map { (group, styles) ->
             val preview = if (input.isBlank()) {
@@ -221,21 +233,57 @@ fun HomeScreen(
                 SmallTitle(text = tr("最近使用"))
             }
             item(key = "home_recent_list") {
-                // 以前这里是横向 LazyRow：主页外面套着 HorizontalPager（左右滑切页），
-                // 那套「横滑拦截」会先吃掉横向拖动，于是右边还有记录时根本划不过去。
-                // 改成换行排布：最多 12 条（RecentStore.MAX）全都能摆下，不再依赖横向手势。
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    for (style in recentStyles) {
-                        ChipButton(
-                            text = style.title,
-                            onClick = { onOpenRecent(style.id) },
-                        )
+                // 收起：一行（最多 3 个）；展开：换行铺开全部。右边那个纯图标按钮切换。
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    if (recentExpanded) {
+                        FlowRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 56.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            for (style in recentStyles) {
+                                ChipButton(
+                                    text = style.title,
+                                    onClick = { onOpenRecent(style.id) },
+                                )
+                            }
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 56.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            for (style in recentStyles.take(RECENT_COLLAPSED_COUNT)) {
+                                ChipButton(
+                                    text = style.title,
+                                    onClick = { onOpenRecent(style.id) },
+                                )
+                            }
+                        }
+                    }
+                    if (recentStyles.size > RECENT_COLLAPSED_COUNT) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(end = 6.dp),
+                        ) {
+                            IconButton(onClick = { recentExpanded = !recentExpanded }) {
+                                Icon(
+                                    imageVector = if (recentExpanded) {
+                                        MiuixIcons.ExpandLess
+                                    } else {
+                                        MiuixIcons.ExpandMore
+                                    },
+                                    contentDescription = null,
+                                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                )
+                            }
+                        }
                     }
                 }
             }

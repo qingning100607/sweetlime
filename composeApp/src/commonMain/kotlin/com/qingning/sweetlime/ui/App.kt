@@ -678,19 +678,14 @@ private fun RootScaffold(
             }
             HorizontalPager(
                 state = tabPagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    // KernelSU 那半段我之前漏了：手势交给 miuix 的拦截器统一管
-                    // （斜滑判定 + 点到就刹车），不再和内置手滑两套抢。
-                    .pagerGestureOverride(
-                        pagerState = tabPagerState,
-                        mode = PagerInterceptionMode.CrossAxisInterceptor,
-                        enabled = true,
-                    ),
-                beyondViewportPageCount = warmPages,
+                modifier = Modifier.fillMaxSize(),
+                // 以前这里挂 miuix 的 pagerGestureOverride（CrossAxisInterceptor）：
+                // 它在**手势层**就把横向拖动拿走，于是主页「最近使用」那排横向列表根本滑不动
+                // （一滑直接切到工具页）。改用 HorizontalPager 自己的滑动：
+                // 手指在横向列表上时先滚列表，滚到头才切页；落在别处就正常切页。                beyondViewportPageCount = warmPages,
                 overscrollEffect = null,
                 // 和 KernelSU 一样：内置手滑关掉，手势只走上面那个拦截器。
-                userScrollEnabled = false,
+                userScrollEnabled = true,
                 pageNestedScrollConnection = PagerGestureNestedScrollConnection,
                 flingBehavior = PagerDefaults.flingBehavior(
                     state = tabPagerState,
