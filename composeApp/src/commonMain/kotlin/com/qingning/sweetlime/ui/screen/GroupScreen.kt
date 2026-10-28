@@ -39,6 +39,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.PreviewCache
 import com.qingning.sweetlime.core.TransformItem
@@ -129,7 +133,7 @@ fun GroupScreen(
                 SmallTitle(text = trf("共 {} 种样式 · 点条目看详情", styles.size))
             }
             // 一行一个 LazyColumn item：只组合屏幕附近的几行。
-            // 圆角只在首尾两行给，中间行用 0 圆角拼成同一张卡的样子。
+            // 圆角只给首行的上边和末行的下边，中间行四角全平，拼成同一张卡的样子。
             itemsIndexed(styles, key = { _, style -> style.id }) { index, style ->
                 val entry = remember(style, input, PreviewCache.version) { PreviewCache.entry(style, input) }
                 val item = entry.item
@@ -137,8 +141,12 @@ fun GroupScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        cornerRadius = groupRowCornerRadius(index, styles.size),
+                            .padding(horizontal = 12.dp)
+                            // miuix 的 Card 只收一个统一的 cornerRadius，做不出「只圆外侧两角」。
+                            // 所以内层留平、外层按行位置裁形：首行圆上面、末行圆下面、中间直接拼平，
+                            // 相邻两行边缘完全重合，竖着看就是一张连着的卡。
+                            .clip(groupRowShape(index, styles.size)),
+                        cornerRadius = 0.dp,
                     ) {
                         BasicComponent(
                             title = item.styleTitle,
@@ -227,6 +235,14 @@ fun GroupScreen(
     }
 }
 
-/** 一行在整张卡里的圆角：只有首尾两行带圆角，中间拼平。16dp = miuix Card 的默认半径。 */
-private fun groupRowCornerRadius(index: Int, count: Int): androidx.compose.ui.unit.Dp =
-    if (count <= 1 || index == 0 || index == count - 1) 16.dp else 0.dp
+/** 一行在整张卡里的形状：首行只圆上面两角、末行只圆下面两角，中间行拼平；单行四角全圆。 */
+private fun groupRowShape(index: Int, count: Int): Shape {
+    // 16dp = miuix Card 的默认半径。
+    val r = 16.dp
+    return when {
+        count <= 1 -> RoundedCornerShape(r)
+        index == 0 -> RoundedCornerShape(topStart = r, topEnd = r)
+        index == count - 1 -> RoundedCornerShape(bottomStart = r, bottomEnd = r)
+        else -> RectangleShape
+    }
+}
