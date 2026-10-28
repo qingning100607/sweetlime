@@ -31,4 +31,9 @@ object TransformRegistry {
     private val byIdIndex: Map<String, TextTransform> by lazy { all.associateBy { it.id } }
 
     fun byId(id: String): TextTransform? = byIdIndex[id]
+
+    /** id → 在 [all] 里的下标。转换缓存用下标寻址，省掉每行一次字符串哈希。 */
+    private val indexById: Map<String, Int> by lazy { all.withIndex().associate { (i, t) -> t.id to i } }
+
+    fun indexOf(transform: TextTransform): Int = indexById[transform.id] ?: -1
 }

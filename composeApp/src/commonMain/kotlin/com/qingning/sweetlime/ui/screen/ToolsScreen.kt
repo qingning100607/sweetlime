@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,26 +49,35 @@ fun ToolsScreen(
     ) {
         item(key = "tool_title") {
         }
-        item(key = "tool_list") {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-            ) {
-                TOOL_ENTRIES.forEachIndexed { index, tool ->
-                    BasicComponent(
-                        title = tool.title,
-                        summary = tool.summary,
-                        onClick = { onOpenTool(tool.id) },
-                        endActions = {
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = null,
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+        // 工具按用途分四组：文字处理 / 编码转换 / 字符素材 / 实用工具。
+        // 每组一行 miuix 灰色小字标题，下面一张卡。
+        TOOL_SECTIONS.forEachIndexed { sectionIndex, (title, ids) ->
+            item(key = "tool_section_$sectionIndex") {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        SmallTitle(text = tr(title))
+                    }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 12.dp),
+                    ) {
+                        ids.forEach { id ->
+                            val tool = TOOL_ENTRIES.firstOrNull { it.id == id } ?: return@forEach
+                            BasicComponent(
+                                title = tool.title,
+                                summary = tool.summary,
+                                onClick = { onOpenTool(tool.id) },
+                                endActions = {
+                                    Icon(
+                                        imageVector = MiuixIcons.Basic.ArrowRight,
+                                        contentDescription = null,
+                                        tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                    )
+                                },
                             )
-                        },
-                    )
-                    if (index != TOOL_ENTRIES.lastIndex) {
+                        }
                     }
                 }
             }
@@ -74,3 +85,11 @@ fun ToolsScreen(
 
     }
 }
+
+/** 工具页分组：标题 + 工具 id。 */
+private val TOOL_SECTIONS: List<Pair<String, List<String>>> = listOf(
+    "文字处理" to listOf("pinyin", "chai", "daxie", "qqname"),
+    "编码转换" to listOf("base64", "md5", "url", "radix", "color"),
+    "字符素材" to listOf("symbol", "kaomoji"),
+    "实用工具" to listOf("sniff", "currency", "bmi", "level", "editor"),
+)

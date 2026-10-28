@@ -1,6 +1,8 @@
 package com.qingning.sweetlime.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -71,6 +73,7 @@ import androidx.compose.ui.unit.sp
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.BackAction
+import com.qingning.sweetlime.core.PreviewCache
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.resolveBackAction
 import com.qingning.sweetlime.core.UpdateChecker
@@ -189,6 +192,15 @@ fun SweetLimeApp() {
     val scope = rememberCoroutineScope()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var input by rememberSaveable { mutableStateOf("") }
+
+    // 输入一变就提前把整套转换算好（每 4 条让出一次主线程，不掉帧）。
+    // 这样点进「花样网名」这类一两百套的大分类时，页面只做查表，进去不掉帧。
+    // 打字抖动靠 delay(120) 合并：连打时只有停下后那一次生效。
+    LaunchedEffect(input) {
+        if (input.isBlank()) return@LaunchedEffect
+        delay(120)
+        PreviewCache.prefetch(input)
+    }
 
     // 启动时静默查一次更新：只在查到「有更新的版本」时，主页顶部才会多出一条提示。
     // 一次请求，失败 / 离线都不影响使用（UpdateChecker 自己会兜底并返回 Failed）。
@@ -803,11 +815,27 @@ private fun RootScaffold(
         // 两种形态（由设置里的「悬浮底栏」切换）：
         // - 普通：贴底整条，玻璃矩形铺满整个宽度，上沿用渐变淡出；
         //   玻璃直接画在胶囊自己身上（同形状同尺寸），不做渐隐，左右留白。
+        // 进二级页时整条底栏往下沉 + 淡出，退回主页时再浮上来。
+        // atRoot 由返回栈深度决定，所以是「页面开始滑进来的同一刻」起步。
+        val bottomBarSink = remember { Animatable(0f) }
+        LaunchedEffect(atRoot) {
+            bottomBarSink.animateTo(
+                targetValue = if (atRoot) 0f else 1f,
+                animationSpec = tween(
+                    durationMillis = if (atRoot) BOTTOM_BAR_BACK_MS else BOTTOM_BAR_SINK_MS,
+                    easing = FastOutSlowInEasing,
+                ),
+            )
+        }
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .onSizeChanged { bottomBarHeight = with(density) { it.height.toDp() } },
+                .onSizeChanged { bottomBarHeight = with(density) { it.height.toDp() } }
+                .graphicsLayer {
+                    translationY = size.height * bottomBarSink.value
+                    alpha = 1f - bottomBarSink.value
+                },
         ) {
             if (floatingBottomBar) {
                 // ui/components/FloatingBottomBar.kt）：玻璃、随重力转的高光反光、
@@ -903,3 +931,9 @@ private fun RowScope.LiquidBarItem(
         )
     }
 }
+
+/** 进二级页时底栏下沉的时长（毫秒）。 */
+private const val BOTTOM_BAR_SINK_MS = 260
+
+/** 退回主页时底栏浮上来的时长（毫秒）。 */
+private const val BOTTOM_BAR_BACK_MS = 380

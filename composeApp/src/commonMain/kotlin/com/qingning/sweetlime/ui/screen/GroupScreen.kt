@@ -34,11 +34,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.StyleGroup
+import com.qingning.sweetlime.core.PreviewCache
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.data.FavoritesStore
@@ -74,15 +76,11 @@ fun GroupScreen(
     onOpenItem: (TransformItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val items = remember(input, group) {
-        if (input.isBlank()) {
-            emptyList()
-        } else {
-            TransformRegistry.all
-                .filter { it.group == group }
-                .mapNotNull { TransformItem.of(it, input) }
-        }
-    }
+    // 只筛出这一组的样式对象，**不预先算输出**。
+    // 以前这里是 mapNotNull { TransformItem.of(it, input) }：进页面就把整组（最多两百多套）
+    // 的转换 + 预览全算一遍，全压在第一帧上，所以「神仙网名」这种大组会掉一下帧。
+    // 现在转换挪到每一行自己的 remember 里，屏幕外的行不组合、也就不算。
+    val styles = remember(group) { TransformRegistry.all.filter { it.group == group } }
     val hazeState = remember { HazeState() }
     val hazeTint = MiuixTheme.colorScheme.surface
     var topBarHeight by remember { mutableStateOf(0.dp) }
@@ -99,7 +97,7 @@ fun GroupScreen(
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer(),
         ) {
-        if (items.isEmpty()) {
+        if (input.isBlank() || styles.isEmpty()) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -128,18 +126,23 @@ fun GroupScreen(
             contentPadding = PaddingValues(top = topBarHeight, bottom = 48.dp),
         ) {
             item(key = "group_count") {
-                SmallTitle(text = trf("共 {} 种样式 · 点条目看详情", items.size))
+                SmallTitle(text = trf("共 {} 种样式 · 点条目看详情", styles.size))
             }
-            item(key = "group_items") {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                ) {
-                    items.forEachIndexed { index, item ->
+            // 一行一个 LazyColumn item：只组合屏幕附近的几行。
+            // 圆角只在首尾两行给，中间行用 0 圆角拼成同一张卡的样子。
+            itemsIndexed(styles, key = { _, style -> style.id }) { index, style ->
+                val entry = remember(style, input, PreviewCache.version) { PreviewCache.entry(style, input) }
+                val item = entry.item
+                if (item != null) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        cornerRadius = groupRowCornerRadius(index, styles.size),
+                    ) {
                         BasicComponent(
                             title = item.styleTitle,
-                            summary = item.output.listPreview(),
+                            summary = entry.preview,
                             onClick = { onOpenItem(item) },
                             endActions = {
                                 IconButton(onClick = { onCopy(item) }) {
@@ -162,10 +165,8 @@ fun GroupScreen(
                                 }
                             },
                         )
-                        if (index != items.lastIndex) {
-                        }
-                    }
                 }
+            }
             }
         }
         }
@@ -225,3 +226,7 @@ fun GroupScreen(
         }
     }
 }
+
+/** 一行在整张卡里的圆角：只有首尾两行带圆角，中间拼平。16dp = miuix Card 的默认半径。 */
+private fun groupRowCornerRadius(index: Int, count: Int): androidx.compose.ui.unit.Dp =
+    if (count <= 1 || index == 0 || index == count - 1) 16.dp else 0.dp

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.StyleGroup
+import com.qingning.sweetlime.core.PreviewCache
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.readClipboard
@@ -46,6 +48,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import top.yukonga.miuix.kmp.icon.extended.ExpandLess
 import top.yukonga.miuix.kmp.icon.extended.ExpandMore
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.rotate
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
 import com.qingning.sweetlime.core.listPreview
@@ -96,12 +102,18 @@ fun HomeScreen(
 ) {
     // 最近使用：收起时只排一行，右边的图标按钮点一下展开/收起。
     var recentExpanded by remember { mutableStateOf(false) }
+    // 展开进度：0=收起、1=铺开。高度和箭头都跟着它走，展开时是「长出来」而不是跳一下。
+    val recentExpandProgress by animateFloatAsState(
+        targetValue = if (recentExpanded) 1f else 0f,
+        animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
+        label = "recentExpand",
+    )
     val entries = remember(input) {
         TransformRegistry.grouped.map { (group, styles) ->
             val preview = if (input.isBlank()) {
                 ""
             } else {
-                styles.firstNotNullOfOrNull { TransformItem.of(it, input)?.output }.orEmpty()
+                styles.firstNotNullOfOrNull { PreviewCache.entry(it, input).item?.output }.orEmpty()
             }
             GroupEntry(group, styles.size, preview)
         }
@@ -112,6 +124,8 @@ fun HomeScreen(
     // SnapshotStateList，而它的 equals 是**引用比较**（不是逐元素比较），
     // 实例一直是同一个，拿它当 remember 的键就永远不会失效，列表会变成死的。
     // toList() 换来一个普通 List：既按内容判等，读的过程也顺带订阅了列表变化。
+    // 分组标题要过翻译，所以在这里取一次，下面直接遍历。
+    val homeSections = HOME_SECTIONS
     val recentStyles = remember(recentIds.toList()) {
         recentIds.mapNotNull { id -> TransformRegistry.byId(id) }
     }
@@ -239,6 +253,10 @@ fun HomeScreen(
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
+                            // 收起 / 展开切换 maxLines 时高度是跳变的，这里补一段高度动画。
+                            .animateContentSize(
+                                animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
+                            )
                             .padding(start = 12.dp, end = 56.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -262,7 +280,7 @@ fun HomeScreen(
                                     imageVector = MiuixIcons.ChevronForward,
                                     contentDescription = null,
                                     tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                                    modifier = Modifier.rotate(if (recentExpanded) 270f else 90f),
+                                    modifier = Modifier.rotate(90f + 180f * recentExpandProgress),
                                 )
                             }
                         }
@@ -276,30 +294,39 @@ fun HomeScreen(
         }
         // 这里以前有一行小标题「样式分类 · 点一条进入」，
         // 它正好压在顶栏玻璃的渐隐带上，模糊之后显得很突兀，所以直接删掉。
-        item(key = "home_group_list") {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-            ) {
-                entries.forEachIndexed { index, entry ->
-                    BasicComponent(
-                        title = entry.group.label,
-                        summary = when {
-                            input.isBlank() -> trf("{} 种样式", entry.count)
-                            entry.preview.isNotEmpty() -> entry.preview.listPreview()
-                            else -> tr("这段文字在这里没有效果")
-                        },
-                        onClick = { onOpenGroup(entry.group) },
-                        endActions = {
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = null,
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+        // 主页分两类：英文数字（花体/上下标/彩色字母）、中文（符号与装饰）。
+        // 每类上面一行 miuix 灰色小字，下面一张卡。
+        homeSections.forEachIndexed { index, (title, groups) ->
+            item(key = "home_section_$index") {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        SmallTitle(text = tr(title))
+                    }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 12.dp),
+                    ) {
+                        groups.forEach { group ->
+                            val entry = entries.firstOrNull { it.group == group } ?: return@forEach
+                            BasicComponent(
+                                title = entry.group.label,
+                                summary = when {
+                                    input.isBlank() -> trf("{} 种样式", entry.count)
+                                    entry.preview.isNotEmpty() -> entry.preview.listPreview()
+                                    else -> tr("这段文字在这里没有效果")
+                                },
+                                onClick = { onOpenGroup(entry.group) },
+                                endActions = {
+                                    Icon(
+                                        imageVector = MiuixIcons.Basic.ArrowRight,
+                                        contentDescription = null,
+                                        tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                    )
+                                },
                             )
-                        },
-                    )
-                    if (index != entries.lastIndex) {
+                        }
                     }
                 }
             }
@@ -307,3 +334,15 @@ fun HomeScreen(
 
     }
 }
+
+/** 主页分类的分组：字母数字 / 符号与空白 / 昵称装饰。 */
+private val HOME_SECTIONS: List<Pair<String, List<StyleGroup>>> = listOf(
+    "字母与数字" to listOf(StyleGroup.LATIN, StyleGroup.SUPSUB, StyleGroup.COLOR),
+    "符号与空白" to listOf(StyleGroup.OVERLAY, StyleGroup.SYMBOL, StyleGroup.BLANK),
+    "昵称装饰" to listOf(
+        StyleGroup.HUAYANG,
+        StyleGroup.WING,
+        StyleGroup.VINE,
+        StyleGroup.BIRD,
+    ),
+)

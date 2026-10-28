@@ -219,26 +219,34 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
-        item(key = "symbol_list") {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-            ) {
-                categories.forEachIndexed { index, category ->
-                    BasicComponent(
-                        title = category.title,
-                        summary = trf("{} 个符号", category.symbols.size),
-                        onClick = { onOpen(index) },
-                        endActions = {
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowRight,
-                                contentDescription = null,
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+        // 44 个符号分类按用途分六组，一组一张卡（组内索引仍是原来的下标，onOpen 不受影响）。
+        SYMBOL_SECTIONS.forEachIndexed { sectionIndex, (title, range) ->
+            item(key = "symbol_section_$sectionIndex") {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        SmallTitle(text = tr(title))
+                    }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 12.dp),
+                    ) {
+                        range.forEach { index ->
+                            val category = categories.getOrNull(index) ?: return@forEach
+                            BasicComponent(
+                                title = category.title,
+                                summary = trf("{} 个符号", category.symbols.size),
+                                onClick = { onOpen(index) },
+                                endActions = {
+                                    Icon(
+                                        imageVector = MiuixIcons.Basic.ArrowRight,
+                                        contentDescription = null,
+                                        tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                    )
+                                },
                             )
-                        },
-                    )
-                    if (index != categories.lastIndex) {
+                        }
                     }
                 }
             }
@@ -422,3 +430,13 @@ private fun UnknownTool() {
         }
     }
 }
+
+/** 特殊符号分类的分组：标题 + 分类下标区间。 */
+private val SYMBOL_SECTIONS: List<Pair<String, IntRange>> = listOf(
+    "常用与热门" to 0..1,
+    "图案与表情" to 2..8,
+    "生活与娱乐" to 9..17,
+    "数学与单位" to 18..23,
+    "星座与形状" to 24..30,
+    "文字与符号" to 31..43,
+)
