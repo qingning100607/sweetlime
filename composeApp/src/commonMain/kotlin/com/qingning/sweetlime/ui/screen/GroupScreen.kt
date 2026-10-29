@@ -36,6 +36,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,7 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import com.qingning.sweetlime.core.StyleGroup
-import com.qingning.sweetlime.core.PreviewCache
+import com.qingning.sweetlime.core.PreviewEntry
 import com.qingning.sweetlime.core.TransformItem
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.data.FavoritesStore
@@ -52,6 +62,7 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
@@ -101,6 +112,33 @@ fun GroupScreen(
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer(),
         ) {
+        // 进这一页就开始算：把本组全部样式的转换结果和列表预览串算出来。
+        // 计算放在后台线程，算完才切到列表 —— 加载动画盖的就是这段真实耗时。
+        var rows by remember(group, input) { mutableStateOf<List<PreviewEntry?>?>(null) }
+        // 加载动画的最短时长：真算得快也要走完这一段；真算得慢就等它算完，不会被截断。
+        var minElapsed by remember(group, input) { mutableStateOf(false) }
+        LaunchedEffect(group, input) {
+            delay(LOADING_MIN_MS)
+            minElapsed = true
+        }
+        LaunchedEffect(group, input) {
+            // 先让出一帧：让加载态真的画到屏幕上，再去算。
+            withFrameNanos { }
+            // 分批算，每算几条就让出一次：一口气把整组算完会把 CPU 占满，
+            // 主线程抢不到帧，圆环就会卡住不动，一直到算完才突然跳一下。
+            val computed = withContext(Dispatchers.Default) {
+                val out = ArrayList<PreviewEntry?>(styles.size)
+                styles.forEachIndexed { index, transform ->
+                    val item = TransformItem.of(transform, input)
+                    out.add(if (item == null) null else PreviewEntry(item, item.output.listPreview()))
+                    if (index % COMPUTE_CHUNK == COMPUTE_CHUNK - 1) delay(COMPUTE_YIELD_MS)
+                }
+                out
+            }
+            // 先让出一帧，让加载态真正画到屏幕上，再切到列表。
+            withFrameNanos { }
+            rows = computed
+        }
         if (input.isBlank() || styles.isEmpty()) {
             Card(
                 modifier = Modifier
@@ -118,11 +156,48 @@ fun GroupScreen(
             }
             return@Column
         }
+        val prepared = rows
+        if (prepared == null || !minElapsed) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = topBarHeight),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    InfiniteProgressIndicator()
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = tr("载入中"),
+                        style = MiuixTheme.textStyles.footnote1,
+                        color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                    )
+                }
+            }
+            return@Column
+        }
+        // 内容淡入：加载完不要直接跳出一整屏。
+        var contentVisible by remember(group, input) { mutableStateOf(false) }
+        LaunchedEffect(group, input, prepared) {
+            if (prepared != null) {
+                withFrameNanos { }
+                contentVisible = true
+            }
+        }
+        val contentAlpha by animateFloatAsState(
+            targetValue = if (contentVisible) 1f else 0f,
+            animationSpec = tween(CONTENT_FADE_MS, easing = FastOutSlowInEasing),
+            label = "groupContentAlpha",
+        )
         val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .graphicsLayer {
+                    alpha = contentAlpha
+                    translationY = CONTENT_SLIDE_PX * (1f - contentAlpha)
+                }
                 .overScrollVertical()
                 .hyperScrollHaptic(),
             // 顶部让出顶栏高度 —— 写在 contentPadding 里（不是外层占位），
@@ -135,9 +210,9 @@ fun GroupScreen(
             // 一行一个 LazyColumn item：只组合屏幕附近的几行。
             // 圆角只给首行的上边和末行的下边，中间行四角全平，拼成同一张卡的样子。
             itemsIndexed(styles, key = { _, style -> style.id }) { index, style ->
-                val entry = remember(style, input, PreviewCache.version) { PreviewCache.entry(style, input) }
-                val item = entry.item
-                if (item != null) {
+                val entry = prepared.getOrNull(index)
+                val item = entry?.item
+                if (entry != null && item != null) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -234,6 +309,24 @@ fun GroupScreen(
         }
     }
 }
+
+/** 加载动画的直径。 */
+private val GROUP_LOADING_SIZE = 44.dp
+
+/** 加载动画的最短时长（毫秒）：真算得快也走完；真算得慢就以实际算完为准。 */
+private const val LOADING_MIN_MS = 400L
+
+/** 每算这么多条样式让出一次，避免计算独占 CPU 把圆环动画卡住。 */
+private const val COMPUTE_CHUNK = 4
+
+/** 让出时长（毫秒）。 */
+private const val COMPUTE_YIELD_MS = 2L
+
+/** 内容淡入时长（毫秒）。 */
+private const val CONTENT_FADE_MS = 300
+
+/** 出场时内容从下方约 12dp 滑到位的像素偏移。 */
+private const val CONTENT_SLIDE_PX = 36f
 
 /** 一行在整张卡里的形状：首行只圆上面两角、末行只圆下面两角，中间行拼平；单行四角全圆。 */
 private fun groupRowShape(index: Int, count: Int): Shape {

@@ -1,6 +1,6 @@
 {
-  "version": "2.9.70",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.70",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.70/SweetLime-release.apk",
+  "version": "2.9.73",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.73",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.73/SweetLime-release.apk",
   "note": "应用内「检查更新」的备用源，走 raw CDN，不受 API 频率限制。发版时 version、url、apk 三处要一起改。"
 }

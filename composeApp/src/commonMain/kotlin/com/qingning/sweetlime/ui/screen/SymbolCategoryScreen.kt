@@ -21,6 +21,14 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import androidx.compose.runtime.remember
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.delay
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageBackground
@@ -133,6 +141,14 @@ fun SymbolCategoryScreen(
         )
     }
     val density = LocalDensity.current
+    // 加载动画：和分类页/详情页同一套 —— 圆环盖住「第一帧的真实开销」，
+    // 同时也是进页面的缓冲，最短停 LOADING_MIN_MS。
+    var minElapsed by remember(safeIndex) { mutableStateOf(false) }
+    LaunchedEffect(safeIndex) {
+        delay(LOADING_MIN_MS)
+        minElapsed = true
+    }
+    val showSpinner = !minElapsed
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -147,9 +163,42 @@ fun SymbolCategoryScreen(
                     .hazeSource(state = hazeState)
                     .pageBackdropLayer(),
             ) {
+            if (showSpinner) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topBarHeight),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        InfiniteProgressIndicator()
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = tr("载入中"),
+                            style = MiuixTheme.textStyles.footnote1,
+                            color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                        )
+                    }
+                }
+            } else {
+            // 出场动画：和分类页同一套（300ms 淡入 + 轻微上移）。
+            var contentVisible by remember(safeIndex) { mutableStateOf(false) }
+            LaunchedEffect(safeIndex) {
+                withFrameNanos { }
+                contentVisible = true
+            }
+            val contentAlpha by animateFloatAsState(
+                targetValue = if (contentVisible) 1f else 0f,
+                animationSpec = tween(CONTENT_FADE_MS, easing = FastOutSlowInEasing),
+                label = "symbolContentAlpha",
+            )
             LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .graphicsLayer {
+                    alpha = contentAlpha
+                    translationY = CONTENT_SLIDE_PX * (1f - contentAlpha)
+                }
                 .overScrollVertical()
                 .hyperScrollHaptic(),
             contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
@@ -187,6 +236,7 @@ fun SymbolCategoryScreen(
             }
             item { Spacer(modifier = Modifier.height(48.dp)) }
         }
+            }
             }
 
         // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。符号从它下面穿过去时逐帧被糊掉。
@@ -272,3 +322,11 @@ private fun SymbolChip(symbol: String, onClick: () -> Unit, width: androidx.comp
         )
     }
 }
+/** 加载动画的最短时长（毫秒）。 */
+private const val LOADING_MIN_MS = 400L
+
+/** 出场动画时长（毫秒）。 */
+private const val CONTENT_FADE_MS = 300
+
+/** 出场时内容从下方约 12dp 滑到位的像素偏移。 */
+private const val CONTENT_SLIDE_PX = 36f

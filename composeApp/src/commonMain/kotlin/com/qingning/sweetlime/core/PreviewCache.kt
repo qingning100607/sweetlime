@@ -42,6 +42,9 @@ object PreviewCache {
     var version by mutableIntStateOf(0)
         private set
 
+    /** 这份输入是否已经预热完成。界面据此决定「先给加载动画，还是直接铺列表」。 */
+    fun isReady(input: String): Boolean = cachedInput == input
+
     /** 取某样式对某输入的预计算结果；缓存没覆盖到就当场算一条。 */
     fun entry(transform: TextTransform, input: String): PreviewEntry {
         if (input != cachedInput) return compute(transform, input)
