@@ -209,10 +209,12 @@ fun GroupScreen(
             }
             // 一行一个 LazyColumn item：只组合屏幕附近的几行。
             // 圆角只给首行的上边和末行的下边，中间行四角全平，拼成同一张卡的样子。
-            itemsIndexed(styles, key = { _, style -> style.id }) { index, style ->
-                val entry = prepared.getOrNull(index)
-                val item = entry?.item
-                if (entry != null && item != null) {
+            // 只保留真正有变化的样式：输中文/表情时很多拉丁样式算出来等于原文（被 of() 过滤成 null），
+            // 那些行不显示。圆角必须按**可见行**算，否则首行落到中间位置就会变成平角、四角全没了。
+            val shown = prepared.filter { it?.item != null }
+            itemsIndexed(shown, key = { _, entry -> entry!!.item!!.styleId }) { index, entry ->
+                val item = entry!!.item!!
+                run {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -220,7 +222,7 @@ fun GroupScreen(
                             // miuix 的 Card 只收一个统一的 cornerRadius，做不出「只圆外侧两角」。
                             // 所以内层留平、外层按行位置裁形：首行圆上面、末行圆下面、中间直接拼平，
                             // 相邻两行边缘完全重合，竖着看就是一张连着的卡。
-                            .clip(groupRowShape(index, styles.size)),
+                            .clip(groupRowShape(index, shown.size)),
                         cornerRadius = 0.dp,
                     ) {
                         BasicComponent(
