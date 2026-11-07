@@ -80,7 +80,8 @@ object UpdateChecker {
         (APK_URL_PATTERN.find(text) ?: KEYED_APK_PATTERN.find(text))?.groupValues?.getOrNull(1)
 
     private fun bodyText(text: String): String? {
-        val raw = BODY_PATTERN.find(text)?.groupValues?.getOrNull(1) ?: return null
+        val raw = (BODY_PATTERN.find(text) ?: KEYED_NOTES_PATTERN.find(text))
+            ?.groupValues?.getOrNull(1) ?: return null
         val out = StringBuilder(raw.length)
         var i = 0
         while (i < raw.length) {
@@ -137,6 +138,7 @@ object UpdateChecker {
     private val APK_URL_PATTERN = Regex("\"browser_download_url\"\\s*:\\s*\"(https://[^\"]+\\.apk)\"")
 
     private val BODY_PATTERN = Regex("\"body\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"")
+    private val KEYED_NOTES_PATTERN = Regex("\"notes\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"")
 
     private val KEYED_APK_PATTERN = Regex("\"apk\"\\s*:\\s*\"(https://[^\"]+)\"")
 
