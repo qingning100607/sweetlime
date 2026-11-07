@@ -1,6 +1,6 @@
 {
-  "version": "2.9.81",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.81",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.81/SweetLime-release.apk",
-  "notes": "本次更新\n- 更新提示全红\n- 点提示才弹窗\n- 弹窗用 WindowDialog\n- 取消不留记录\n- 设置检查更新修复\n- 新增内容重复率\n- 重复率50%已修\n- 颜文字并入符号\n- 新增五类符号\n- 花名改为网名\n- 飞鸟并入网名\n- 渐变色加CSS\n- 震动范围收敛\n- 删编辑器嗅探\n- 源码注释清空\n- 许可补充三项"
+  "version": "2.9.82",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.82",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.82/SweetLime-release.apk",
+  "notes": "更新逻辑调整\n工具栏新增内容重复率\n颜文字并入符号\n新增五类符号\n花样网名改为网名\n转换条目内飞鸟文并入网名\n颜色转换内添加渐变色\n震动范围调整为只在tab页生效\n删代码编辑器"
 }
