@@ -54,6 +54,11 @@ import androidx.compose.ui.draw.rotate
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
 import com.qingning.sweetlime.core.listPreview
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.unit.sp
 
 private class GroupEntry(
     val group: StyleGroup,
@@ -111,18 +116,14 @@ fun HomeScreen(
     ) {
         item(key = "home_update_banner") {
             if (newVersion != null) {
-                Card(
+                UpdateWarningCard(
+                    message = trf("发现新版本 {}", newVersion),
+                    onClick = onOpenUpdateDialog,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
                         .padding(top = 8.dp),
-                ) {
-                    BasicComponent(
-                        title = trf("发现新版本 {}", newVersion),
-                        summary = tr("点击查看更新内容"),
-                        onClick = onOpenUpdateDialog,
-                    )
-                }
+                )
             }
         }
         item(key = "home_input") {
@@ -276,3 +277,35 @@ private val HOME_SECTIONS: List<Pair<String, List<StyleGroup>>> = listOf(
         StyleGroup.VINE,
     ),
 )
+
+@Composable
+private fun UpdateWarningCard(
+    message: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dark = MiuixTheme.colorScheme.background.luminance() < 0.5f
+    val container = if (dark) Color(0xFF3E2F1B) else Color(0xFFFFF0DB)
+    val content = Color(0xFFF5A623)
+    Card(
+        modifier = modifier,
+        onClick = onClick,
+        colors = CardDefaults.defaultColors(color = container, contentColor = content),
+        showIndication = true,
+        pressFeedbackType = PressFeedbackType.Sink,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = message,
+                fontSize = 14.sp,
+                color = content,
+            )
+        }
+    }
+}
