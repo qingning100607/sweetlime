@@ -1,6 +1,9 @@
 package com.qingning.sweetlime.core.i18n
 
 internal val EN: Map<String, String> = mapOf(
+    "更新日志" to "Changelog",
+    "新版本 {}" to "New version {}",
+    "点击查看更新内容" to "Tap to see what changed",
     "网名" to "Name",
     "序号符号" to "Numbered",
     "制表与线条" to "Box drawing",
@@ -578,6 +581,9 @@ internal val EN: Map<String, String> = mapOf(
 )
 
 internal val TW: Map<String, String> = mapOf(
+    "更新日志" to "更新日誌",
+    "新版本 {}" to "新版本 {}",
+    "点击查看更新内容" to "點擊查看更新內容",
     "网名" to "名稱",
     "序号符号" to "序號",
     "制表与线条" to "製表與線條",

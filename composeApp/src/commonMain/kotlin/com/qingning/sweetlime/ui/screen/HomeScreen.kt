@@ -72,6 +72,8 @@ fun HomeScreen(
     onOpenGroup: (StyleGroup) -> Unit,
     recentIds: List<String> = emptyList(),
     onOpenRecent: (String) -> Unit = {},
+    newVersion: String? = null,
+    onOpenUpdateDialog: () -> Unit = {},
 ) {
 
     var recentExpanded by remember { mutableStateOf(false) }
@@ -107,6 +109,22 @@ fun HomeScreen(
             bottom = outerPadding.calculateBottomPadding(),
         ),
     ) {
+        item(key = "home_update_banner") {
+            if (newVersion != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 8.dp),
+                ) {
+                    BasicComponent(
+                        title = trf("发现新版本 {}", newVersion),
+                        summary = tr("点击查看更新内容"),
+                        onClick = onOpenUpdateDialog,
+                    )
+                }
+            }
+        }
         item(key = "home_input") {
 
             TextField(

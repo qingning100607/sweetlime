@@ -77,7 +77,7 @@ import com.qingning.sweetlime.core.PreviewCache
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.resolveBackAction
 import com.qingning.sweetlime.core.UpdateChecker
-import com.qingning.sweetlime.ui.screen.UpdateDialog
+import com.qingning.sweetlime.ui.screen.UpdateNotesDialog
 import com.qingning.sweetlime.core.OpenSourceLicenses
 import com.qingning.sweetlime.core.PrivacyPolicy
 import com.qingning.sweetlime.core.copyToClipboard
@@ -186,10 +186,10 @@ fun SweetLimeApp() {
     var updateResult by remember { mutableStateOf<UpdateChecker.Result?>(null) }
     var checkingUpdate by remember { mutableStateOf(false) }
     var showUpdateDialog by remember { mutableStateOf(false) }
-    val newerRelease = UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate)
+    val newerRelease = updateResult as? UpdateChecker.Result.Newer
 
     fun openUpdateDownload() {
-        val newer = newerRelease ?: return
+        val newer = updateResult as? UpdateChecker.Result.Newer ?: return
         openUrl(newer.apkUrl ?: newer.releaseUrl ?: UpdateChecker.RELEASES_PAGE_URL)
     }
 
@@ -199,9 +199,6 @@ fun SweetLimeApp() {
         scope.launch {
             updateResult = UpdateChecker.check()
             checkingUpdate = false
-            if (UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate) != null) {
-                showUpdateDialog = true
-            }
         }
     }
 
@@ -312,6 +309,8 @@ fun SweetLimeApp() {
                         onOpenSearch = { push(Route.Search) },
                         recentIds = recent.ids,
                         onOpenRecent = { openStyle(it) },
+                        newVersion = newerRelease?.latest,
+                        onOpenUpdateDialog = { showUpdateDialog = true },
                     )
                 }
 
@@ -433,14 +432,14 @@ fun SweetLimeApp() {
             )
             val dialogRelease = newerRelease
             if (showUpdateDialog && dialogRelease != null) {
-                UpdateDialog(
+                UpdateNotesDialog(
                     version = dialogRelease.latest,
                     notes = dialogRelease.notes,
-                    onDismiss = {
-                        settings.dismissedUpdate = dialogRelease.latest
+                    onDismiss = { showUpdateDialog = false },
+                    onOpenDownload = {
                         showUpdateDialog = false
+                        openUpdateDownload()
                     },
-                    onOpenDownload = { openUpdateDownload() },
                 )
             }
             }
@@ -469,6 +468,8 @@ private fun RootScaffold(
     onOpenSearch: () -> Unit,
     recentIds: List<String>,
     onOpenRecent: (String) -> Unit,
+    newVersion: String?,
+    onOpenUpdateDialog: () -> Unit,
 ) {
     var topBarHeight by remember { mutableStateOf(0.dp) }
     var bottomBarHeight by remember { mutableStateOf(0.dp) }
@@ -564,6 +565,8 @@ private fun RootScaffold(
                     onOpenGroup = onOpenGroup,
                     recentIds = recentIds,
                     onOpenRecent = onOpenRecent,
+                    newVersion = newVersion,
+                    onOpenUpdateDialog = onOpenUpdateDialog,
                 )
                 1 -> ToolsScreen(
                     outerPadding = contentPadding,
