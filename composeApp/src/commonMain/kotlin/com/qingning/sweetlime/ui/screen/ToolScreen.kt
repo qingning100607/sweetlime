@@ -207,7 +207,7 @@ private fun SymbolCategoryList(sections: List<Pair<String, List<Int>>>, onOpen: 
         modifier = Modifier
             .fillMaxSize()
             .overScrollVertical()
-            .hyperScrollHaptic(),
+,
 
         contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
@@ -271,7 +271,7 @@ internal fun ConverterToolScreen(
         modifier = Modifier
             .fillMaxSize()
             .overScrollVertical()
-            .hyperScrollHaptic(),
+,
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
         item {

@@ -43,7 +43,7 @@ internal fun DupCheckToolScreen(onCopyText: (String, String) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .overScrollVertical()
-            .hyperScrollHaptic(),
+,
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
         item {
@@ -79,37 +79,21 @@ internal fun DupCheckToolScreen(onCopyText: (String, String) -> Unit) {
                     modifier = Modifier.padding(horizontal = 18.dp),
                 )
                 SmallTitle(text = tr("重复率"))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        if (result != null) {
-                            Text(
-                                text = trf("{}%", result.similarityPercent),
-                                style = MiuixTheme.textStyles.title1,
-                                color = MiuixTheme.colorScheme.onSurfaceContainer,
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = trf("重复 {} 字 · 原文 {} 字 · 对比 {} 字", result.commonChars, result.baseChars, result.targetChars),
-                                style = MiuixTheme.textStyles.body2,
-                                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = when {
-                                    result.similarityPercent >= 80 -> tr("几乎一样，属于高度重复。")
-                                    result.similarityPercent >= 50 -> tr("重复较多，建议再改一改。")
-                                    result.similarityPercent >= 20 -> tr("有一部分重复。")
-                                    else -> tr("重复很少。")
-                                },
-                                style = MiuixTheme.textStyles.footnote1,
-                                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                        }
+                if (result != null) {
+                    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                        Text(
+                            text = trf("{}%", result.similarityPercent),
+                            style = MiuixTheme.textStyles.title2,
+                            color = MiuixTheme.colorScheme.onSurfaceContainer,
+                            modifier = Modifier.padding(16.dp),
+                        )
                     }
+                    Text(
+                        text = trf("重复 {} 字 · 原文 {} 字 · 对比 {} 字", result.commonChars, result.baseChars, result.targetChars),
+                        style = MiuixTheme.textStyles.footnote1,
+                        color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp),
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(

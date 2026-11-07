@@ -10,6 +10,7 @@ import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -80,9 +81,9 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
                 tr("八位十六进制按 AARRGGBB 解析。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = 6.dp),
         )
-        SmallTitle(text = tr("颜色预览"))
+        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("颜色预览"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Box(
@@ -113,7 +114,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             }
         }
         if (info != null) {
-            SmallTitle(text = tr("各种写法"))
+            SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("各种写法"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     lines.forEachIndexed { index, line ->
@@ -124,7 +125,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
                 }
             }
         }
-        SmallTitle(text = tr("渐变色"))
+        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("渐变色"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

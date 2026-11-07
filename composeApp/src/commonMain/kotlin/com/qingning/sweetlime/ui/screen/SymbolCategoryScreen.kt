@@ -179,7 +179,7 @@ fun SymbolCategoryScreen(
                     translationY = CONTENT_SLIDE_PX * (1f - contentAlpha)
                 }
                 .overScrollVertical()
-                .hyperScrollHaptic(),
+,
             contentPadding = PaddingValues(bottom = 24.dp),
         ) {
             item {

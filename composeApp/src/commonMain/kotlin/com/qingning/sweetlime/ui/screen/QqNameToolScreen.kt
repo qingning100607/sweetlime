@@ -1,6 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -83,7 +84,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
 
-        SmallTitle(text = tr("内容"))
+        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("内容"))
         TextField(
             value = nickname,
             onValueChange = { nickname = it },
@@ -109,12 +110,12 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
                 text = tr("别在 QQ 的账号昵称里用，它只在「群昵称」里生效。"),
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                modifier = Modifier.padding(horizontal = 4.dp),
+                modifier = Modifier.padding(horizontal = 6.dp),
             )
         }
 
         if (useColor) {
-            SmallTitle(text = tr("颜色"))
+            SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("颜色"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Box(
                     modifier = Modifier
@@ -189,7 +190,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
 
-        SmallTitle(text = tr("生成结果"))
+        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("生成结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = result,

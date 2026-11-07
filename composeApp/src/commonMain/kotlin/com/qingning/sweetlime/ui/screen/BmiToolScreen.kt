@@ -1,6 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
@@ -93,9 +94,9 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
             text = tr("分级采用中国成人标准：偏瘦 < 18.5，正常 18.5–23.9，超重 24–27.9，肥胖 ≥ 28。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = 6.dp),
         )
-        SmallTitle(text = tr("计算结果"))
+        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("计算结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 if (report == null) {

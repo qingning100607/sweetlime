@@ -67,7 +67,7 @@ internal fun LevelToolScreen() {
         modifier = Modifier
             .fillMaxSize()
             .overScrollVertical()
-            .hyperScrollHaptic(),
+,
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {

@@ -41,7 +41,7 @@ fun SpringColumn(
             modifier = modifier
                 .fillMaxSize()
                 .overScrollVertical()
-                .hyperScrollHaptic(),
+,
             contentPadding = contentPadding,
         ) {
             item(key = "spring-column-content") {

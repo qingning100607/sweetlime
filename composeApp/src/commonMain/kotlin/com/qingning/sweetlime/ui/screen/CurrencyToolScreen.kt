@@ -1,5 +1,4 @@
 package com.qingning.sweetlime.ui.screen
-import com.qingning.sweetlime.ui.effect.rememberClickHaptic
 import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,6 +7,7 @@ import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -122,9 +122,9 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             text = tr("汇率来自 exchangerate-api，换货币不用重新请求。"),
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = 6.dp),
         )
-        SmallTitle(text = tr("换算结果"))
+        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("换算结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val message = when {
@@ -181,14 +181,12 @@ private fun CurrencyPickRow(
     onPick: (String) -> Unit,
 ) {
 
-    val clickHaptic = rememberClickHaptic()
     Box(modifier = Modifier.fillMaxWidth()) {
         BasicComponent(
             title = title,
             summary = CurrencyApi.displayName(code),
             onClick = {
-                clickHaptic()
-                onExpand()
+                                onExpand()
             },
             endActions = {
                 Text(
@@ -220,8 +218,7 @@ private fun CurrencyPickRow(
                         isSelected = entry.second == code,
                         index = index,
                         onSelectedIndexChange = {
-                            clickHaptic()
-                            onPick(entry.second)
+                                                        onPick(entry.second)
                         },
                     )
                 }

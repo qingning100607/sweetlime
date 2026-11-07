@@ -26,7 +26,7 @@ object ContentDupCheck {
         val b = normalize(target).take(MAX_LEN)
         val common = lcsLength(a, b)
         val total = a.length + b.length
-        val percent = if (total == 0) 0 else (common * 200 + total) / (total * 2)
+        val percent = if (total == 0) 0 else (common * 200 + total / 2) / total
         return Result(
             similarityPercent = percent.coerceIn(0, 100),
             commonChars = common,

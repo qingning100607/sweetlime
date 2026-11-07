@@ -188,7 +188,7 @@ fun GroupScreen(
                     translationY = CONTENT_SLIDE_PX * (1f - contentAlpha)
                 }
                 .overScrollVertical()
-                .hyperScrollHaptic(),
+,
 
             contentPadding = PaddingValues(top = topBarHeight, bottom = 48.dp),
         ) {

@@ -34,7 +34,7 @@ fun DocScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .overScrollVertical()
-                .hyperScrollHaptic(),
+,
             contentPadding = PaddingValues(top = topPadding + 8.dp, bottom = 48.dp),
         ) {
             item(key = "doc_body") {
