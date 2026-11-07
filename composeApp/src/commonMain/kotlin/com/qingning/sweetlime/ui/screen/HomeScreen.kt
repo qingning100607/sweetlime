@@ -285,8 +285,8 @@ private fun UpdateWarningCard(
     modifier: Modifier = Modifier,
 ) {
     val dark = MiuixTheme.colorScheme.background.luminance() < 0.5f
-    val container = if (dark) Color(0xFF3E2F1B) else Color(0xFFFFF0DB)
-    val content = Color(0xFFF5A623)
+    val container = if (dark) Color(0xFF310808) else Color(0xFFF8E2E2)
+    val content = Color(0xFFF72727)
     Card(
         modifier = modifier,
         onClick = onClick,

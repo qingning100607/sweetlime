@@ -199,9 +199,6 @@ fun SweetLimeApp() {
         scope.launch {
             updateResult = UpdateChecker.check()
             checkingUpdate = false
-            if (updateResult is UpdateChecker.Result.Newer) {
-                showUpdateDialog = true
-            }
         }
     }
 
