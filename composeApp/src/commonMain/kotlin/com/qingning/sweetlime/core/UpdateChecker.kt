@@ -1,142 +1,123 @@
 package com.qingning.sweetlime.core
 
-/**
- * 「检查更新」。
- *
- * 只在 [FEED_URL] 非空时才会发一次 GET，平时不会去碰任何服务器。
- *
- * 更新源是本仓库的 GitHub Releases：发版时在 GitHub 上打一个 tag（形如 `v2.6.0`）
- * 并发布 Release 即可，应用内就能看到。该接口不带授权也能访问（有匿名频率限制，
- * 但「检查更新」这点请求量远远够用）。
- *
- * 解析很宽松，按顺序尝试：
- * 1. `"tag_name": "v2.6.0"` —— GitHub Releases 的 JSON；
- * 2. 正文里第一个形如 `2.6.0` 的版本号 —— 换成任何纯文本地址也能用。
- */
 object UpdateChecker {
 
-    /** 更新源（主）：本仓库最新的一条 Release。 */
     const val FEED_URL: String = "https://api.github.com/repos/qingning100607/sweetlime/releases/latest"
 
-    /**
-     * 更新源（备用）：仓库里的 version.json，走 raw CDN。
-     *
-     * GitHub API 对匿名请求有频率限制（同一出口 IP 每小时 60 次，共享网络/VPN 很容易撞到），
-     * raw 没有这个限制，所以主源取不到东西时自动降级到这里。
-     */
     const val FALLBACK_FEED_URL: String =
         "https://raw.githubusercontent.com/qingning100607/sweetlime/master/version.json"
 
-    /** 发布页（拿不到具体某版的地址时退到这里，永远有地方可去）。 */
     const val RELEASES_PAGE_URL: String =
         "https://github.com/qingning100607/sweetlime/releases"
 
-    /** 源码仓库（设置页「关于」里那一行跳转）。 */
     const val REPO_URL: String = "https://github.com/qingning100607/sweetlime"
 
-    /** 从更新源里解析出来的这三样东西。 */
     data class Feed(
         val version: String,
-        /** 发布页地址（`html_url` / `url`）。 */
+
         val pageUrl: String? = null,
-        /** 安装包直链（`assets[].browser_download_url` / `"apk"`）。 */
+
         val apkUrl: String? = null,
+        val notes: String? = null,
     )
 
     sealed interface Result {
-        /** 没配地址，只报告当前版本。 */
+
         data class NotConfigured(val current: String) : Result
 
-        /** 网络失败 / 返回内容里没有版本号 / 还没有发布过 Release。 */
         data class Failed(val current: String) : Result
 
-        /** 已经是最新。 */
         data class UpToDate(val current: String) : Result
 
-        /**
-         * 有新版本。
-         *
-         * [releaseUrl] 是发布页地址，取不到时为 null（界面会退回到「去交流群」的说法）。
-         */
         data class Newer(
             val latest: String,
             val current: String,
             val releaseUrl: String? = null,
-            /** 安装包直链；拿不到时为 null（界面退回到「打开发布页」）。 */
+
             val apkUrl: String? = null,
+            val notes: String? = null,
         ) : Result
     }
 
     suspend fun check(): Result {
         val current = APP_VERSION
-        // 主源：Releases API（能顺带给出发布页地址和 APK 直链）。
+
         var feed = parseFeed(httpGetText(FEED_URL).orEmpty())
-        // 备用源：仓库里的 version.json。API 撞匿名限流时靠它兜底。
+
         if (feed == null) feed = parseFeed(httpGetText(FALLBACK_FEED_URL).orEmpty())
         val latest = feed?.version ?: return Result.Failed(current)
         return if (compareVersions(latest, current) > 0) {
-            Result.Newer(latest, current, feed.pageUrl, feed.apkUrl)
+            Result.Newer(latest, current, feed.pageUrl, feed.apkUrl, feed.notes)
         } else {
             Result.UpToDate(current)
         }
     }
 
-    /**
-     * 主页顶部那条「发现新版本」提示：该不该显示、显示什么。
-     *
-     * - 只有 [Result.Newer]（确实查到更高的版本）才显示；
-     * - 用户点过「×」忽略过的那个版本（[dismissedVersion] 和它相同）就不再打扰，
-     *   等出了更高的一版会重新提示；
-     * - 还没查（[result] 为 null）、已是最新、检查失败、没配更新源 —— 一律不显示。
-     */
     fun homeBanner(result: Result?, dismissedVersion: String): Result.Newer? =
         (result as? Result.Newer)?.takeIf {
             it.latest.isNotBlank() && it.latest != dismissedVersion
         }
 
-    /**
-     * 从响应文本里取出版本号（能取到时连发布页地址一起给出）。取不到返回 null。
-     *
-     * 保留这个「只关心版本号和发布页」的老用法；要 APK 直链就用 [parseFeed]。
-     */
     internal fun parseLatest(text: String): Pair<String, String?>? =
         parseFeed(text)?.let { it.version to it.pageUrl }
 
-    /**
-     * 把更新源的响应解析成 [Feed]：版本号 + 发布页地址 + APK 直链。
-     *
-     * 解析顺序和以前一致（tag_name → version → 正文里第一个版本号），只是顺手把
-     * 安装包直链也捞出来 —— 主页顶部那条提示要能「在应用内直接下载」，就得有直链。
-     */
     internal fun parseFeed(text: String): Feed? {
         if (text.isBlank()) return null
         val apk = apkLink(text)
-        TAG_PATTERN.find(text)?.let { return Feed(it.groupValues[1], releaseLink(text), apk) }
+        val notes = bodyText(text)
+        TAG_PATTERN.find(text)?.let { return Feed(it.groupValues[1], releaseLink(text), apk, notes) }
         KEYED_VERSION_PATTERN.find(text)?.let {
-            return Feed(it.groupValues[1], releaseLink(text), apk)
+            return Feed(it.groupValues[1], releaseLink(text), apk, notes)
         }
-        // GitHub 撞限流 / 报错时返回的是 {"message":"API rate limit exceeded for 1.2.3.4"...}，
-        // 里面的 IP 长得跟版本号一模一样，所以这种响应一律不认，别去扫数字。
+
         if (ERROR_BODY_PATTERN.containsMatchIn(text)) return null
-        // 最后才退化到「正文里第一个像版本号的东西」，方便临时换成别的纯文本源。
-        VERSION_PATTERN.find(text)?.let { return Feed(it.value, releaseLink(text), apk) }
+
+        VERSION_PATTERN.find(text)?.let { return Feed(it.value, releaseLink(text), apk, notes) }
         return null
     }
 
-    /**
-     * APK 直链：优先认 Releases API 的 `"browser_download_url": "...apk"`，
-     * 再认 version.json 里的 `"apk"`。
-     */
     private fun apkLink(text: String): String? =
         (APK_URL_PATTERN.find(text) ?: KEYED_APK_PATTERN.find(text))?.groupValues?.getOrNull(1)
 
-    /** 发布页地址：先认 Releases API 的 `html_url`，再认 version.json 里的 `url`。 */
+    private fun bodyText(text: String): String? {
+        val raw = BODY_PATTERN.find(text)?.groupValues?.getOrNull(1) ?: return null
+        val out = StringBuilder(raw.length)
+        var i = 0
+        while (i < raw.length) {
+            val ch = raw[i]
+            if (ch == '\\' && i + 1 < raw.length) {
+                when (val next = raw[i + 1]) {
+                    'n' -> out.append('\n')
+                    'r' -> out.append('\r')
+                    't' -> out.append('\t')
+                    'b' -> out.append('\b')
+                    '"' -> out.append('"')
+                    '\\' -> out.append('\\')
+                    '/' -> out.append('/')
+                    'u' -> {
+                        val hex = raw.substring(i + 2, minOf(i + 6, raw.length))
+                        val code = hex.toIntOrNull(16)
+                        if (code != null) {
+                            out.append(code.toChar())
+                            i += 4
+                        }
+                    }
+                    else -> out.append(next)
+                }
+                i += 2
+            } else {
+                out.append(ch)
+                i++
+            }
+        }
+        return out.toString().trim().ifBlank { null }
+    }
+
     private fun releaseLink(text: String): String? {
         val match = RELEASE_URL_PATTERN.find(text) ?: FALLBACK_URL_PATTERN.find(text)
         return match?.groupValues?.getOrNull(1)
     }
 
-    /** 逐段比大小；段数不一样时缺的地位零（2.5 与 2.5.0 视为相同）。 */
     internal fun compareVersions(a: String, b: String): Int {
         val x = a.split('.').map { it.toIntOrNull() ?: 0 }
         val y = b.split('.').map { it.toIntOrNull() ?: 0 }
@@ -147,27 +128,21 @@ object UpdateChecker {
         return 0
     }
 
-    /** GitHub Releases JSON 里的 `"tag_name": "v2.6.0"`（`v` 可有可无）。 */
     private val TAG_PATTERN = Regex("\"tag_name\"\\s*:\\s*\"v?([0-9]+(?:\\.[0-9]+)*)\"")
 
-    /** 发布页地址，只认 GitHub 自己的域名，避免把响应里别的链接当成下载地址。 */
     private val RELEASE_URL_PATTERN = Regex("\"html_url\"\\s*:\\s*\"(https://github\\.com/[^\"]+)\"")
 
-    /** 备用源 version.json 里的 `"url": "https://github.com/.../releases/tag/v2.5.0"`。 */
     private val FALLBACK_URL_PATTERN = Regex("\"url\"\\s*:\\s*\"(https://github\\.com/[^\"]+)\"")
 
-    /** Releases API 的 assets 里那个 APK：`"browser_download_url": "https://.../SweetLime-2.5.4.apk"`。 */
     private val APK_URL_PATTERN = Regex("\"browser_download_url\"\\s*:\\s*\"(https://[^\"]+\\.apk)\"")
 
-    /** 备用源 version.json 里也可以直接写 `"apk": "https://...apk"`。 */
+    private val BODY_PATTERN = Regex("\"body\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"")
+
     private val KEYED_APK_PATTERN = Regex("\"apk\"\\s*:\\s*\"(https://[^\"]+)\"")
 
-    /** 备用源 version.json 里的 `"version": "2.5.0"`。 */
     private val KEYED_VERSION_PATTERN = Regex("\"version\"\\s*:\\s*\"v?([0-9]+(?:\\.[0-9]+)*)\"")
 
-    /** GitHub 的错误响应体（限流、404 等），这里面的 IP 不能当成版本号。 */
     private val ERROR_BODY_PATTERN = Regex("\"(message|documentation_url)\"\\s*:")
 
-    /** 兜底：正文里第一个像版本号的东西。 */
     private val VERSION_PATTERN = Regex("[0-9]+(\\.[0-9]+)+")
 }

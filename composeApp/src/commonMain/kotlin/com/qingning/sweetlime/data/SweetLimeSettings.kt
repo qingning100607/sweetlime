@@ -6,34 +6,25 @@ import androidx.compose.runtime.setValue
 import com.qingning.sweetlime.core.KeyValueStore
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 
-/** 主题模式选项：跟随系统 / 浅色 / 深色。 */
 object ThemeMode {
     const val SYSTEM = 0
     const val LIGHT = 1
     const val DARK = 2
 }
 
-/**
- * 用户设置。字段用 Compose 的 mutableStateOf 承载，读写即触发重组，
- * 赋值时顺便落盘（SharedPreferences 是异步 apply，不会卡 UI）。
- */
 class SweetLimeSettings(private val store: KeyValueStore) {
     private var monetState by mutableStateOf(store.getBoolean(KEY_MONET, false))
     private var themeModeState by mutableStateOf(store.getInt(KEY_THEME_MODE, ThemeMode.SYSTEM))
-    // 默认关闭：保持原有的贴底导航栏，想要的自己去设置里开。
+
     private var floatingBarState by mutableStateOf(store.getBoolean(KEY_FLOATING_BAR, false))
-    // 主页「发现新版本」提示被点掉的那个版本号：同一个版本不再打扰，
-    // 等出了更新的一版会重新提示（空串 = 没有点掉过任何版本）。
+
     private var dismissedUpdateState by mutableStateOf(store.getString(KEY_DISMISSED_UPDATE, ""))
-    // 流光背景：**默认关闭** —— 首装要的是「干净、省电、开哪页都不掉帧」的观感，
-    // 想要流光的人自己去设置里打开（打开后这一层的着色器开销由用户自己选择承担）。
+
     private var flowingBgState by mutableStateOf(store.getBoolean(KEY_FLOWING_BG, false))
-    // 流光风格：0=跟随系统（按 HyperOS 大版本）、1=OS2、2=OS3。见 HyperOsStyle。
-    // 默认直接选 **OS3**（配色在三组色板间流动的那一代），不跟随系统 ——
-    // 这样不管机器上是哪个 HyperOS 版本，首装看到的都是最新的那套观感。
+
     private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.AUTO))
     private var hapticState by mutableStateOf(store.getBoolean(KEY_HAPTIC, true))
-    // 界面语言：zh=简体 / en=英文 / tw=繁体。存 code，认不出来回落简体。
+
     private var languageState by mutableStateOf(store.getString(KEY_LANGUAGE, "zh"))
 
     var monet: Boolean
@@ -50,7 +41,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putInt(KEY_THEME_MODE, value)
         }
 
-    
     var floatingBottomBar: Boolean
         get() = floatingBarState
         set(value) {
@@ -58,7 +48,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putBoolean(KEY_FLOATING_BAR, value)
         }
 
-    /** 主页顶部「发现新版本」提示里点过「×」的版本号；同一个版本不再提示。 */
     var dismissedUpdate: String
         get() = dismissedUpdateState
         set(value) {
@@ -66,7 +55,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putString(KEY_DISMISSED_UPDATE, value)
         }
 
-    /** 流光背景：整屏铺一层慢速流动的彩色光晕（着色器实现，需要 Android 13+）。 */
     var flowingBackground: Boolean
         get() = flowingBgState
         set(value) {
@@ -74,11 +62,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putBoolean(KEY_FLOWING_BG, value)
         }
 
-    /**
-     * 流光风格：跟随系统 / OS2 / OS3（取值见 [com.qingning.sweetlime.ui.effect.HyperOsStyle]）。
-     *
-     * 「跟随系统」按 HyperOS 大版本自动选；手动选了就无视系统版本。
-     */
     var flowingStyle: Int
         get() = flowingStyleState
         set(value) {
@@ -86,19 +69,13 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putInt(KEY_FLOWING_STYLE, value)
         }
 
-    /** 震动反馈总开关：控件点击震动 + 列表到边震动，全在这一层管。 */
     var hapticFeedback: Boolean
         get() = hapticState
         set(value) {
             hapticState = value
             store.putBoolean(KEY_HAPTIC, value)
         }
-    /**
-     * 界面语言（code 见 [com.qingning.sweetlime.core.i18n.AppLanguage]）。
-     *
-     * 只存 code；真正生效靠 App 里把 [com.qingning.sweetlime.core.i18n.AppLocale]
-     * 同步过来，然后整个界面按新语言重组，不用重启。
-     */
+
     var language: String
         get() = languageState
         set(value) {

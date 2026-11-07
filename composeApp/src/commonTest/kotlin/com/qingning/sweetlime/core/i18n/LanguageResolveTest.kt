@@ -3,13 +3,6 @@ package com.qingning.sweetlime.core.i18n
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * 「跟随系统」的解析规则。
- *
- * 关键点：**存的 code 和真正生效的语言是两件事**。
- * 选「跟随系统」时生效语言会跟着系统变，但设置页那一行必须还显示「跟随系统」，
- * 所以 [AppLocale.selection] 存 code、[AppLocale.current] 存解析结果，两者不能混。
- */
 class LanguageResolveTest {
     @Test
     fun autoFollowsSystemLanguage() {
@@ -46,7 +39,6 @@ class LanguageResolveTest {
         assertEquals("tw", AppLocale.selection)
         assertEquals(AppLanguage.TW, AppLocale.current)
 
-        // 老接口仍然表示「明确选了这一种语言」
         AppLocale.apply(AppLanguage.ZH)
         assertEquals("zh", AppLocale.selection)
         assertEquals(AppLanguage.ZH, AppLocale.current)

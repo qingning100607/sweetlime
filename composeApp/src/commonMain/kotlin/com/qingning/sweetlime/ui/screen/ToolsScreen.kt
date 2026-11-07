@@ -24,12 +24,6 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/**
- * 工具页（底层）：一列**竖排的工具入口**。
- *
- * 这里只做目录，点任意一条才 push 进对应的工具二级页 ——
- * 每个工具都有输入框、有结果、有说明，全部塞在一页里必然又长又乱。
- */
 @Composable
 fun ToolsScreen(
     outerPadding: PaddingValues,
@@ -49,8 +43,7 @@ fun ToolsScreen(
     ) {
         item(key = "tool_title") {
         }
-        // 工具按用途分四组：文字处理 / 编码转换 / 字符素材 / 实用工具。
-        // 每组一行 miuix 灰色小字标题，下面一张卡。
+
         TOOL_SECTIONS.forEachIndexed { sectionIndex, (title, ids) ->
             item(key = "tool_section_$sectionIndex") {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -86,10 +79,9 @@ fun ToolsScreen(
     }
 }
 
-/** 工具页分组：标题 + 工具 id。 */
 private val TOOL_SECTIONS: List<Pair<String, List<String>>> = listOf(
     "文字处理" to listOf("pinyin", "chai", "daxie", "qqname"),
     "编码转换" to listOf("base64", "md5", "url", "radix", "color"),
-    "字符素材" to listOf("symbol", "kaomoji"),
-    "实用工具" to listOf("sniff", "currency", "bmi", "level", "editor"),
+    "字符素材" to listOf("symbol", "kaomoji", "symbol_more"),
+    "实用工具" to listOf("dup", "currency", "bmi", "level"),
 )

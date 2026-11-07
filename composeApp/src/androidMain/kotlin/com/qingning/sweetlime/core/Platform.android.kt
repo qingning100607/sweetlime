@@ -81,7 +81,7 @@ actual fun shareText(text: String) {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, text)
     }
-    // 单独放一个新 task：从 Application context 起 Activity 必须带这个 flag。
+
     val chooser = Intent.createChooser(intent, tr("分享到")).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
@@ -96,14 +96,6 @@ actual fun openUrl(url: String) {
     runCatching { context.startActivity(intent) }
 }
 
-/**
- * 「柔光玻璃」：全分辨率原生高斯模糊 + 颜色矩阵（提亮 + 加饱和）。
- *
- * 1. 模糊用 [android.graphics.RenderEffect.createBlurEffect]，不做任何降采样，
- *    所以文字不会被糊成一块一块的（miuix 自带 blur() 会降采样，半径大就有像素感）；
- * 2. 颜色矩阵把底下的内容稍微提亮、加一点饱和，压成一片奶白色，
- *    这就是 HyperOS 「柔光玻璃」那种质感。
- */
 actual fun softBlurEffect(radiusPx: Float, saturation: Float, brightness: Float): RenderEffect {
     return try {
         val matrix = android.graphics.ColorMatrix().apply { setSaturation(saturation) }
@@ -123,7 +115,7 @@ actual fun softBlurEffect(radiusPx: Float, saturation: Float, brightness: Float)
             blurred,
         ).asComposeRenderEffect()
     } catch (_: Throwable) {
-        // 个别机型不支持链式 RenderEffect，退化成纯模糊，不影响可用。
+
         androidx.compose.ui.graphics.BlurEffect(
             radiusPx,
             radiusPx,
@@ -151,7 +143,7 @@ actual suspend fun httpGetText(url: String): String? = withContext(Dispatchers.I
 }
 
 actual fun systemUiLanguage(): AppLanguage {
-    // 繁体判断：脚本是 Hant，或者国家/地区属于港澳台。Locale.script 要 API 21+，我们最低 33。
+
     val locale = Locale.getDefault()
     return when {
         locale.language == "zh" -> {
@@ -163,126 +155,6 @@ actual fun systemUiLanguage(): AppLanguage {
         else -> AppLanguage.ZH
     }
 }
-
-actual suspend fun downloadApkToPrivateDir(
-    url: String,
-    fileName: String,
-    onProgress: (Float) -> Unit,
-): String? = withContext(Dispatchers.IO) {
-    runCatching {
-        val dir = File(AppContext.get().filesDir, "update").apply { mkdirs() }
-        val part = File(dir, "$fileName.part")
-        val dest = File(dir, fileName)
-        // 旧包和半截包会一直堆在这个目录里（在 filesDir，系统「清除缓存」不会动），
-        // 重下之前顺手清一遍，免得无上限增长。
-        dir.listFiles()?.forEach { f ->
-            val stale = f.name != fileName && f.name != "$fileName.part" &&
-                (f.name.endsWith(".apk") || f.name.endsWith(".part"))
-            if (stale) f.delete()
-        }
-        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 10000
-            readTimeout = 20000
-            // GitHub 的下载地址会 302 到 objects.githubusercontent.com，得跟着走。
-            instanceFollowRedirects = true
-            requestMethod = "GET"
-            setRequestProperty("User-Agent", "SweetLime/${APP_VERSION}")
-        }
-        try {
-            if (connection.responseCode !in 200..299) return@runCatching null
-            val total = connection.contentLengthLong
-            // done 要在两个 use 之外可见：下面要用它跟 total 对账。
-            var done = 0L
-            connection.inputStream.use { input ->
-                part.outputStream().use { output ->
-                    val buffer = ByteArray(64 * 1024)
-                    // 只在整数百分比变化时回调：几 MB 的包能少掉上千次无谓的状态更新。
-                    var lastPercent = -2
-                    while (true) {
-                        val read = input.read(buffer)
-                        if (read <= 0) break
-                        output.write(buffer, 0, read)
-                        done += read
-                        val percent = if (total > 0) ((done * 100) / total).toInt() else -1
-                        if (percent != lastPercent) {
-                            lastPercent = percent
-                            onProgress(
-                                if (total > 0) (done.toFloat() / total).coerceIn(0f, 1f) else -1f,
-                            )
-                        }
-                    }
-                    output.flush()
-                }
-            }
-            // 完整性校验：HttpURLConnection 在对端提前断开时**不抛异常**，
-            // 只读到 read <= 0 就退出 —— 于是「半截包」和「完整包」在这里长得一模一样。
-            // 光靠改名保护不了什么，必须自己把字节数对上。
-            if (total > 0 && done != total) {
-                part.delete()
-                return@runCatching null
-            }
-            // 只有一个完整的包才会被改名成正式文件名 —— 半截的留在 .part，不会拿去安装。
-            if (dest.exists()) dest.delete()
-            if (!part.renameTo(dest)) return@runCatching null
-            // 字节数对上了也再让系统解析一遍：截断、内容根本不是 APK、包名不对，全挡在这。
-            if (!isInstallableApk(dest.absolutePath)) {
-                dest.delete()
-                return@runCatching null
-            }
-            onProgress(1f)
-            dest.absolutePath
-        } finally {
-            connection.disconnect()
-        }
-    }.getOrNull()
-}
-
-actual fun isInstallableApk(path: String): Boolean = runCatching {
-    val context = AppContext.get()
-    val file = File(path)
-    if (!file.exists() || file.length() == 0L) return false
-    // 让系统把包解析一遍：能解析、且包名是本应用，才算「下好了」。
-    val info = context.packageManager
-        .getPackageArchiveInfo(file.absolutePath, PackageInfoFlags.of(0L))
-    info != null && info.packageName == context.packageName
-}.getOrDefault(false)
-
-actual fun deleteUpdateFile(path: String) {
-    runCatching { File(path).delete() }
-}
-
-actual fun installApkFile(path: String): Boolean {
-    val context = AppContext.get()
-    val file = File(path)
-    if (!file.exists()) return false
-    // Android 8 起装别的应用要先有「安装未知应用」权限。
-    // 第一次点大概率就是卡在这里 —— 以前直接 startActivity，系统默默拦掉，
-    // 用户看到的就是"点了没反应"。现在缺权限就主动把授权页打开。
-    if (!context.packageManager.canRequestPackageInstalls()) {
-        return openInstallPermissionSettings()
-    }
-    val launched = runCatching {
-        // Android 7 起不能用 file:// 把文件交给别的应用，必须换成 content:// 并临时授权。
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        context.startActivity(intent)
-    }.isSuccess
-    // 有权限但没安装器能接（个别系统把 intent 拦了）：也弹授权页，别让用户点了没反应。
-    return launched || openInstallPermissionSettings()
-}
-
-/** 打开本应用的「安装未知应用」授权页；打不开返回 false。 */
-private fun openInstallPermissionSettings(): Boolean = runCatching {
-    val context = AppContext.get()
-    val intent = Intent(
-        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-        Uri.parse("package:${context.packageName}"),
-    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    context.startActivity(intent)
-}.isSuccess
 
 private class AndroidKeyValueStore(
     private val prefs: SharedPreferences,
@@ -339,7 +211,6 @@ actual fun rememberFilePicker(onResult: (PickedFile?) -> Unit): () -> Unit {
     return remember(launcher) { { launcher.launch(arrayOf("*/*")) } }
 }
 
-/** 从 content:// 里把一个文件读成字节；过大或任何环节出错都返回 null。 */
 private fun readPickedFile(context: Context, uri: Uri): PickedFile? = try {
     val name = queryDisplayName(context, uri) ?: tr("已导入文件")
     val limit = MAX_PICK_MEGABYTES * 1024L * 1024L
@@ -363,7 +234,6 @@ private fun readPickedFile(context: Context, uri: Uri): PickedFile? = try {
     null
 }
 
-/** 声明的大小（拿不到就返回 null，那就只能读完再判断）。 */
 private fun querySize(context: Context, uri: Uri): Long? = runCatching {
     context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
         if (!cursor.moveToFirst()) return@use null
@@ -380,7 +250,6 @@ private fun queryDisplayName(context: Context, uri: Uri): String? = runCatching 
     }
 }.getOrNull()
 
-/** 严格 UTF-8；有非法字节就返回 null（GB18030 的文件基本过不了这一关）。 */
 private fun strictUtf8(bytes: ByteArray): String? = runCatching {
     Charsets.UTF_8.newDecoder()
         .onMalformedInput(CodingErrorAction.REPORT)
@@ -389,7 +258,6 @@ private fun strictUtf8(bytes: ByteArray): String? = runCatching {
         .toString()
 }.getOrNull()
 
-/** 指定编码严格解码；字节不合法就返回 null。 */
 private fun strictDecode(bytes: ByteArray, charset: Charset): String? = runCatching {
     charset.newDecoder()
         .onMalformedInput(CodingErrorAction.REPORT)
@@ -400,7 +268,7 @@ private fun strictDecode(bytes: ByteArray, charset: Charset): String? = runCatch
 
 actual fun decodeTextBytes(bytes: ByteArray): String {
     if (bytes.isEmpty()) return ""
-    // BOM 优先，它比任何猜测都准。
+
     if (bytes.size >= 3 && bytes[0] == 0xEF.toByte() && bytes[1] == 0xBB.toByte() && bytes[2] == 0xBF.toByte()) {
         return String(bytes, 3, bytes.size - 3, Charsets.UTF_8)
     }
@@ -411,9 +279,9 @@ actual fun decodeTextBytes(bytes: ByteArray): String {
         return String(bytes, 2, bytes.size - 2, Charsets.UTF_16BE)
     }
     strictUtf8(bytes)?.let { return it }
-    // 不是 UTF-8，中文环境里绝大多数就是 GBK 系。
+
     strictDecode(bytes, Charset.forName("GB18030"))?.let { return it }
-    // 兜底：宽松 UTF-8，坏字节变成 U+FFFD，至少不崩。
+
     return bytes.decodeToString()
 }
 
@@ -453,14 +321,13 @@ actual fun encodeTextToBytes(text: String, charsetName: String): ByteArray {
 }
 
 actual fun unzipEntries(bytes: ByteArray): List<ArchiveEntry>? {
-    // 先按 UTF-8 读；名字里出现替换符说明原包用的是另一套编码，换个编码重来一遍。
+
     val utf8 = readZipEntries(bytes, "UTF-8")
     if (utf8 != null && utf8.none { it.path.contains('\uFFFD') }) return utf8
     val legacy = readZipEntries(bytes, "GB18030")
     return legacy ?: utf8
 }
 
-/** 用指定编码把 zip 读成条目；条目数 / 解压总量超限或出错返回 null。 */
 private fun readZipEntries(bytes: ByteArray, charsetName: String): List<ArchiveEntry>? = runCatching {
     val charset = Charset.forName(charsetName)
     val limit = MAX_UNZIP_MEGABYTES * 1024L * 1024L
@@ -499,11 +366,6 @@ private fun readZipEntries(bytes: ByteArray, charsetName: String): List<ArchiveE
     result
 }.getOrNull()
 
-/**
- * 挑一个文件，并且**同时申请写权限** —— 这样后面才能把内容保存回原文件。
- *
- * 系统自带的 OpenDocument 契约不带写权限，所以这里自己声明一份。
- */
 private class OpenDocumentForWrite : ActivityResultContract<Array<String>, Uri?>() {
 
     override fun createIntent(context: Context, input: Array<String>): Intent {
@@ -523,12 +385,6 @@ private class OpenDocumentForWrite : ActivityResultContract<Array<String>, Uri?>
     }
 }
 
-/**
- * 覆盖写一个 content:// 文件，写坏了就尽力把原内容还原。
- *
- * openOutputStream(uri, "rwt") 会先把文件截断，之后任何一步出错（磁盘满、进程被杀、
- * 掉电）都会留下半截文件。所以这里先留一份原字节，失败就立刻写回去。
- */
 private inline fun writeWithRollback(uri: Uri, write: (OutputStream) -> Unit): Boolean {
     val resolver = AppContext.get().contentResolver
     val backup = runCatching {
@@ -562,7 +418,7 @@ actual suspend fun writeZipBackPickedFile(
     handle: String,
     entries: List<ArchiveEntry>,
 ): Boolean = withContext(Dispatchers.IO) {
-    // 用原包的编码打包，中文名才不会在别处变花。
+
     val charsetName = entries.firstOrNull { !it.charset.isNullOrEmpty() }?.charset ?: "UTF-8"
     writeWithRollback(Uri.parse(handle)) { output ->
         ZipOutputStream(output, Charset.forName(charsetName)).use { zip ->
@@ -575,15 +431,8 @@ actual suspend fun writeZipBackPickedFile(
     }
 }
 
-/** 低通滤波系数：越大越跟手、越小越稳。0.15 是「气泡不抖、手一动又能跟上」的常见取值。 */
 private const val TILT_FILTER = 0.15f
 
-/**
- * 水平仪：订阅加速度计，按「一阶低通 + atan2」算出左右 / 前后倾角。
- *
- * 为什么要滤波：原始加速度噪声很大（手轻轻一抖就跳好几度），气泡会一直蹦，
- * 所以每次只把读数的 15% 混进当前值里。
- */
 @Composable
 actual fun rememberTilt(): Tilt? {
     val context = AppContext.get()
@@ -603,8 +452,7 @@ actual fun rememberTilt(): Tilt? {
                     gx += TILT_FILTER * (v[0] - gx)
                     gy += TILT_FILTER * (v[1] - gy)
                     gz += TILT_FILTER * (v[2] - gz)
-                    // 屏幕朝上水平放置时 gx≈0、gy≈0、gz≈9.8：
-                    // atan2(gx, gz) 是左右倾角，atan2(gy, gz) 是前后倾角。
+
                     tilt = Tilt(
                         x = Math.toDegrees(atan2(gx.toDouble(), gz.toDouble())).toFloat(),
                         y = Math.toDegrees(atan2(gy.toDouble(), gz.toDouble())).toFloat(),
@@ -614,11 +462,11 @@ actual fun rememberTilt(): Tilt? {
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
             }
             listener = l
-            // SENSOR_DELAY_GAME ≈ 20ms 一帧，气泡跟得上手。
+
             manager.registerListener(l, sensor, SensorManager.SENSOR_DELAY_GAME)
         }
         onDispose {
-            // 离开页面立刻注销：传感器一直开着是实打实的耗电。
+
             val l = listener
             if (l != null) manager?.unregisterListener(l)
         }
@@ -626,15 +474,12 @@ actual fun rememberTilt(): Tilt? {
     return tilt
 }
 
-/** 嗅探一次最多读 4MB 正文：够解析几万个标签，又不至于把内存吃爆。 */
 private const val MAX_DOCUMENT_BYTES = 4 * 1024 * 1024
 
-/** 装成普通浏览器：不少站点看 UA 决定给不给你完整页面。 */
 private const val BROWSER_UA =
     "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) " +
         "Chrome/124.0.0.0 Mobile Safari/537.36"
 
-/** 从 Content-Type 里抠出 charset，没有就返回 null。 */
 private fun charsetFromContentType(contentType: String?): String? {
     val header = contentType ?: return null
     val value = Regex("charset\\s*=\\s*[\"']?([A-Za-z0-9_\\-]+)", RegexOption.IGNORE_CASE)
@@ -642,7 +487,6 @@ private fun charsetFromContentType(contentType: String?): String? {
     return value.takeIf { runCatching { Charset.forName(it) }.isSuccess }
 }
 
-/** 读满 [max] 字节就停（页面里如果挂了超大文件，不至于整段读进来）。 */
 private fun readLimited(input: InputStream, max: Int): ByteArray {
     val out = ByteArrayOutputStream()
     val buffer = ByteArray(16 * 1024)
@@ -677,7 +521,7 @@ actual suspend fun httpGetDocument(url: String): HttpResponse? = withContext(Dis
         try {
             if (connection.responseCode !in 200..299) return@runCatching null
             val bytes = connection.inputStream.use { readLimited(it, MAX_DOCUMENT_BYTES) }
-            // 重定向之后的地址：解析相对链接要用它，不然 /img/a.png 会拼到旧主机上。
+
             val finalUrl = connection.url?.toString() ?: url
             if (bytes.isEmpty()) return@runCatching HttpResponse("", finalUrl)
             val byHeader = charsetFromContentType(connection.contentType)
@@ -689,10 +533,8 @@ actual suspend fun httpGetDocument(url: String): HttpResponse? = withContext(Dis
     }.getOrNull()
 }
 
-/** 单张图片最多下 12MB（有些站点的「图」其实是几百 KB 的 GIF，够用了）。 */
 private const val MAX_IMAGE_BYTES = 12 * 1024 * 1024
 
-/** 按长边上限算采样率：列表里的小缩略图没必要把整张原图读进内存。 */
 private fun decodeSampled(bytes: ByteArray, maxPixels: Int): ImageBitmap? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
@@ -700,7 +542,7 @@ private fun decodeSampled(bytes: ByteArray, maxPixels: Int): ImageBitmap? {
 
     var sample = 1
     val longest = maxOf(bounds.outWidth, bounds.outHeight)
-    // 采样率是 2 的幂；留一倍余量（比如只要 160px，就解成 ≤320px 再缩，画质更稳）
+
     while (longest / sample > maxPixels * 2) sample *= 2
 
     val options = BitmapFactory.Options().apply { inSampleSize = sample }
@@ -728,7 +570,6 @@ actual suspend fun loadImageBitmap(url: String, maxPixels: Int): ImageBitmap? =
         }.getOrNull()
     }
 
-/** 去掉文件名里的路径分隔符与非法字符：从 URL 里抠出来的名字不一定干净。 */
 private fun sanitizeFileName(raw: String): String {
     val cleaned = raw
         .substringBefore('?')
@@ -737,14 +578,13 @@ private fun sanitizeFileName(raw: String): String {
         .replace('/', '_')
         .trim()
     val safe = cleaned.ifEmpty { "sweetlime_file" }
-    // 太长（有些站点的名字带一大串 hash）就截一段，保留扩展名。
+
     if (safe.length <= 96) return safe
     val dot = safe.lastIndexOf('.')
     val ext = if (dot in 1..10) safe.substring(dot) else ""
     return safe.take(90 - ext.length) + ext
 }
 
-/** 「下载/SweetLime/<名字>」的完整路径，给用户提示用（只是拼字符串，不需要任何权限）。 */
 private fun downloadFilePath(name: String): String = File(
     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
     "SweetLime/$name",
@@ -763,7 +603,7 @@ actual suspend fun downloadToDownloads(
             readTimeout = 30000
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", BROWSER_UA)
-            // 很多图床 / 视频站会校验 Referer，带上页面地址才给下载。
+
             if (!referer.isNullOrEmpty()) setRequestProperty("Referer", referer)
         }
         try {
@@ -782,7 +622,7 @@ actual suspend fun downloadToDownloads(
                     MediaStore.MediaColumns.RELATIVE_PATH,
                     Environment.DIRECTORY_DOWNLOADS + "/SweetLime",
                 )
-                // IS_PENDING：写到一半的文件先不对外可见，写完再放出去。
+
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
             val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
@@ -802,7 +642,7 @@ actual suspend fun downloadToDownloads(
                             done += read
                             if (total > 0) {
                                 val percent = (done * 100 / total).toInt()
-                                // 只在整数百分比变化时回调，别让进度刷爆重组。
+
                                 if (percent != lastPercent) {
                                     lastPercent = percent
                                     onProgress(percent / 100f)
@@ -812,15 +652,14 @@ actual suspend fun downloadToDownloads(
                     }
                 }
             } catch (t: Throwable) {
-                // 失败就把这条半成品删掉，别在「下载」里留个打不开的文件。
+
                 runCatching { resolver.delete(uri, null, null) }
                 throw t
             }
             values.clear()
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
-            // 重名时 MediaStore 会自动加「(1)」，所以要把系统里真实的名字查回来，
-            // 不然提示给用户的路径是不存在的。
+
             val actualName = runCatching {
                 resolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)
                     ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }

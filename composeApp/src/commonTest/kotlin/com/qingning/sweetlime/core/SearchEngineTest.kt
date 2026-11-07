@@ -41,13 +41,13 @@ class SearchEngineTest {
 
     @Test
     fun digitPrefixedQueryStaysEmpty() {
-        // "1花" 不是样式名也不是分类名；曾经会误命中。
+
         assertTrue(SearchEngine.search("1" + hua, "").isEmpty())
     }
 
     @Test
     fun findsToolById() {
-        // 搜「汇率」应当能找到汇率工具，不是只能在工具箱里翻。
+
         val hits = SearchEngine.search("\u6c47\u7387", "")
         assertTrue(hits.filterIsInstance<SearchHit.Tool>().any { it.id == "currency" })
     }

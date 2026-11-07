@@ -7,9 +7,6 @@ import com.qingning.sweetlime.core.mapping.mapEach
 import com.qingning.sweetlime.core.mapping.mathRange
 import com.qingning.sweetlime.core.transform
 
-// ---------------------------------------------------------------------------
-// 需要补位的字符表（这些码位在数学字母符号区里是空洞，用 Letterlike Symbols 顶）
-// ---------------------------------------------------------------------------
 private val SCRIPT_EXCEPTIONS = mapOf(
     'B' to "\u212C", 'E' to "\u2130", 'F' to "\u2131", 'H' to "\u210B",
     'I' to "\u2110", 'L' to "\u2112", 'M' to "\u2133", 'R' to "\u211B",
@@ -36,9 +33,6 @@ private val SMALL_CAPS = mapOf(
     'y' to '\u028F', 'z' to '\u1D22',
 )
 
-// ---------------------------------------------------------------------------
-// 样式定义
-// ---------------------------------------------------------------------------
 private fun mathStyle(
     id: String,
     title: String,
@@ -58,7 +52,6 @@ private fun circledTransform(char: Char): String? = when {
     else -> null
 }
 
-/** 粗圆圈：Unicode 只有大写的「负片圆环字母」（U+1F150 起），小写也映射成同一批字形。 */
 private fun boldCircledTransform(char: Char): String? {
     val upper = when {
         char in 'A'..'Z' -> char
@@ -68,10 +61,6 @@ private fun boldCircledTransform(char: Char): String? {
     return codePointToString(0x1F150 + (upper - 'A'))
 }
 
-/**
- * 倒置字：整体翻转 180°。
- * 做法是先逐行把字符顺序倒过来，再把每个字符替换成它的「倒过来看」字形。
- */
 private val FLIP_MAP: Map<Char, String> = mapOf(
     'a' to "\u0250", 'b' to "q", 'c' to "\u0254", 'd' to "p", 'e' to "\u01DD",
     'f' to "\u025F", 'g' to "\u0183", 'h' to "\u0265", 'i' to "\u1D09", 'j' to "\u027E",
@@ -93,7 +82,6 @@ private val FLIP_MAP: Map<Char, String> = mapOf(
     ';' to "\u061B", '\u3001' to ",",
 )
 
-/** 按码位（不是按 Char）倒序，避免把增补平面的代理对拆坏。 */
 private fun reverseCodePoints(text: String): String {
     val units = ArrayList<String>(text.length)
     var i = 0
@@ -116,9 +104,9 @@ private fun reverseCodePoints(text: String): String {
 
 internal val latinStyles: List<TextTransform>
     get() = listOf(
-    // Mathematical Bold
+
     mathStyle("latin_bold", "粗体", 0x1D400, 0x1D41A, 0x1D7CE),
-    // Mathematical Italic（小写 h 是空洞，用 ℎ U+210E）
+
     mathStyle(
         "latin_italic", "斜体", 0x1D434, 0x1D44E,
         exceptions = mapOf('h' to "\u210E"),
@@ -133,13 +121,13 @@ internal val latinStyles: List<TextTransform>
         "latin_fraktur", "哥特体", 0x1D504, 0x1D51E,
         exceptions = FRAKTUR_EXCEPTIONS,
     ),
-    // Mathematical Bold Fraktur（无空洞）
+
     mathStyle("latin_bold_fraktur", "粗哥特体", 0x1D56C, 0x1D586),
     mathStyle(
         "latin_double_struck", "双线体", 0x1D538, 0x1D552, 0x1D7D8,
         exceptions = DOUBLE_STRUCK_EXCEPTIONS,
     ),
-    // 无衬线家族：数字只有 sans-serif / sans-serif bold 两套，斜体家族 Unicode 没给数字
+
     mathStyle("latin_sans_serif", "无衬线体", 0x1D5A0, 0x1D5BA, 0x1D7E2),
     mathStyle("latin_sans_serif_bold", "粗无衬线", 0x1D5D4, 0x1D5EE, 0x1D7EC),
     mathStyle("latin_sans_serif_italic", "无衬线斜体", 0x1D608, 0x1D622),

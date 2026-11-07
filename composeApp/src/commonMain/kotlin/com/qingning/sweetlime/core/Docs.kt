@@ -1,15 +1,10 @@
 package com.qingning.sweetlime.core
 
 import com.qingning.sweetlime.core.i18n.tr
-/** 一段带标题的说明文字（隐私政策 / 开源许可共用这个形状）。 */
+import com.qingning.sweetlime.core.mapping.SYMBOL_CATEGORIES
+
 class Doc(val title: String, val body: String)
 
-/**
- * 隐私政策。
- *
- * 这个应用是「纯本地工具」，所以这份政策的核心就一句话：
- * 你的文字不会离开这台设备。
- */
 object PrivacyPolicy {
     val TITLE: String get() = tr("隐私政策")
 
@@ -68,11 +63,23 @@ object OpenSourceLicenses {
         ),
         Doc(
             "Data Sources",
-            "Style code tables, 44 categories of special characters, Chinese Pinyin and\n" +
+            "Style code tables, " + SYMBOL_CATEGORIES.size + " categories of special characters, Chinese Pinyin and\n" +
                 "character-decomposition data were compiled from publicly available sources\n" +
                 "and are provided for learning and reference only. If your work is included\n" +
                 "here and you would prefer it not to be, please contact the author and it\n" +
                 "will be removed as soon as possible.",
+        ),
+        Doc(
+            "Kotlin Coroutines",
+            "Copyright JetBrains s.r.o. and contributors\nLicense: Apache License 2.0",
+        ),
+        Doc(
+            "androidx.navigationevent",
+            "Copyright The Android Open Source Project\nLicense: Apache License 2.0",
+        ),
+        Doc(
+            "miuix squircle / blur / nav",
+            "Copyright compose-miuix-ui contributors\nLicense: Apache License 2.0",
         ),
         Doc(
             "Apache License 2.0 (Summary)",

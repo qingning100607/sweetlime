@@ -9,7 +9,6 @@ internal object DaxieConverter {
     private val BIG_RADICES = arrayOf("", "万", "亿")
     private val DECIMALS = arrayOf("角", "分")
 
-    /** 原站限制：小于 1000 亿元。 */
     private const val MAXIMUM_NUMBER = 99999999999.99
 
     private val CN_MAP: Map<Char, Int> = mapOf(
@@ -25,16 +24,10 @@ internal object DaxieConverter {
         '亿' to 100000000L,
     )
 
-    /**
-     * 小写金额 → 大写金额。输入非法（空串、含非数字、超出上限）时返回 `null`。
-     * 例：`1234.5` → `人民币壹仟贰佰叁拾肆元伍角`。
-     */
     fun toUpper(input: String): String? {
         val raw = input.trim().replace(",", "")
         if (raw.isEmpty()) return null
-        // 这里过去直接 trimStart('0')，顺手把「整数部分是不是零」这个人信息也丢了 ——
-        // 于是 0.00 输出「人民币整」、0.5 输出「人民币伍角」，都缺「元」。
-        // 全零时保留一位 "0"，让下面还能判断出来。
+
         var text = raw.trimStart('0').ifEmpty { "0" }
         if (text.any { it != '.' && !it.isDigit() }) return null
         val value = text.toDoubleOrNull() ?: return null
@@ -44,10 +37,6 @@ internal object DaxieConverter {
         val integralText = if (dot >= 0) text.substring(0, dot) else text
         val fracText = if (dot >= 0) text.substring(dot + 1) else ""
 
-        // 四舍五入到分：看小数点后第 3 位，>= 5 就进一位。
-        //
-        // 这里绝不能走 Double：1.005 在二进制里其实略小于 1.005，乘 100 得到
-        // 100.4999…，roundToLong 之后仍然是 100，照样是错的。所以按字符串取位算整数。
         val frac = fracText.padEnd(3, '0').take(3)
         var cents = frac.substring(0, 2).toLong()
         if (frac[2] >= '5') cents++
@@ -82,7 +71,7 @@ internal object DaxieConverter {
             }
             sb.append("元")
         } else {
-            // 整数部分是零：中文金额一样要写出「零元」，不能只剩「整」/「伍角」。
+
             sb.append("零元")
         }
 
@@ -109,10 +98,6 @@ internal object DaxieConverter {
         return "人民币$out"
     }
 
-    /**
-     * 大写金额 → 小写金额（保留两位小数）。格式不对时返回 `null`。
-     * 例：`人民币壹仟贰佰叁拾肆元伍角` → `1234.50`。
-     */
     fun toLower(input: String): String? {
         var text = input.trim()
         if (text.isEmpty()) return null

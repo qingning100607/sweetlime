@@ -14,13 +14,6 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/**
- * 横向滚动条里的小胶囊按钮（「最近使用」用）。
- *
- * 按压反馈**不再自己造**：`clickable` 不带 indication，就会落到 miuix 主题里
- * `LocalIndication` 提供的 `MiuixIndication`（只压暗 / 提亮一层很淡的高亮），
- * 也就是 miuix_UI 本来的手感 —— 不缩、不弹。
- */
 @Composable
 fun ChipButton(
     text: String,

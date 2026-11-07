@@ -17,8 +17,6 @@ internal object BgEffectConfig {
         val shadowNoiseScale: Float = 5.0f,
     )
 
-    // ---------------- OS2 ----------------
-
     private val OS2_PHONE_LIGHT_COLORS = floatArrayOf(
         0.57f, 0.76f, 0.98f, 1.0f, 0.98f, 0.85f, 0.68f, 1.0f, 0.98f, 0.75f, 0.93f, 1.0f, 0.73f, 0.70f, 0.98f, 1.0f,
     )
@@ -47,8 +45,6 @@ internal object BgEffectConfig {
         pointOffset = 0.1f,
     )
 
-    // ---------------- OS3 ----------------
-
     private val OS3_PHONE_LIGHT = Config(
         points = floatArrayOf(0.8f, 0.2f, 1.0f, 0.8f, 0.9f, 1.0f, 0.2f, 0.9f, 1.0f, 0.2f, 0.2f, 1.0f),
         colors1 = floatArrayOf(1.0f, 0.9f, 0.94f, 1.0f, 1.0f, 0.84f, 0.89f, 1.0f, 0.97f, 0.73f, 0.82f, 1.0f, 0.64f, 0.65f, 0.98f, 1.0f),
@@ -71,7 +67,6 @@ internal object BgEffectConfig {
         pointOffset = 0.4f,
     )
 
-    /** Returns the phone preset used on every screen size. */
     fun get(isDark: Boolean, isOs3: Boolean = true): Config = if (isOs3) {
         if (!isDark) OS3_PHONE_LIGHT else OS3_PHONE_DARK
     } else {

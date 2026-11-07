@@ -5,16 +5,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * 无衬线家族 + 粗哥特体的回归。
- *
- * 这几个家族以前**整个漏掉了**（只有粗体/斜体/手写/哥特/双线/等宽），
- * 所以这里钉住三件事：字面量对不对、数字该有则有该无则无、代理对没被劈开。
- */
 class SansSerifStylesTest {
     private fun byId(id: String) = TransformRegistry.byId(id)!!
 
-    /** 把一个「单码点字符串」解成 Int（不用 java.lang.Character，common 里也能用）。 */
     private fun codePointOf(s: String): Int =
         if (s.length == 1) {
             s[0].code
@@ -22,7 +15,6 @@ class SansSerifStylesTest {
             ((s[0].code - 0xD800) shl 10) + (s[1].code - 0xDC00) + 0x10000
         }
 
-    /** 码点数：测试自己数，不依赖被测实现。 */
     private fun cpLen(s: String): Int {
         var n = 0
         var i = 0
@@ -37,7 +29,7 @@ class SansSerifStylesTest {
     fun sansSerifBoldMatchesExpectedGlyphs() {
         val out = byId("latin_sans_serif_bold").transform("SweetLime")
         assertEquals("𝗦𝘄𝗲𝗲𝘁𝗟𝗶𝗺𝗲", out)
-        // 9 个码点：若按 char 数会变成 18
+
         assertEquals(9, cpLen(out))
     }
 
@@ -53,7 +45,7 @@ class SansSerifStylesTest {
 
     @Test
     fun italicFamiliesLeaveDigitsUntouched() {
-        // Unicode 没给无衬线斜体配数字：数字必须原样保留，不能变成方块或吞掉
+
         for (id in listOf("latin_sans_serif_italic", "latin_sans_serif_bold_italic")) {
             assertEquals("0", byId(id).transform("0"), id)
             assertEquals("123", byId(id).transform("123"), id)

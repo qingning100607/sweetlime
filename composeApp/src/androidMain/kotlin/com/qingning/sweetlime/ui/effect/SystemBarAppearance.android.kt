@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 
-/** 把窗口里那个 Activity 从任意一层 Context 包皮里剥出来。 */
 private fun Context.findActivity(): Activity? {
     var ctx: Context? = this
     while (ctx is ContextWrapper) {
@@ -45,7 +44,6 @@ actual fun ApplySystemBarAppearance(dark: Boolean) {
         onDispose { }
     }
 
-    // enableEdgeToEdge 是派发到下一帧的，这里再直写一次，保证当帧就是对的颜色。
     LaunchedEffect(dark, view) {
         val window = view.context.findActivity()?.window ?: return@LaunchedEffect
         val controller = window.insetsController ?: return@LaunchedEffect

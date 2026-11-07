@@ -61,15 +61,13 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            
-            
+
             .overScrollVertical(),
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {
             Column {
 
-        // 顶栏是浮层：这点高度必须写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -149,7 +147,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
         Spacer(modifier = Modifier.height(48.dp))
-    
+
             }
         }
     }

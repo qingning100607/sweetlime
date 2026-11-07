@@ -2,19 +2,10 @@ package com.qingning.sweetlime.core.mapping
 
 import com.qingning.sweetlime.core.i18n.tr
 
-/**
- * 颜文字（kaomoji）库。
- *
- * 和 [SymbolCategory] 一样的规矩：[titleKey] 存的是**简体原文**（词表 key），
- * 标题在读的时候才翻译 —— 顶层 val 只构造一次，构造函数里存 tr() 结果会把语言定死。
- *
- * 新增分类：下面加一条 + 词表里补一行（英文 / 繁体各一条）。
- */
-internal class KaomojiCategory(private val titleKey: String, val items: List<String>) {
+internal class KaomojiCategory(val titleKey: String, val items: List<String>) {
     val title: String get() = tr(titleKey)
 }
 
-/** 全部颜文字分类（顺序即界面上的顺序）。 */
 internal val KAOMOJI_CATEGORIES: List<KaomojiCategory> = listOf(
     KaomojiCategory(
         "开心",

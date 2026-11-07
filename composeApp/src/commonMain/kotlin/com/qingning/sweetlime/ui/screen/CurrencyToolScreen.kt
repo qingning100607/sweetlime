@@ -75,15 +75,13 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            
-            
+
             .overScrollVertical(),
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {
             Column {
 
-        // 顶栏是浮层：这点高度必须写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
@@ -167,7 +165,7 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
         Spacer(modifier = Modifier.height(48.dp))
-    
+
             }
         }
     }
@@ -182,7 +180,7 @@ private fun CurrencyPickRow(
     onDismiss: () -> Unit,
     onPick: (String) -> Unit,
 ) {
-    // 弹二级菜单时响一下。
+
     val clickHaptic = rememberClickHaptic()
     Box(modifier = Modifier.fillMaxWidth()) {
         BasicComponent(
@@ -206,7 +204,7 @@ private fun CurrencyPickRow(
                 )
             },
         )
-        // 词表是「按当前语言现算」的 getter，直接在下面循环里用会每次重组重建 12 个 Pair。
+
         val options = remember(AppLocale.current) { CurrencyApi.COMMON }
 
         OverlayListPopup(
@@ -232,7 +230,6 @@ private fun CurrencyPickRow(
     }
 }
 
-/** 固定保留 [digits] 位小数的字符串（commonMain 里没有 String.format）。 */
 private fun formatDecimal(value: Double, digits: Int): String {
     if (!value.isFinite()) return "—"
     var factor = 1L
@@ -246,7 +243,6 @@ private fun formatDecimal(value: Double, digits: Int): String {
     return "$sign$intPart.${fracPart.toString().padStart(digits, '0')}"
 }
 
-/** 汇率一般都很小（1 CNY ≈ 0.14 USD），小数位按量级给，太长太短都不好看。 */
 private fun formatRate(rate: Double): String {
     if (!rate.isFinite()) return "—"
     val digits = when {
@@ -257,7 +253,3 @@ private fun formatRate(rate: Double): String {
     }
     return formatDecimal(rate, digits)
 }
-
-/* -------------------------------------------------------------------------- */
-/* 5. 身体 BMI                                                                  */
-/* -------------------------------------------------------------------------- */

@@ -5,12 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * 更新检查的解析与版本比较（不联网，纯文本进、结果出）。
- */
 class UpdateCheckerTest {
 
-    /** GitHub Releases API 的响应片段，字段顺序和真实响应一致。 */
     private val releaseJson = """
         {
           "url": "https://api.github.com/repos/qingning100607/sweetlime/releases/1",
@@ -41,7 +37,7 @@ class UpdateCheckerTest {
 
     @Test
     fun fallsBackToPlainTextFeed() {
-        // 换成随便一个纯文本地址（未接入 GitHub 时）也要能用。
+
         val parsed = UpdateChecker.parseLatest("latest version: 2.5.1\n")
         assertEquals("2.5.1", parsed?.first)
         assertNull(parsed?.second)
@@ -50,7 +46,7 @@ class UpdateCheckerTest {
     @Test
     fun ignoresTextWithoutVersion() {
         assertNull(UpdateChecker.parseLatest("404: Not Found"))
-        // 日期里有横杠没有点，不算版本号。
+
         assertNull(UpdateChecker.parseLatest("created 2026-10-01"))
     }
 
@@ -64,7 +60,7 @@ class UpdateCheckerTest {
 
     @Test
     fun readsFallbackFile() {
-        // 仓库里的 version.json（走 raw，撞不到 API 限流）。
+
         val parsed = UpdateChecker.parseLatest(
             """{"version":"2.5.0","url":"https://github.com/qingning100607/sweetlime/releases/tag/v2.5.0"}""",
         )
@@ -77,7 +73,7 @@ class UpdateCheckerTest {
 
     @Test
     fun ignoresRateLimitBody() {
-        // GitHub 匿名限流时返回的就是这段话，不能被当成版本号。
+
         assertNull(
             UpdateChecker.parseLatest(
                 """{"message":"API rate limit exceeded for 203.10.98.186.","documentation_url":"https://docs.github.com/rest"}""",
@@ -87,18 +83,16 @@ class UpdateCheckerTest {
 
     @Test
     fun feedIsConfigured() {
-        // 主源与备用源都接好了，不再走「未配置」那条分支。
+
         assertTrue(UpdateChecker.FEED_URL.startsWith("https://api.github.com/repos/"))
         assertTrue(UpdateChecker.FALLBACK_FEED_URL.startsWith("https://raw.githubusercontent.com/"))
     }
-
-    // --- 主页顶部的「发现新版本」提示 ---
 
     @Test
     fun homeBannerShowsOnlyWhenNewer() {
         val newer = UpdateChecker.Result.Newer("2.6.0", "2.5.3", "https://github.com/x/y/releases/tag/v2.6.0")
         assertEquals(newer, UpdateChecker.homeBanner(newer, ""))
-        // 还没查出来 / 已是最新 / 失败 / 没配源：主页都不应该出现提示。
+
         assertNull(UpdateChecker.homeBanner(null, ""))
         assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.UpToDate("2.5.3"), ""))
         assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.Failed("2.5.3"), ""))
@@ -108,9 +102,9 @@ class UpdateCheckerTest {
     @Test
     fun homeBannerRespectsDismiss() {
         val newer = UpdateChecker.Result.Newer("2.6.0", "2.5.3")
-        // 点掉过的版本不再提示……
+
         assertNull(UpdateChecker.homeBanner(newer, "2.6.0"))
-        // ……但出了更新的一版要重新提示。
+
         assertEquals(newer, UpdateChecker.homeBanner(newer, "2.5.0"))
     }
 
@@ -119,7 +113,6 @@ class UpdateCheckerTest {
         assertNull(UpdateChecker.homeBanner(UpdateChecker.Result.Newer("", "2.5.3"), ""))
     }
 
-    /** 带 assets 的真实 Releases 响应片段：要能从里面捞出 APK 直链。 */
     private val releaseJsonWithAsset = """
         {
           "html_url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.4",
@@ -154,7 +147,7 @@ class UpdateCheckerTest {
 
     @Test
     fun noApkUrlWhenSourceHasNone() {
-        // 换成纯文本源时没有直链，界面要能退回「打开发布页」。
+
         val feed = UpdateChecker.parseFeed("latest version: 2.5.4")
         assertEquals("2.5.4", feed?.version)
         assertNull(feed?.apkUrl)
@@ -162,7 +155,7 @@ class UpdateCheckerTest {
 
     @Test
     fun apkUrlKeepsReleaseUrl() {
-        // 版本号、发布页、直链三者要能同时拿到（下载失败时靠 releaseUrl 兜底）。
+
         val feed = UpdateChecker.parseFeed(releaseJsonWithAsset)
         assertEquals(
             "https://github.com/qingning100607/sweetlime/releases/tag/v2.5.4",

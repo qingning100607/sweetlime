@@ -1,9 +1,5 @@
 package com.qingning.sweetlime.core.mapping
 
-/**
- * 汉字拆分表（1686 条，对齐汉字拆分页的 .czstr 数据）。
- * 每行一个条目：第 1 个字是被拆的字，后面是拆出来的部件。
- */
 private val CHAI_RAW: String = buildString {
     append(ch0())
     append(ch1())

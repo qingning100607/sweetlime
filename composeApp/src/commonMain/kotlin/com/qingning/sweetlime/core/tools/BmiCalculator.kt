@@ -3,12 +3,6 @@ package com.qingning.sweetlime.core.tools
 import com.qingning.sweetlime.core.i18n.tr
 import kotlin.math.roundToInt
 
-/**
- * BMI 的分级（中国成人标准，WS/T428-2013）。
- *
- * 注意和国际口径的差别：这里是 24 算超重的起点、28 算肥胖，
- * 而 WHO 用的是 25 / 30。中文界面下用国内标准更贴合直觉。
- */
 enum class BmiLevel(private val labelKey: String, private val rangeKey: String) {
     THIN("偏瘦", "低于 18.5"),
     NORMAL("正常", "18.5 – 23.9"),
@@ -16,34 +10,25 @@ enum class BmiLevel(private val labelKey: String, private val rangeKey: String) 
     OBESE("肥胖", "28.0 及以上"),
     ;
 
-    /**
-     * 和 [StyleGroup.label] 同一个道理：枚举初始化只有一次，
-     * 把 tr() 的返回值当构造参数存下来，语言就被定死成初始化那一刻的了。
-     */
     val label: String get() = tr(labelKey)
 
-    /** 纯数字区间在词表里没有条目，[tr] 查不到会原样返回。 */
     val range: String get() = tr(rangeKey)
 }
 
-/** 一次 BMI 计算的全部结果。 */
 class BmiReport(
     val bmi: Double,
     val level: BmiLevel,
     val healthyMinKg: Double,
     val healthyMaxKg: Double,
 ) {
-    /** 保留一位小数的 BMI。 */
+
     val bmiText: String get() = BmiCalculator.format1(bmi)
 
-    /** 例如「正常（18.5 – 23.9）」。 */
     val levelText: String get() = "${level.label}（${level.range}）"
 
-    /** 例如「53.4 – 69.3 kg」。 */
     val healthyRangeText: String
         get() = "${BmiCalculator.format1(healthyMinKg)} – ${BmiCalculator.format1(healthyMaxKg)} kg"
 
-    /** 一句人话。 */
     val advice: String
         get() = when (level) {
             BmiLevel.THIN -> tr("体重偏低，注意补充营养，别盲目节食。")
@@ -53,19 +38,12 @@ class BmiReport(
         }
 }
 
-/**
- * 身体 BMI 计算：体重(kg) ÷ 身高(m)²。
- *
- * 纯本地公式，不联网、没有依赖表。
- */
 object BmiCalculator {
 
-    /** 超出这个范围的输入基本都是打错了，直接判无效而不是硬算。 */
     private const val MIN_HEIGHT_CM = 50.0
     private const val MAX_HEIGHT_CM = 260.0
     private const val MAX_WEIGHT_KG = 500.0
 
-    /** 输入不合法（缺、非数、离谱）时返回 null。 */
     fun compute(heightCm: Double, weightKg: Double): BmiReport? {
         if (!heightCm.isFinite() || !weightKg.isFinite()) return null
         if (heightCm !in MIN_HEIGHT_CM..MAX_HEIGHT_CM) return null
@@ -87,13 +65,11 @@ object BmiCalculator {
         )
     }
 
-    /** 保留一位小数。 */
     fun format1(value: Double): String {
         val rounded = (value * 10).roundToInt()
         return "${rounded / 10}.${rounded % 10}"
     }
 
-    /** 解析用户输入的数字：容忍「cm」「kg」后缀、空格和全角空格。 */
     fun parseNumber(raw: String): Double? {
         var s = raw.replace("\u3000", "").filterNot { it.isWhitespace() }
         for (suffix in listOf("kg", "KG", "Kg", "kG", "cm", "CM", "Cm", "cM")) {

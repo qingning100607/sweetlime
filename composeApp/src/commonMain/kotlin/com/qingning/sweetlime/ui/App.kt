@@ -77,12 +77,11 @@ import com.qingning.sweetlime.core.PreviewCache
 import com.qingning.sweetlime.core.TransformRegistry
 import com.qingning.sweetlime.core.resolveBackAction
 import com.qingning.sweetlime.core.UpdateChecker
+import com.qingning.sweetlime.ui.screen.UpdateDialog
 import com.qingning.sweetlime.core.OpenSourceLicenses
 import com.qingning.sweetlime.core.PrivacyPolicy
 import com.qingning.sweetlime.core.copyToClipboard
 import com.qingning.sweetlime.core.createKeyValueStore
-import com.qingning.sweetlime.core.downloadApkToPrivateDir
-import com.qingning.sweetlime.core.installApkFile
 import com.qingning.sweetlime.core.openUrl
 import com.qingning.sweetlime.core.shareText
 import com.qingning.sweetlime.data.FavoritesStore
@@ -156,36 +155,21 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.LocalOverScrollState
 import top.yukonga.miuix.kmp.utils.MiuixOverscrollFactory
 import top.yukonga.miuix.kmp.utils.OverScrollState
-import com.qingning.sweetlime.core.deleteUpdateFile
-import com.qingning.sweetlime.core.isInstallableApk
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
-/**
- * 应用外壳。
- *
- * 页面切换交给 **miuix-nav**（Miuix 0.9.4 自带的导航运行时）：
- * - 整个返回栈由一条 `Animatable<Float>`（animatedTop）驱动，每个页面的样子是「相对深度」的纯函数；
- * - 默认过渡 `NavTransitions.MiuixDefault` = 整屏滑入 + 四分之一视差 + 被覆盖层轻微淡出；
- * - 圆角裁切与压暗由 `NavDisplayEffects` 提供（默认开启），过渡只负责沿手势塑造它的曲线；
- * - 返回手势是 1:1 跟手的预测性返回，松手要么提交（spring 收尾）要么回弹。
- *
- * 我们自己只做两件事：把状态（输入框、Tab、收藏、设置）提到这一层，
- * 以及给底部导航栏铺一层玻璃。
- */
 @Composable
 fun SweetLimeApp() {
     val store = remember { createKeyValueStore() }
     val settings = remember(store) { SweetLimeSettings(store) }
-    // 震动总开关：读一次设置就写进 HyperHaptics，设置页一改立刻生效。
+
     HyperHaptics.enabled = settings.hapticFeedback
     val favorites = remember(store) { FavoritesStore(store) }
     val recent = remember(store) { RecentStore(store) }
-    // 界面语言：在组合期订阅设置里的 code，再用 SideEffect 落到全局 AppLocale 上。
-    // 这样改语言 = 改一个 State，整个界面按新语言重组，不用重启 Activity。
+
     val languageCode = settings.language
     SideEffect { AppLocale.applyStored(languageCode) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -193,23 +177,21 @@ fun SweetLimeApp() {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var input by rememberSaveable { mutableStateOf("") }
 
-    // 输入一变就提前把整套转换算好（每 4 条让出一次主线程，不掉帧）。
-    // 这样点进「花样网名」这类一两百套的大分类时，页面只做查表，进去不掉帧。
-    // 打字抖动靠 delay(120) 合并：连打时只有停下后那一次生效。
     LaunchedEffect(input) {
         if (input.isBlank()) return@LaunchedEffect
         delay(120)
         PreviewCache.prefetch(input)
     }
 
-    // 启动时静默查一次更新：只在查到「有更新的版本」时，主页顶部才会多出一条提示。
-    // 一次请求，失败 / 离线都不影响使用（UpdateChecker 自己会兜底并返回 Failed）。
     var updateResult by remember { mutableStateOf<UpdateChecker.Result?>(null) }
     var checkingUpdate by remember { mutableStateOf(false) }
-    // 「下载 → 唤起安装器」的进度：主页横幅和设置页共用同一份，两边永远一致。
-    var downloadState by remember { mutableStateOf<UpdateDownloadState>(UpdateDownloadState.Idle) }
-    // 用户点过「×」的那个版本不再提示；出了更新的一版会重新提示。
-    val newVersion = UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate)
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    val newerRelease = UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate)
+
+    fun openUpdateDownload() {
+        val newer = newerRelease ?: return
+        openUrl(newer.apkUrl ?: newer.releaseUrl ?: UpdateChecker.RELEASES_PAGE_URL)
+    }
 
     fun checkUpdate() {
         if (checkingUpdate) return
@@ -217,99 +199,25 @@ fun SweetLimeApp() {
         scope.launch {
             updateResult = UpdateChecker.check()
             checkingUpdate = false
-        }
-    }
-
-    /**
-     * 主页横幅 / 设置页「检查更新」那一行，点击的统一入口：
-     * 没查到就先查 → 查到了就在应用内下载 → 下好了交给系统安装器。
-     *
-     * 下载走应用私有目录，失败会停在 Failed（界面提示"点击重试"），不会留下半截文件。
-     */
-    fun onUpdateAction() {
-        // 包已经在本地了：交给系统安装器；缺「安装未知应用」权限就标成 NeedsPermission，
-        // 界面会提示"点击去授权"（installApkFile 内部会把授权页打开）。
-        fun startInstall(path: String) {
-            if (!installApkFile(path)) {
-                downloadState = UpdateDownloadState.NeedsPermission(path)
-            }
-        }
-
-        when (val state = downloadState) {
-            // 下载中重复点没意义，忽略。
-            is UpdateDownloadState.Downloading -> Unit
-
-            // 已经下好了：再点击就是重新拉起系统安装器。
-            // 但包也可能已经不在了、或者根本是坏的（安装器只会报「解析软件包时出现问题」，
-            // 点一次报一次，再也回不到「重新下载」）：那就把它清掉、退回可重下的状态。
-            is UpdateDownloadState.Ready -> {
-                if (isInstallableApk(state.path)) {
-                    startInstall(state.path)
-                } else {
-                    deleteUpdateFile(state.path)
-                    downloadState = UpdateDownloadState.Failed
-                }
-            }
-
-            // 上次点的时候没权限：再点击要么装上，要么再去授权页。
-            is UpdateDownloadState.NeedsPermission -> startInstall(state.path)
-
-            else -> {
-                val newer = updateResult as? UpdateChecker.Result.Newer
-                if (newer == null) {
-                    checkUpdate()
-                } else {
-                    val url = newer.apkUrl
-                    if (url == null) {
-                        // 更新源没给安装包直链（例如临时换成了纯文本源）：退回到打开发布页。
-                        openUrl(newer.releaseUrl ?: UpdateChecker.RELEASES_PAGE_URL)
-                    } else {
-                        downloadState = UpdateDownloadState.Downloading(-1f)
-                        scope.launch {
-                            val path = downloadApkToPrivateDir(
-                                url = url,
-                                fileName = "SweetLime-${newer.latest}.apk",
-                            ) { progress ->
-                                downloadState = UpdateDownloadState.Downloading(progress)
-                            }
-                            if (path == null) {
-                                downloadState = UpdateDownloadState.Failed
-                            } else {
-                                downloadState = UpdateDownloadState.Ready(path)
-                                // 下完直接把安装器叫起来，省用户一下点击；装不装由用户决定。
-                                // 首次装多半会缺「安装未知应用」权限，startInstall 会把它标成 NeedsPermission。
-                                startInstall(path)
-                            }
-                        }
-                    }
-                }
+            if (UpdateChecker.homeBanner(updateResult, settings.dismissedUpdate) != null) {
+                showUpdateDialog = true
             }
         }
     }
 
     LaunchedEffect(Unit) { checkUpdate() }
 
-    // 返回栈：add / removeLastOrNull 都由 miuix-nav 接管动画与手势。
     val backStack = rememberNavBackStack<Route>(Route.Home)
-    // 输入法：切 Tab、进出二级页（进详情 / 返回主页等）都把手势键盘收起来，
-    // 不然在主页输入框打完字再切走，键盘会一直挂在底部。
+
     val keyboard = LocalSoftwareKeyboardController.current
-    // 切 Tab / 进出二级页时收键盘（否则在主页打完字切走，键盘会一直挂着）。
+
     LaunchedEffect(selectedTab) { keyboard?.hide() }
     LaunchedEffect(backStack.size) { keyboard?.hide() }
     fun goBack() {
-        // 双击返回时也会同一帧跑两次：把栈底那一页也弹掉的话，返回栈就空了。
+
         if (backStack.size > 1) backStack.removeLastOrNull()
     }
 
-    /**
-     * 唯一的入栈入口。
-     *
-     * 手速快（尤其双击）时，同一个点击回调会在同一帧里跑两次 —— 于是同一个路由
-     * **连续入栈两次**。miuix-nav 拿路由本身当 entry 的 contentKey，重复的 key 会直接
-     * 抛 `IllegalArgumentException: Duplicate contentKey on the back stack` → 闪退。
-     * 栈顶已经是同一个路由就把这次点击吞掉：观感上只是「第二下没生效」，而不是崩掉。
-     */
     fun push(route: Route) {
         if (backStack.lastOrNull() == route) return
         backStack.add(route)
@@ -325,39 +233,24 @@ fun SweetLimeApp() {
         scope.launch { snackbarHostState.showSnackbar(trf("已复制{}", label)) }
     }
 
-    /**
-     * 打开某个样式的详情页（顺便记一笔「最近使用」，搜索 / 分类 / 最近使用列表都走这里）。
-     *
-     * [text] 是要转换的原文：主页进来就是主页输入框里的内容；
-     * 搜索页进来则是**搜索框里的那行字** —— 搜什么，详情页的「原文」就是什么。
-     */
     fun openStyle(styleId: String, text: String = input) {
         recent.record(styleId)
         push(Route.Item(styleId, text))
     }
 
     SweetLimeTheme(monet = settings.monet, themeMode = settings.themeMode) {
-        // 全局把 Compose 默认的 overscroll 换成 **miuix 那套 iOS 风格弹性回弹**：
-        // 滑到顶/底之后还能继续拖（内容跟手走，松手弹回去），而不是硬邦邦地顶住。
-        // 换的是 CompositionLocal，所以整个软件里所有 LazyColumn / verticalScroll 都自动生效，
-        // 不用一页一页去挂 modifier。
+
         val overScrollState = remember { OverScrollState() }
-        // 所有控件（按钮/开关/滑块/长按/文本选择）都先走 HyperOS 原生马达，
-        // 拿不到再按 HyperLight 的映射表转发 Android 常量；下面再挂「顶到边还在拉」的边界震动。
+
         val hyperHaptic = rememberHyperHapticFeedback()
         CompositionLocalProvider(
             LocalOverscrollFactory provides MiuixOverscrollFactory,
             LocalOverScrollState provides overScrollState,
             LocalHapticFeedback provides hyperHaptic,
         ) {
-            // 顶到列表边界还继续拉时响一次（HyperLight rb0.java 那条逻辑）。
-        // 外面套一层 miuix 的 Scaffold：它负责提供 LocalPopupStates / LocalRootPopupStates，
-        // 并在最外层渲染 MiuixPopupHost()。设置页里「点击弹出圆角菜单」的 OverlayListPopup
-        // 就是靠它才有地方渲染 —— 之前手写的 Box 没有这个宿主，所以点了完全没反应。
-        // contentWindowInsets = 0：边到边由我们自己管，不要再被系统栏内边距顶一次。
+
         Scaffold(
-            // 底色交给最底下的「流光背景」自己铺 —— 它永远会先画一层主题底色，
-            // 开了流光再叠着色器；这一层保持透明，不然会把流光整个盖住。
+
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
         ) { _ ->
@@ -365,20 +258,14 @@ fun SweetLimeApp() {
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
-            // 最底层：主题底色 +（设置里开启时）HyperOS 那种流光着色器。
-            // 放在 NavDisplay 之前，所以永远在所有内容之下；
-            // 机型不支持 RuntimeShader 时自动退化成纯底色，不会崩。
+
             BgEffectBackground(
                 enabled = settings.flowingBackground,
-                // 跟随系统 / OS2 / OS3：见 HyperOsStyle。手动选了就无视 HyperOS 大版本。
+
                 isOs3 = HyperOsStyle.resolveIsOs3(settings.flowingStyle),
                 modifier = Modifier.fillMaxSize(),
             ) {
-            // 页面容器：开了「流光背景」时，把 Miuix 的几档容器色换成半透明，让卡片
-            // 浮在流光上；每个二级页再拿**同一帧的同一支画刷**给自己刷一层实流光当底
-            // （见 FlowingLayer.kt / flowingPageLayer()），
-            // 所以二级页 / 设置页的背景就是「和主页一模一样的实流光」，完全不透。
-            // 不开则完全原样（连一层 MiuixTheme 都不套），观感和以前一模一样。
+
             val navSwipeDismiss = if (LocalLayoutDirection.current == LayoutDirection.Rtl) {
                 NavSwipeDirection.RightToLeft
             } else {
@@ -388,9 +275,7 @@ fun SweetLimeApp() {
             NavDisplay(
                 backStack = backStack,
                 onBack = { goBack() },
-                // 大 R 角 + 轻微压暗：过渡中两张页面（滑进来的新的、以及底下被揭开的上一级）
-                // 四角都是圆角，露出底下那层背景色，就是 HyperOS 那种「卡片」观感。
-                // 不是我们自己瞎定的数字。
+
                 effects = if (!settings.flowingBackground) {
                     NavDisplayEffects(cornerClipRadius = rememberNavSystemCornerRadius())
                 } else {
@@ -398,12 +283,9 @@ fun SweetLimeApp() {
                     enableCornerClip = true,
                     cornerClipRadius = rememberNavSystemCornerRadius(),
                     cornerClipMode = NavCornerClipMode.All,
-                    // 开着流光时不要压暗：这层压暗是画在「页面之下、流光之上」的，
-                    // 于是这层 0.35 的黑纱直接盖在流光上 —— 页面背景就变成一片灰，
-                    // 实测左边距从 (242,242,247) 掉到 (141,142,162)，正好是 0.65 倍。
+
                     dimAmount = if (settings.flowingBackground) 0f else 0.35f,
-                    // 这层是「页面圆角外露出来的底色」。开着流光时必须透明，
-                    // 否则它会把最底下那层流光整个盖住（页圆角也就露不出流光了）。
+
                     backdropColor = if (settings.flowingBackground) {
                         Color.Transparent
                     } else {
@@ -415,8 +297,7 @@ fun SweetLimeApp() {
                 entry<Route.Home> {
                     RootScaffold(
                         favorites = favorites,
-                        // 返回栈里只剩 Home 时才算「根级」：那时返回键才该管底栏页，
-                        // 否则先退二级页。见 resolveBackAction。
+
                         atRoot = backStack.size <= 1,
                         selectedTab = selectedTab,
                         onTabSelected = { selectedTab = it },
@@ -431,13 +312,6 @@ fun SweetLimeApp() {
                         onOpenSearch = { push(Route.Search) },
                         recentIds = recent.ids,
                         onOpenRecent = { openStyle(it) },
-                        newVersion = newVersion?.latest,
-                        updateDownload = downloadState,
-                        onUpdateAction = { onUpdateAction() },
-                        // 点「×」：记下这个版本，之后不再提示（出了更新的一版会重新提示）。
-                        onDismissUpdate = {
-                            newVersion?.let { settings.dismissedUpdate = it.latest }
-                        },
                     )
                 }
 
@@ -459,7 +333,7 @@ fun SweetLimeApp() {
                     if (transform == null) {
                         LaunchedEffect(route) { goBack() }
                     } else {
-                        // 收藏键 = 样式 + 原文，原文在详情页里可以随时改，所以实时算。
+
                         fun favoriteKey(text: String) =
                             TransformItem(transform.id, transform.title, text, transform.transform(text)).key
                         DetailScreen(
@@ -470,7 +344,7 @@ fun SweetLimeApp() {
                             onCopy = { output -> copyRaw(output, "「${transform.title}」") },
                             onShare = { output -> shareText(output) },
                             onToggleFavorite = { text -> favorites.toggle(favoriteKey(text)) },
-                            // 详情页里改的原文同步回主页输入框，返回后前后一致。
+
                             onInputChange = { input = it },
                         )
                     }
@@ -481,7 +355,7 @@ fun SweetLimeApp() {
                         toolId = route.id,
                         onBack = { goBack() },
                         onCopyText = ::copyRaw,
-                        // 工具页里需要一句提示（比如「已保存到下载」）时弹 Snackbar。
+
                         onMessage = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
                         onOpenSymbolCategory = { push(Route.Symbols(it)) },
                     )
@@ -504,19 +378,17 @@ fun SweetLimeApp() {
                         onOpenPrivacy = { push(Route.Privacy) },
                         onOpenLicenses = { push(Route.Licenses) },
                         onOpenAbout = { push(Route.About) },
-                        // 检查更新 / 下载安装：和主页横幅共用同一份状态，两边显示永远一致。
                         updateResult = updateResult,
                         checkingUpdate = checkingUpdate,
-                        updateDownload = downloadState,
                         onCheckUpdate = { checkUpdate() },
-                        onUpdateAction = { onUpdateAction() },
+                        onOpenDownload = { openUpdateDownload() },
                     )
                 }
 
                 entry<Route.Search>(swipeDismiss = navSwipeDismiss) {
                     SearchScreen(
                         onBack = { goBack() },
-                        // 搜索页的原文 = 搜索框里那行字，直接带进详情页。
+
                         onOpenStyle = { styleId, text -> openStyle(styleId, text) },
                         onOpenGroup = { push(Route.Group(it)) },
                         onOpenSymbols = { push(Route.Symbols(it)) },
@@ -559,6 +431,18 @@ fun SweetLimeApp() {
                     .align(Alignment.BottomCenter)
                     .padding(bottom = if (backStack.size > 1) 24.dp else 120.dp),
             )
+            val dialogRelease = newerRelease
+            if (showUpdateDialog && dialogRelease != null) {
+                UpdateDialog(
+                    version = dialogRelease.latest,
+                    notes = dialogRelease.notes,
+                    onDismiss = {
+                        settings.dismissedUpdate = dialogRelease.latest
+                        showUpdateDialog = false
+                    },
+                    onOpenDownload = { openUpdateDownload() },
+                )
+            }
             }
             }
             }
@@ -567,17 +451,10 @@ fun SweetLimeApp() {
     }
 }
 
-/**
- * 底层脚手架：顶栏（大标题）+ 内容 + **压在内容之上的玻璃导航栏**。
- *
- * 玻璃（miuix-blur 的 LayerBackdrop）只采样「顶栏 + 内容」这一层 ——
- * 导航栏自己是它的兄弟节点，不会被一起采样，所以不会出现「自己采样自己」的递归。
- * 内容底部按实测栏高避让，最后一条永远完整可见。
- */
 @Composable
 private fun RootScaffold(
     favorites: FavoritesStore,
-    /** 返回栈是否只剩根页；返回键逻辑要用（见 resolveBackAction）。 */
+
     atRoot: Boolean,
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
@@ -592,36 +469,23 @@ private fun RootScaffold(
     onOpenSearch: () -> Unit,
     recentIds: List<String>,
     onOpenRecent: (String) -> Unit,
-    /** 查到的新版本号；null = 主页不显示顶部提示。 */
-    newVersion: String?,
-    updateDownload: UpdateDownloadState,
-    onUpdateAction: () -> Unit,
-    onDismissUpdate: () -> Unit,
 ) {
     var topBarHeight by remember { mutableStateOf(0.dp) }
     var bottomBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     val backdrop = rememberLayerBackdrop()
-    // 顶栏「实时模糊」用：下面内容层当 source，顶栏当 effect（Haze 的 AGSL 逐帧高斯）。
+
     val hazeState = remember { HazeState() }
-    // HyperOS 的大标题：往上滑时大标题收起、往下滑时再展开。
-    // 它靠嵌套滚动驱动，所以下面的内容层要挂上它的 nestedScrollConnection。
+
     val scrollBehavior = MiuixScrollBehavior()
 
-    // 三个 Tab 的横向分页：手指左右滑换页；点底栏则是带动画滚过去 ——
     val tabPagerState = rememberPagerState(pageCount = { 3 })
-    // 底栏「图标选中的页」和 Pager 的真实页分开管 —— 点击图标立刻过去，
-    // 动画在另一条协程里跑；只有不在导航中，才允许 pager 回写选中态。
-    // 之前把两者混用，连点时会互相回写，表现就是「画面和图标不跟手」。
+
     val pagerScope = rememberCoroutineScope()
     val tabState = rememberTabPagerState(pagerState = tabPagerState, coroutineScope = pagerScope)
 
-    
     val backAction = resolveBackAction(atRoot = atRoot, selectedTab = tabState.selectedPage)
-    //
-    // activity-compose 的 BackHandler 走的是 OnBackPressedDispatcher 的**无预览**回调，
-    // 只要它 enabled，系统就不再播预测性返回动画（只有一次回弹，没有跟手的预览页）。
-    // NavigationBackHandler 是 OnBackInvokedCallback + 进度事件，系统手势拖到一半
+
     val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
     NavigationBackHandler(
         state = backEventState,
@@ -635,56 +499,40 @@ private fun RootScaffold(
     LaunchedEffect(pagerCurrentPage) {
         tabState.syncPage()
     }
-    // 停稳后同步给外部状态（各页面/其它逻辑用的 selectedTab）。
+
     val pagerSettledPage = tabState.pagerState.settledPage
     LaunchedEffect(pagerSettledPage) {
         if (selectedTab != pagerSettledPage) onTabSelected(pagerSettledPage)
     }
 
-    // 预热策略（防「刚进软件前几次点击掉帧」）：
-    // 我们没有闪屏，如果在第一帧就把三个 Tab 页全组合出来，这笔开销就全压在用户
-    // 刚进软件、正要开始点的那几帧上 -> 前几次点击掉帧。
-    // 所以错峰：先只组合当前页，闲下来之后再陆续把邻居页 / 全部页放进组合。
     var warmPages by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
-        // 顺手把几处「首次用到才初始化」的东西提前备好（都是毫秒级，但要避开点击）。
+
         HyperHaptics.hasMiuixCompat()
         delay(1_200)
-        warmPages = 1   // 左右邻居各一页（切页时目标页内容已就绪）
+        warmPages = 1
         delay(3_000)
-        warmPages = 2   // 三页全在组合里
+        warmPages = 2
     }
     val bottomBlurPx = remember(density) { with(density) { 40.dp.toPx() } }
-    // HyperOS 那种玻璃是有「底色」的：模糊之上再蒙一层很淡的主题色，
-    // 这样它看起来是「磨砂玻璃」而不是「把内容压成一团糊」。
-    // 让底层流光直接透上来。
+
     val glassTint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // 内容层：铺满整屏，既当玻璃的采样源，也能从顶栏 / 底栏下面滑过去。
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
                 .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                // 背景也画进这一层里。
-                //
-                // 底栏玻璃是从「这一层」采样去模糊的 —— 而这三页自己是透明的
-                // （背景由更底下的 BgEffectBackground 铺），所以只要底栏后面没有内容
-                // 垫着（收藏页空列表时就是），采样区就是一片空白，miuix 的液态玻璃管线
-                // 在空白处会出一层不透明黑 → 整条胶囊看起来「切到了深色模式」。
-                // 这里把同一帧的流光（或纯主题底色）也铺进来，背板就永远有东西可采。
+
                 .then(
                     if (flowing) {
                         Modifier.glassBarBackdrop()
                     } else {
-                        // 不能在 lambda 里读主题（drawBehind 不是 @Composable 作用域），先取出来。
-                        // 这里必须是 surface（#F7F7F7），**不能**用 colorScheme.background
-                        // （那是纯白 #FFFFFF）：这三页的卡片/列表容器本身就是白卡，铺白底
-                        // 会让卡片、列表的边缘和背景糊成一片白 —— 主页/工具/收藏「边缘混成白色」
-                        // 就是这一句造成的。全软件其它页铺的都是 surface，这里跟着统一。
+
                         val plainBg = MiuixTheme.colorScheme.surface
                         Modifier.drawBehind { drawRect(plainBg) }
                     },
@@ -699,10 +547,7 @@ private fun RootScaffold(
             HorizontalPager(
                 state = tabPagerState,
                 modifier = Modifier.fillMaxSize(),
-                // 以前这里挂 miuix 的 pagerGestureOverride（CrossAxisInterceptor）：
-                // 它在**手势层**就把横向拖动拿走，于是主页「最近使用」那排横向列表根本滑不动
-                // （一滑直接切到工具页）。改用 HorizontalPager 自己的滑动：
-                // 手指在横向列表上时先滚列表，滚到头才切页；落在别处就正常切页。                beyondViewportPageCount = warmPages,
+
                 overscrollEffect = null,
                 userScrollEnabled = true,
                 pageNestedScrollConnection = PagerGestureNestedScrollConnection,
@@ -719,10 +564,6 @@ private fun RootScaffold(
                     onOpenGroup = onOpenGroup,
                     recentIds = recentIds,
                     onOpenRecent = onOpenRecent,
-                    newVersion = newVersion,
-                    updateDownload = updateDownload,
-                    onUpdateAction = onUpdateAction,
-                    onDismissUpdate = onDismissUpdate,
                 )
                 1 -> ToolsScreen(
                     outerPadding = contentPadding,
@@ -738,13 +579,6 @@ private fun RootScaffold(
             }
         }
 
-        // 顶部玻璃栏。
-        //
-        // 顶栏的模糊走 **Haze**（AGSL 逐帧高斯，RenderEffect.createRuntimeShaderEffect）——
-        // 内容层是 source、这里是 effect，所以：**列表从下面滑过去时是实时糊的**，
-        // 而且用 progressive 做成「贴着最顶上最糊、往下渐隐到 0」的渐变，
-        // 而不是「一条硬边的整块模糊」。
-        // 流光模式下也照铺（以前这时顶栏是全透明的，滚动时一点模糊都没有）。
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -758,7 +592,7 @@ private fun RootScaffold(
                     .hazeEffect(
                         state = hazeState,
                         style = HazeStyle(
-                            // 半径 20dp / 噪点 0.15：跟 HyperLight 那边同一套参数。
+
                             blurRadius = 20.dp,
                             noiseFactor = 0.15f,
                             tint = HazeTint(glassTint.copy(alpha = if (flowing) 0.16f else 0.30f)),
@@ -770,10 +604,7 @@ private fun RootScaffold(
                         )
                     },
             )
-            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
-            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
-            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
-            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -785,8 +616,7 @@ private fun RootScaffold(
                     ),
             )
             TopAppBar(
-                // 大标题会随内容上滑收起、下滑展开（HyperOS 那种），
-                // 收起后小标题才会出现在栏里 —— 不再是「SweetLime 一直杵在顶上」。
+
                 title = "SweetLime",
                 largeTitle = "SweetLime",
                 color = Color.Transparent,
@@ -810,13 +640,6 @@ private fun RootScaffold(
             )
         }
 
-        // 底部玻璃栏：浮在内容之上，列表从它下面滑过时被高斯模糊。
-        //
-        // 两种形态（由设置里的「悬浮底栏」切换）：
-        // - 普通：贴底整条，玻璃矩形铺满整个宽度，上沿用渐变淡出；
-        //   玻璃直接画在胶囊自己身上（同形状同尺寸），不做渐隐，左右留白。
-        // 进二级页时整条底栏往下沉 + 淡出，退回主页时再浮上来。
-        // atRoot 由返回栈深度决定，所以是「页面开始滑进来的同一刻」起步。
         val bottomBarSink = remember { Animatable(0f) }
         LaunchedEffect(atRoot) {
             bottomBarSink.animateTo(
@@ -838,9 +661,7 @@ private fun RootScaffold(
                 },
         ) {
             if (floatingBottomBar) {
-                // ui/components/FloatingBottomBar.kt）：玻璃、随重力转的高光反光、
-                // 按下放大、以及那枚**能跟着手指拖动的指示器**，全部由组件自己画。
-                // 我们只负责把「内容那一层」的 backdrop 递进去当采样源，并按它的规矩留边距。
+
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
@@ -849,7 +670,7 @@ private fun RootScaffold(
                         modifier = Modifier.padding(
                             start = 28.dp,
                             end = 28.dp,
-                            // 这里给得略松一点（12dp + 内边距），观感更透气。
+
                             bottom = 12.dp +
                                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
                         ),
@@ -864,7 +685,7 @@ private fun RootScaffold(
                     }
                 }
             } else {
-                // 栏本身不画实心底色，而是把「下面内容那一层」做一次高斯模糊，
+
                 val barTint = MiuixTheme.colorScheme.surface
                 Box(
                     modifier = Modifier.textureBlur(
@@ -932,8 +753,6 @@ private fun RowScope.LiquidBarItem(
     }
 }
 
-/** 进二级页时底栏下沉的时长（毫秒）。 */
 private const val BOTTOM_BAR_SINK_MS = 260
 
-/** 退回主页时底栏浮上来的时长（毫秒）。 */
 private const val BOTTOM_BAR_BACK_MS = 380

@@ -1,6 +1,45 @@
 package com.qingning.sweetlime.core.i18n
 
 internal val EN: Map<String, String> = mapOf(
+    "网名" to "Name",
+    "序号符号" to "Numbered",
+    "制表与线条" to "Box drawing",
+    "方块与几何" to "Blocks & shapes",
+    "装饰星形" to "Stars & ornaments",
+    "货币补充" to "More currency",
+    "情绪" to "Moods",
+    "动作与动物" to "Actions & animals",
+    "其他" to "Others",
+    "新增分类" to "New categories",
+    "内容重复率" to "Duplicate check",
+    "第一段文字（原文）" to "First text (original)",
+    "第二段文字（要对比的）" to "Second text (to compare)",
+    "只比较汉字、字母和数字，标点空格直接忽略；两段各取前 2000 字计算。" to "Only letters, digits and Chinese characters are compared; punctuation and spaces are ignored. Both sides are cut to 2000 characters.",
+    "重复率" to "Duplication",
+    "两段都填上才会算。" to "Fill in both boxes to get a result.",
+    "重复 {} 字 · 原文 {} 字 · 对比 {} 字" to "{} shared · {} original · {} compared",
+    "几乎一样，属于高度重复。" to "Nearly identical - highly duplicated.",
+    "重复较多，建议再改一改。" to "Quite a lot of overlap; consider rewriting.",
+    "有一部分重复。" to "Some overlap.",
+    "重复很少。" to "Very little overlap.",
+    "重复率 {}% · 重复 {} 字" to "Duplication {}% · {} shared characters",
+    "{}%" to "{}%",
+    "结果" to "Result",
+    "发现新版本 {}" to "New version {}",
+    "点一下标题看这一版改了什么" to "Tap the title to see what changed",
+    "这一版没有写更新说明，点下面的按钮去 GitHub 看。" to "This release has no notes; tap the button below to open GitHub.",
+    "稍后" to "Later",
+    "更新" to "Update",
+    "发现新版本 {}，点击前往 GitHub 下载" to "New version {} - tap to download from GitHub",
+    "渐变色" to "Gradient",
+    "起始颜色" to "Start color",
+    "结束颜色" to "End color",
+    "{}°" to "{}°",
+    "复制 CSS" to "Copy CSS",
+    "常用、图案、装饰等分类，点击即复制" to "Common, shape and decoration categories; tap to copy",
+    "开心、难过、动物、魔法等分类，点击即复制" to "Happy, sad, animal, magic and more; tap to copy",
+    "序号、制表、几何、星形等新增分类" to "Numbered, box drawing, geometry and star categories",
+    "两段文字比对重复率，附重复字数" to "Compare two texts and show the duplication rate",
     "字母与数字" to "Letters & Numbers",
     "符号与空白" to "Symbols & Blanks",
     "昵称装饰" to "Name Decor",
@@ -539,6 +578,45 @@ internal val EN: Map<String, String> = mapOf(
 )
 
 internal val TW: Map<String, String> = mapOf(
+    "网名" to "名稱",
+    "序号符号" to "序號",
+    "制表与线条" to "製表與線條",
+    "方块与几何" to "方塊與幾何",
+    "装饰星形" to "裝飾星形",
+    "货币补充" to "貨幣補充",
+    "情绪" to "情緒",
+    "动作与动物" to "動作與動物",
+    "其他" to "其他",
+    "新增分类" to "新增分類",
+    "内容重复率" to "內容重複率",
+    "第一段文字（原文）" to "第一段文字（原文）",
+    "第二段文字（要对比的）" to "第二段文字（要對比的）",
+    "只比较汉字、字母和数字，标点空格直接忽略；两段各取前 2000 字计算。" to "只比較漢字、字母和數字，標點空格直接忽略；兩段各取前 2000 字計算。",
+    "重复率" to "重複率",
+    "两段都填上才会算。" to "兩段都填上才會算。",
+    "重复 {} 字 · 原文 {} 字 · 对比 {} 字" to "重複 {} 字 · 原文 {} 字 · 對比 {} 字",
+    "几乎一样，属于高度重复。" to "幾乎一樣，屬於高度重複。",
+    "重复较多，建议再改一改。" to "重複較多，建議再改一改。",
+    "有一部分重复。" to "有一部分重複。",
+    "重复很少。" to "重複很少。",
+    "重复率 {}% · 重复 {} 字" to "重複率 {}% · 重複 {} 字",
+    "{}%" to "{}%",
+    "结果" to "結果",
+    "发现新版本 {}" to "發現新版本 {}",
+    "点一下标题看这一版改了什么" to "點一下標題看這一版改了什麼",
+    "这一版没有写更新说明，点下面的按钮去 GitHub 看。" to "這一版沒有寫更新說明，點下面的按鈕去 GitHub 看。",
+    "稍后" to "稍後",
+    "更新" to "更新",
+    "发现新版本 {}，点击前往 GitHub 下载" to "發現新版本 {}，點擊前往 GitHub 下載",
+    "渐变色" to "漸變色",
+    "起始颜色" to "起始顏色",
+    "结束颜色" to "結束顏色",
+    "{}°" to "{}°",
+    "复制 CSS" to "複製 CSS",
+    "常用、图案、装饰等分类，点击即复制" to "常用、圖案、裝飾等分類，點擊即複製",
+    "开心、难过、动物、魔法等分类，点击即复制" to "開心、難過、動物、魔法等分類，點擊即複製",
+    "序号、制表、几何、星形等新增分类" to "序號、製表、幾何、星形等新增分類",
+    "两段文字比对重复率，附重复字数" to "兩段文字比對重複率，附重複字數",
     "字母与数字" to "字母與數字",
     "符号与空白" to "符號與空白",
     "昵称装饰" to "暱稱裝飾",
@@ -1082,15 +1160,8 @@ private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {
     AppLanguage.TW -> TW
 }
 
-/** 把一句简体原文翻译成当前语言。查不到就原样返回。 */
 fun tr(zh: String): String = table(AppLocale.current)?.get(zh) ?: zh
 
-/**
- * 模板串版：[pattern] 里的 `{}` 会按顺序被 [args] 顶掉。
- *
- * 先把 pattern 翻成目标语言（译文里的 `{}` 位置可以重排），再填参数，
- * 这样参数本身不用翻译、也不受语序影响。
- */
 fun trf(pattern: String, vararg args: Any?): String {
     val text = tr(pattern)
     if (args.isEmpty()) return text

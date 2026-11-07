@@ -64,10 +64,8 @@ import top.yukonga.miuix.kmp.window.WindowBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-/** 分组展开 / 收起的高度动画时长（毫秒）。嫌快就调大，嫌慢就调小。 */
 private const val GROUP_EXPAND_MS = 280
 
-/** 收藏页（底层）：按分组竖向排列，点条目进详情。 */
 @Composable
 fun FavoriteScreen(
     favorites: FavoritesStore,
@@ -75,11 +73,7 @@ fun FavoriteScreen(
     onCopy: (TransformItem) -> Unit,
     onOpen: (TransformItem) -> Unit,
 ) {
-    // 收藏以 key 持久化，展示时按样式重算输出。
-    //
-    // 这里必须包 remember：重算要按 id 查注册表、还要对每条重跑一次 transform()，
-    // 而收藏页任何一次重组（滚动、Snackbar、切语言）都会走到这一行。
-    // 键里带上语言：样式标题是读时翻译的，不跟着语言重算的话标题会停留旧语言。
+
     val items: List<TransformItem> = remember(favorites.keys.toList(), AppLocale.current) {
         favorites.keys.mapNotNull { key ->
             val (styleId, input) = TransformItem.fromKey(key) ?: return@mapNotNull null
@@ -89,12 +83,9 @@ fun FavoriteScreen(
     }
     var showAddGroup by remember { mutableStateOf(false) }
     var groupName by remember { mutableStateOf("") }
-    // 新建分组时的错误提示：空名字 / 重名。
+
     var groupError by remember { mutableStateOf("") }
 
-    // 分组 → 条目。未分组排最前，自建分组按名字 A→Z 排。
-    // 这里不 remember：分组成员是 SnapshotStateMap，读它就订阅它，
-    // 「移到分组」之后同一帧就会重排（之前不刷新就是 remember 键里漏了它）。
     val byGroup = items.groupBy { favorites.groupOf(it.key) }
     val sections: List<Pair<String, List<TransformItem>>> = buildList {
         val ungrouped = byGroup[""].orEmpty()
@@ -115,7 +106,7 @@ fun FavoriteScreen(
             bottom = outerPadding.calculateBottomPadding(),
         ),
     ) {
-        // 顶部这一行右侧就是「添加分组」的小按钮（不再用右下角悬浮加号）。
+
         item(key = "favorite_header") {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -170,11 +161,11 @@ fun FavoriteScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            // 分组被删掉时整块淡出 + 下方卡片平滑合上来。
+
                             .animateItem(
                                 fadeInSpec = tween(200),
                                 fadeOutSpec = tween(180),
-                                // 不做位移动画：展开时后续卡片的位移如果也走 tween，会「追不上」而显得迟锁。
+
                                 placementSpec = null,
                             ),
                     ) {
@@ -190,13 +181,12 @@ fun FavoriteScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp)
                                 .padding(bottom = 12.dp)
-                                // 展开 / 收起时高度连续变化。
+
                                 .animateContentSize(
                                     animationSpec = tween(GROUP_EXPAND_MS, easing = FastOutSlowInEasing),
                                 ),
                         ) {
-                            // 分组名就是这张卡的标题行：点它展开 / 收起，长按它删除整个分组
-                            // （「未分组」是兜底分组，不能删）。
+
                             val canDelete = group.isNotEmpty()
                             Box(
                                 modifier = Modifier
@@ -232,8 +222,7 @@ fun FavoriteScreen(
                                     },
                                 )
                             }
-                            // 只做「有没有」的切换：高度交给外层 Card 的 animateContentSize，
-                            // 不要和 expandVertically 同时动，两级动画叠加会有拖泥带水的延迟感。
+
                             if (!collapsed) {
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     if (list.isEmpty()) {
@@ -264,10 +253,8 @@ fun FavoriteScreen(
             }
         }
 
-
     }
 
-    // 从底部升起的「新建分组」面板。
     WindowBottomSheet(
         show = showAddGroup,
         onDismissRequest = { showAddGroup = false },
@@ -325,8 +312,6 @@ fun FavoriteScreen(
     }
 }
 
-// 旧版输入弹窗已不再使用，保留删除按钮所需的图标导入即可。
-
 @Composable
 private fun FavoriteRow(
     item: TransformItem,
@@ -338,7 +323,7 @@ private fun FavoriteRow(
     onMove: (String) -> Unit,
 ) {
     var showMove by remember { mutableStateOf(false) }
-    // 新出现（刚被挪进来）的行淡入 + 从下面 6dp 处顶上来。
+
     val appear = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         appear.animateTo(1f, tween(200, easing = FastOutSlowInEasing))
@@ -385,7 +370,7 @@ private fun FavoriteRow(
             onDismissRequest = { showMove = false },
         ) {
             ListPopupColumn {
-                // 第一项是「未分组」，后面才是自建分组。
+
                 val options = buildList {
                     add("")
                     addAll(groups)
@@ -406,4 +391,3 @@ private fun FavoriteRow(
         }
     }
 }
-

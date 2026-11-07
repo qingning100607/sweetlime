@@ -1,9 +1,5 @@
 package com.qingning.sweetlime.core.mapping
 
-/**
- * 空白 / 不可见字符码表（取自 qiwangming 空白网名 index_tx.js）。
- * 这些码点在大多数字体中不显示，但占据一个字符位。
- */
 internal val BLANK_CODEPOINTS: List<Int> = listOf(
     0x1701, 0x1702, 0x1703, 0x1704, 0x1705, 0x1706, 0x1707, 0x1708,
     0x1709, 0x170A, 0x170B, 0x170C, 0x170D, 0x170E, 0x170F, 0x1710,

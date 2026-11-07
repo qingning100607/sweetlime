@@ -2,23 +2,10 @@ package com.qingning.sweetlime.core.mapping
 
 import com.qingning.sweetlime.core.i18n.tr
 
-/**
- * 一个符号分类：标题 + 该分类下的全部符号。
- *
- * [titleKey] 存的是**简体原文**（词表 key），[title] 在读的时候才翻译 ——
- * [SYMBOL_CATEGORIES] 是顶层 val，构造只发生一次，若在这里就调 tr() 把结果存下来，
- * 分类名会被定死成「第一次加载时」的语言，切语言后再也不变
- * （「特效符号」样式标题、[com.qingning.sweetlime.core.StyleGroup] 都踩过同一个坑）。
- */
 internal class SymbolCategory(private val titleKey: String, val symbols: List<String>) {
     val title: String get() = tr(titleKey)
 }
 
-/*
- * 特殊符号大全（对齐「特殊符号」页的 44 个分类，共 2797 个符号）。
- * 数据由 qiwangming.com/fuhao/ 的静态页面逆向提取。
- * 每个分类各自一个函数，避免单个方法体超过 JVM 的 64KB 限制。
- */
 private fun sc0(): SymbolCategory = SymbolCategory(
     "\u5E38\u7528\u7B26\u53F7",
     listOf(
@@ -3080,7 +3067,7 @@ private fun sc43(): SymbolCategory = SymbolCategory(
     ),
 )
 
-internal val SYMBOL_CATEGORIES: List<SymbolCategory> = listOf(
+private val symbolBaseCategories: List<SymbolCategory> = listOf(
     sc0(),
     sc1(),
     sc2(),
@@ -3126,3 +3113,18 @@ internal val SYMBOL_CATEGORIES: List<SymbolCategory> = listOf(
     sc42(),
     sc43(),
 )
+
+internal val SYMBOL_EXTRA_START: Int = symbolBaseCategories.size
+
+internal val KAOMOJI_START: Int = SYMBOL_EXTRA_START + symbolExtraCategories.size
+
+internal val SYMBOL_CATEGORIES: List<SymbolCategory> =
+    symbolBaseCategories +
+        symbolExtraCategories +
+        KAOMOJI_CATEGORIES.map { SymbolCategory(it.titleKey, it.items) }
+
+internal val SYMBOL_BASE_RANGE: IntRange = 0 until SYMBOL_EXTRA_START
+
+internal val SYMBOL_MORE_RANGE: IntRange = SYMBOL_EXTRA_START until KAOMOJI_START
+
+internal val KAOMOJI_RANGE: IntRange = KAOMOJI_START until SYMBOL_CATEGORIES.size

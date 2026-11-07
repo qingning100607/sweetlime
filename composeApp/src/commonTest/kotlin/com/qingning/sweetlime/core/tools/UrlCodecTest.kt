@@ -10,7 +10,7 @@ class UrlCodecTest {
     fun encodesAscii() {
         assertEquals("hello", UrlCodec.encode("hello"))
         assertEquals("", UrlCodec.encode(""))
-        // 空格必须是 %20（encodeURIComponent 那套），不是表单的 +
+
         assertEquals("a%20b", UrlCodec.encode("a b"))
     }
 
@@ -21,9 +21,9 @@ class UrlCodecTest {
 
     @Test
     fun keepsUnreservedCharacters() {
-        // -_.!~*'() 与字母数字不转义
+
         assertEquals("A-z0-9-_.!~*'()", UrlCodec.encode("A-z0-9-_.!~*'()"))
-        // 结构字符该转的都要转
+
         assertEquals("%2F%3F%26%3D%23%2B", UrlCodec.encode("/?&=#+"))
     }
 
@@ -61,8 +61,7 @@ class UrlCodecTest {
 
     @Test
     fun decodeKeepsAstralCharacters() {
-        // 增补平面字符（emoji）是两个 UTF-16 单元，解码时不能被拆碎。
-        // 这条是「Kotlin ↔ 原生对拍」抓出来的：以前 🎉 会变成两个替换字符。
+
         assertEquals("🎉", UrlCodec.decode("🎉"))
         assertEquals("SweetLime ✨🎉 中文", UrlCodec.decode("SweetLime%20✨🎉%20中文"))
     }

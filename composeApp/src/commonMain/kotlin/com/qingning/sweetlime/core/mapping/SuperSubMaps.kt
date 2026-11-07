@@ -1,9 +1,5 @@
 package com.qingning.sweetlime.core.mapping
 
-/**
- * 上标映射（对齐 qiwangming 上标生成器）。
- * 注意 q / Q 在源站被映射成两个码点的 "ᴼ̴"，S 为 "ᔆ"，属该站特例。
- */
 internal val SUPERSCRIPT_MAP: Map<Char, String> = hashMapOf(
     '0' to "⁰",
     '1' to "¹",
@@ -69,11 +65,6 @@ internal val SUPERSCRIPT_MAP: Map<Char, String> = hashMapOf(
     'z' to "ᶻ",
 )
 
-/**
- * 下标映射（对齐 qiwangming 下标生成器）。
- * 源站对大小写输出完全相同（D→d、G→g、Q→q、W→w 等缺字用普通字母补位），
- * 缺字处用音乐符号 𝄴 / 𝆑 / 𝆎 补位，均属该站特例。
- */
 internal val SUBSCRIPT_MAP: Map<Char, String> = hashMapOf(
     '0' to "₀",
     '1' to "₁",

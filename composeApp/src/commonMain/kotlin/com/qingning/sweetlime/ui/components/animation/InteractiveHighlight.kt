@@ -48,7 +48,7 @@ class InteractiveHighlight(
     layout(color) uniform half4 color;
     uniform float radius;
     uniform float2 position;
-    
+
     half4 main(float2 coord) {
         float dist = distance(coord, position);
         float intensity = smoothstep(radius, radius * 0.5, dist);

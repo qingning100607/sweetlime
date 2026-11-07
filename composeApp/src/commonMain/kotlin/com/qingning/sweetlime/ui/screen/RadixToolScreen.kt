@@ -48,7 +48,6 @@ internal fun RadixToolScreen(onCopyText: (String, String) -> Unit) {
     )
 }
 
-/** 源进制选择：横向可滑的胶囊行（2–36 全给，滚一滚就能找到）。 */
 @Composable
 private fun BaseSelector(selected: Int, onSelect: (Int) -> Unit) {
     Column {
@@ -95,7 +94,3 @@ private fun BaseSelector(selected: Int, onSelect: (Int) -> Unit) {
         }
     }
 }
-
-/* -------------------------------------------------------------------------- */
-/* 3. 颜色代码转换                                                              */
-/* -------------------------------------------------------------------------- */

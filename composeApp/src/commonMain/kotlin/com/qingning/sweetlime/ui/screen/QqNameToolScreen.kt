@@ -51,7 +51,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
     var blue by rememberSaveable { mutableStateOf(QqNameColor.DEFAULT_BLUE) }
 
     val previewColor = Color(red = red, green = green, blue = blue, alpha = alpha)
-    // 尾巴算不算「有」：开关开着、而且不是纯空白（和 QqNameColor 内部判定保持一致）。
+
     val hasTail = useTail && tail.isNotBlank()
     val result = QqNameColor.build(
         nickname = nickname,
@@ -68,7 +68,6 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 两个部分的开关：颜色 / 尾巴互不影响。
         Card(modifier = Modifier.fillMaxWidth()) {
             SwitchPreference(
                 title = tr("给昵称上色"),
@@ -84,7 +83,6 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
 
-        // 输入框放最上面：输入法弹起时它们是唯一必须一直看得见的两个控件。
         SmallTitle(text = tr("内容"))
         TextField(
             value = nickname,
@@ -115,7 +113,6 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
 
-        // 颜色放下面：预览条 + 四个滑块最占地方，不占输入框的位置。
         if (useColor) {
             SmallTitle(text = tr("颜色"))
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -165,8 +162,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        // 开了颜色时，昵称留空也能复制：这时复制的就是「颜色标记」本身，
-        // 粘到群昵称的最前面就能给自己现在的昵称上色（不用把昵称再打一遍）。
+
         val canCopy = nickname.isNotBlank() || useColor
         TextButton(
             text = when {
@@ -209,7 +205,6 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
     }
 }
 
-/** 当前到底生成的是哪几种东西 —— 结果卡里显示它。 */
 private fun modeLabel(useColor: Boolean, hasTail: Boolean): String = when {
     useColor && hasTail -> tr("改颜色 + 加尾巴")
     useColor -> tr("只改颜色")

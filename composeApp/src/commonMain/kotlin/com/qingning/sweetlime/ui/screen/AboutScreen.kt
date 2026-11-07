@@ -204,7 +204,6 @@ private fun AboutContent(
 
     var heroHeightDp by remember { mutableStateOf(220.dp) }
 
-    // 顶部三块各自在窗口里的底边，用来把滚动距离切成三段。
     var heroAreaY by remember { mutableFloatStateOf(0f) }
     var iconY by remember { mutableFloatStateOf(0f) }
     var nameY by remember { mutableFloatStateOf(0f) }
@@ -264,7 +263,7 @@ private fun AboutContent(
                         }
                     },
             ) {
-                // 下面这层是流光色，上面再盖一层半透明原图，不然瓣会被抹平。
+
                 if (blurEnable) {
                     Image(
                         painter = rememberLimeLogo(),
@@ -355,7 +354,7 @@ private fun AboutContent(
                         .height(heroHeightDp + HERO_TOP_PADDING + topBarHeight + HERO_BOTTOM_PADDING)
                         .onSizeChanged { onHeroHeightChanged(it.height) }
                         .onGloballyPositioned { coords ->
-                            // 这块占位的底边，就是第一张卡片的顶边。
+
                             heroAreaY = coords.positionInWindow().y + coords.size.height
                         },
                 )
@@ -432,7 +431,7 @@ private fun FrostedCard(
 ) {
     val colorScheme = MiuixTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    // 倾斜包在玻璃外面，按下时整块（连玻璃）一起沉。
+
     val source = remember { MutableInteractionSource() }
     Box(
         modifier = Modifier

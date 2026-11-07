@@ -1,20 +1,12 @@
 
 package com.qingning.sweetlime.ui.effect
 
-/**
- * HyperOS 大版本探测：决定「流光背景」用哪一代观感。
- *
- * - HyperOS 2 → OS2 观感（配色固定，四个光点自己绕圈漂移）
- * - HyperOS 3 及以上 / 非小米设备 / 读不到版本 → OS3 观感（配色随时间在三组色板间流动）
- */
 object HyperOsStyle {
-    /** 跟随系统：按 HyperOS 大版本自动选。 */
+
     const val AUTO: Int = 0
 
-    /** 强制 OS2 观感。 */
     const val OS2: Int = 1
 
-    /** 强制 OS3 观感。 */
     const val OS3: Int = 2
 
     private val XIAOMI_BRANDS = setOf("xiaomi", "redmi", "poco")
@@ -36,7 +28,6 @@ object HyperOsStyle {
         return maker in XIAOMI_BRANDS || brand in XIAOMI_BRANDS
     }
 
-    /** HyperOS 主版本号，例如 "OS2.0.5.0" → 2；非小米设备或读不到属性时返回 null。 */
     fun hyperOsMajorVersion(): Int? {
         if (!isXiaomiDevice()) return null
         val raw = systemProperty("ro.mi.os.version.name")
@@ -46,11 +37,6 @@ object HyperOsStyle {
             .find(raw)?.groupValues?.getOrNull(1)?.toIntOrNull()
     }
 
-    /**
-     * 把设置里的偏好值解析成「实际用不用 OS3 观感」。
-     *
-     * 手动选了 OS2 / OS3 就无视系统版本；[AUTO] 时 HyperOS 2 走 OS2，其余全走 OS3。
-     */
     fun resolveIsOs3(style: Int): Boolean = when (style) {
         OS2 -> false
         OS3 -> true

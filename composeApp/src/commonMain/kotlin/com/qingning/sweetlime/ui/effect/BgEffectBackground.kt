@@ -1,5 +1,4 @@
 
-
 package com.qingning.sweetlime.ui.effect
 
 import androidx.compose.animation.core.Animatable
@@ -21,21 +20,6 @@ import kotlinx.coroutines.isActive
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/**
- * 「流光背景」：先铺一层主题底色，再用一段 AGSL 着色器（Miuix 的 RuntimeShader）画满整屏 ——
- * 四个彩色光点在 Perlin 噪声上缓慢漂移，配色每隔几秒在几组色板之间用软弹簧插值过去，
- * 就是 HyperOS 系统里那种「流光」观感。
- *
- * 需要 Android 13+（`RuntimeShader`）；机型不支持时自动退化成纯底色，不会崩也不会画错。
- *
- * @param enabled 是否画流光。注意：**关掉时这一层仍然会画主题底色**（它就是这个界面的背景层），
- *   所以外面那层 Scaffold 应该保持透明，否则流光是看不见的。
- * @param isOs3 true = OS3 观感（配色随时间在三组色板间流动，光点动得慢）；
- *   false = OS2 观感（配色固定，四个光点自己绕圈漂移）。
- * @param isDarkTheme 深色/浅色取哪套色板；null（默认）= 按当前主题背景亮度自动判断。
- * @param animate 是否随时间流动。关掉就是一帧静止的流光（省电，也不会每帧重绘）。
- * @param alpha 整层不透明度，默认 1。
- */
 @Composable
 fun BgEffectBackground(
     enabled: Boolean,
@@ -59,15 +43,6 @@ fun BgEffectBackground(
         val preset = remember(isDark, isOs3) { BgEffectConfig.get(isDark, isOs3) }
         val colorStage = remember { Animatable(0f) }
 
-        // 配色不是硬切：每隔 preset.colorInterpPeriod * 500ms 把 stage 加一，
-        // 再用一个很软的弹簧插过去，观感就是「颜色慢慢流过去」。
-        //
-        // 注意这里**故意不把 preset 放进 key**（周期用 rememberUpdatedState 读最新的）：
-        // preset 是挂在 isDark 上的，切深色模式、或者从后台回来时主题亮度抖一下，
-        // 它都会变成一个新对象。以前那样写会让这个效果整个重启 —— targetStage 被重置回
-        // 1，而 colorStage 早就涨到几十了，于是它「倒着」一路弹回 1，颜色在 0.2s 内
-        // 乱扫一遍再落回正常，看起来就是流光突然闪了一下别的配色（概率小、但确实会撞上）。
-        // 现在阶段只增不减：重启也从当前值接着往上走，主题怎么切都不影响。
         val periodState = rememberUpdatedState(preset.colorInterpPeriod)
         LaunchedEffect(animate, drawEffect) {
             if (!animate || !drawEffect) return@LaunchedEffect
@@ -83,14 +58,12 @@ fun BgEffectBackground(
         }
 
         Canvas(modifier = bgModifier.fillMaxSize()) {
-            // 底色：不管开不开流光，这层都要铺满，它就是界面的背景。
+
             drawRect(surface)
-            // 整层完全透明时（例如「关于页」上滑把流光淡到 0）就别再跑着色器了 ——
-            // 画了也看不见，纯粹白烧一遍全屏像素。
+
             val layerAlpha = alpha()
             if (drawEffect && layerAlpha > 0f) {
-                // 光点按「屏幕高度的 78%」那块区域来分布，剩下的留给顶部大标题区，
-                // 免得光斑糊在标题上。
+
                 val drawHeight = size.height * 0.78f
                 val stage = colorStage.value
                 val base = stage.toInt()
@@ -108,18 +81,13 @@ fun BgEffectBackground(
                 val end = getColors(base + 1)
                 painter.updateResolution(size.width, size.height)
                 painter.updatePresetIfNeeded(drawHeight, size.height, size.width, isDark)
-                // 配色插值在 painter 内部的预分配缓冲里做，避免每帧新建 FloatArray。
+
                 painter.updateColors(start, end, fraction)
                 painter.updateAnimTime(animTime())
                 drawRect(painter.brush, alpha = layerAlpha)
             }
         }
-        // 把这一帧的「流光画刷 + 底色」交给下面的内容：二级页 / 设置页拿它给自己
-        // 再刷一层一模一样的流光，页面就变成「实的」了。详见 FlowingLayer.kt。
-        //
-        // 这里必须 remember：否则本组件每重组一次都会造一个新的 FlowingLayer，
-        // CompositionLocal 的值随之变化 —— 所有读 LocalFlowingLayer 的页面
-        // （每个二级页的 flowingPageLayer()）就跟着整棵重组一次，白给的掉帧。
+
         val flowingLayer = remember(drawEffect, painter, surface) {
             if (drawEffect) FlowingLayer(painter.brush, surface, animTime) else null
         }

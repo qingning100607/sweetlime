@@ -5,14 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * 三语词表的自检。
- *
- * 重点不是「译文好不好」，而是三条底线：
- * 1. 简体是源语言，必须原样返回；
- * 2. 查不到的 key 必须回落成原文（不能变成空白、更不能抛异常）；
- * 3. 模板串的参数要按顺序填回去，且译文里的 `{}` 数量要和原文一致。
- */
 class StringsTest {
 
     @Test
@@ -65,7 +57,7 @@ class StringsTest {
         for ((key, value) in TW) {
             assertTrue(value.isNotBlank(), "繁体译文为空：$key")
         }
-        // 两张表的 key 应该完全一致，缺一个就说明漏加了。
+
         assertEquals(EN.keys, TW.keys)
     }
 
@@ -94,7 +86,7 @@ class StringsTest {
     fun languageCodeRoundTrip() {
         assertEquals(AppLanguage.TW, AppLanguage.fromCode("tw"))
         assertEquals(AppLanguage.EN, AppLanguage.fromCode("en"))
-        // 存坏了也不能崩，回落简体。
+
         assertEquals(AppLanguage.ZH, AppLanguage.fromCode("ja"))
         assertEquals(AppLanguage.ZH, AppLanguage.fromCode(null))
     }

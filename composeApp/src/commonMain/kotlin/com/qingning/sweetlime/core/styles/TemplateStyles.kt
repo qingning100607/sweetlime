@@ -5,22 +5,9 @@ import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.forEachCodePoint
 
-/**
- * 「装饰模板」样式：在原文前、以及每个字符之间 / 文字之后插入固定图案。
- *
- * 渲染规则 = prefix + c1 + between + c2 + ... + cn + suffix
- * 数据全部由 qiwangming.com 各工具页（特效 / 花样 / 翅膀 / 花藤）的模板反推得到。
- * 新建模板只需要在下面的列表里加一行。
- */
 internal class TemplateStyle(
     override val id: String,
-    /**
-     * 标题的**简体原文**（词表 key），不是已经翻译好的文案。
-     *
-     * 翻译必须推迟到读取时做（理由同 [com.qingning.sweetlime.core.transform]）：
-     * 这些样式会被 [com.qingning.sweetlime.core.TransformRegistry.all] 提前构造好，
-     * 若在构造函数里就把 `tr()` 的结果存下来，标题会定死成构造那一刻的语言。
-     */
+
     private val titleKey: String,
     override val group: StyleGroup,
     private val prefix: String,
@@ -32,7 +19,7 @@ internal class TemplateStyle(
     override fun transform(input: String): String = buildString(input.length * 3) {
         append(prefix)
         var first = true
-        // 按码点走：between 插在**码点之间**，不能落进代理对中间。
+
         input.forEachCodePoint { ch ->
             if (!first) append(between)
             append(ch)
@@ -42,7 +29,6 @@ internal class TemplateStyle(
     }
 }
 
-/** 特效符号（对齐「特效网名」32 种）。 */
 internal val symbolStyles: List<TextTransform>
     get() = listOf(
     TemplateStyle("tx_1", "删除线", StyleGroup.SYMBOL, "", "̶", "̶"),
@@ -79,10 +65,8 @@ internal val symbolStyles: List<TextTransform>
     TemplateStyle("tx_32", "冒烟文3", StyleGroup.SYMBOL, "", "ۣۣۣۣۣۣۣ", "ۣۣۣۣۣۣۣ"),
 )
 
-/** 花样网名（对齐「花样网名」72 种）。 */
 internal val huayangStyles: List<TextTransform>
     get() = listOf(
-    TemplateStyle("hy_1", "ネф̶ イω ᥬᥬ", StyleGroup.HUAYANG, "ネф̶ イω ᥬᥬ", "", ""),
     TemplateStyle("hy_2", "ᨏ҉ᨏ ོ", StyleGroup.HUAYANG, "ᨏ҉", "", "ᨏ ོ"),
     TemplateStyle("hy_3", "ꦿ໊ོﻬ°", StyleGroup.HUAYANG, "", "", "ꦿ໊ོﻬ°"),
     TemplateStyle("hy_4", "ღ້໌࿐", StyleGroup.HUAYANG, "ღ", "", "້໌࿐"),
@@ -92,6 +76,7 @@ internal val huayangStyles: List<TextTransform>
     TemplateStyle("hy_8", "᭄ꫛꪝ、", StyleGroup.HUAYANG, "᭄ꫛꪝ、", "", ""),
     TemplateStyle("hy_9", "ღ້໌ᮩꦿ᭄࿐", StyleGroup.HUAYANG, "ღ", "້໌ᮩ", "ꦿ᭄࿐"),
     TemplateStyle("hy_10", "ৡᮨོꦿ࿐", StyleGroup.HUAYANG, "ৡ", "ᮨ", "ོꦿ࿐"),
+    TemplateStyle("hy_1", "ネф̶ イω ᥬᥬ", StyleGroup.HUAYANG, "ネф̶ イω ᥬᥬ", "", ""),
     TemplateStyle("hy_11", "ঞ᭄ꦿ༊", StyleGroup.HUAYANG, "ঞ᭄", "", "ꦿ༊"),
     TemplateStyle("hy_12", "এ⁵²º᭄", StyleGroup.HUAYANG, "", "", "এ⁵²º᭄"),
     TemplateStyle("hy_13", "༄྄ེིོུཉི࿔࿆࿐ོ", StyleGroup.HUAYANG, "༄྄ེིོུ", "", "ཉི࿔࿆࿐ོ"),
@@ -153,7 +138,6 @@ internal val huayangStyles: List<TextTransform>
     TemplateStyle("hy_72", ".💤", StyleGroup.HUAYANG, "", "", ".💤"),
 )
 
-/** 翅膀装饰（对齐「翅膀网名」36 种）。 */
 internal val wingStyles: List<TextTransform>
     get() = listOf(
     TemplateStyle("cb_1", "꧁꧂", StyleGroup.WING, "꧁", "", "꧂"),
@@ -193,7 +177,6 @@ internal val wingStyles: List<TextTransform>
     TemplateStyle("cb_36", "☜☞", StyleGroup.WING, "☜", "", "☞"),
 )
 
-/** 花藤字（对齐「花藤字」3 种）。 */
 internal val vineStyles: List<TextTransform>
     get() = listOf(
     TemplateStyle("ht_1", "花藤字1", StyleGroup.VINE, "ζั͡", "ั͡", "ั͡✾ ั"),

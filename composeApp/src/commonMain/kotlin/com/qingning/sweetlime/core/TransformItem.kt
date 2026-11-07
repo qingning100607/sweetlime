@@ -1,13 +1,12 @@
 package com.qingning.sweetlime.core
 
-/** 一次转换的结果，界面与收藏都以它为最小单位。 */
 data class TransformItem(
     val styleId: String,
     val styleTitle: String,
     val input: String,
     val output: String,
 ) {
-    /** 收藏用的稳定键：样式 + 原文。 */
+
     val key: String get() = styleId + SEPARATOR + input
 
     companion object {

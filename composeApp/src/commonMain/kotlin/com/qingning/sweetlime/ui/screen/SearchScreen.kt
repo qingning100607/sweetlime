@@ -33,17 +33,6 @@ import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.ui.components.TiltPressTextField
 
-/**
- * 全局搜索（二级页）。
- *
- * **这一个框里的字，就是要转换的原文。** 它同时干两件事：
- * - 当**关键词**：去匹配样式名 / 分类名 / 英文 id、符号分类 / 符号本身、单字汉字；
- * - 当**原文**：样式结果的预览直接用它；点进详情页后，「原文」那一栏也还是它。
- *
- * 所以搜完不用回主页再敲一遍 —— 搜到的就是「这句话套上各种样式长什么样」。
- * 结果按「汉字信息 → 样式 → 符号」三类分段展示，每一段下面才是具体条目。
- * 搜索是纯内存的（[SearchEngine]），每敲一个字就重算，不做防抖也不会卡。
- */
 @Composable
 fun SearchScreen(
     onBack: () -> Unit,
@@ -56,7 +45,7 @@ fun SearchScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val q = query.trim()
-    // 关键词与原文是同一份内容 —— 这就是「搜什么，转什么」。
+
     val hits = remember(q) { SearchEngine.search(q, q) }
 
     GlassTopBarScaffold(title = tr("搜索"), onBack = onBack, modifier = modifier) { topPadding ->
@@ -103,7 +92,6 @@ fun SearchScreen(
                 SmallTitle(text = trf("「{}」找到 {} 条", q, hits.size))
             }
 
-            // 按类型分段渲染：每换一类，先插一个小标题，再插一张卡片装这一段的条目。
             var index = 0
             while (index < hits.size) {
                 val label = hits[index].sectionLabel()
@@ -123,7 +111,7 @@ fun SearchScreen(
                     ) {
                         for (i in sectionStart until sectionEnd) {
                             val hit = hits[i]
-                            // 先取出样式（只有样式条目才有），避免在 lambda 里对 hit 做智能转换。
+
                             val style = hit as? SearchHit.Style
                             SearchRow(
                                 hit = hit,
@@ -146,7 +134,6 @@ fun SearchScreen(
     }
 }
 
-/** 一类的标题（用于把结果分段）。 */
 private fun SearchHit.sectionLabel(): String = when (this) {
     is SearchHit.Hanzi -> tr("汉字")
     is SearchHit.Style -> tr("样式")
@@ -251,8 +238,7 @@ private fun HintCard(text: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            // 顶部要留出空隙：搜索框（尤其是带 Tilt 的输入框）和这张小字卡片
-            // 原本是贴在一起的，看着像同一块。
+
             .padding(horizontal = 12.dp)
             .padding(top = 10.dp),
     ) {

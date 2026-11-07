@@ -7,12 +7,6 @@ import top.yukonga.miuix.kmp.blur.asBrush
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * 流光背景绘制器。
- *
- * @param isOs3 true 使用 OS3 着色器（颜色随时间在三组配色间插值），
- *              false 使用 OS2 着色器（配色固定，四个光点随时间做圆周漂移）。
- */
 class BgEffectPainter(
     private val isOs3: Boolean = true,
 ) {
@@ -63,8 +57,6 @@ class BgEffectPainter(
         animTime = time
         runtimeShader.setFloatUniform("uAnimTime", animTime)
 
-        // OS2 的流动来自光点位移（配色固定），需逐帧推送新的光点位置；
-        // OS3 的流动由着色器内部按 uAnimTime 自行完成。
         if (!isOs3) {
             val preset = BgEffectConfig.get(isDarkCached ?: false, isOs3 = false)
             val offset = preset.pointOffset
@@ -84,10 +76,8 @@ class BgEffectPainter(
         runtimeShader.setFloatUniform("uColors", colors)
     }
 
-    /** 配色插值的预分配缓冲：每帧插一次，不新建数组。 */
     private val colorBuffer = FloatArray(16)
 
-    
     fun updateColors(start: FloatArray, end: FloatArray, fraction: Float) {
         for (i in 0 until 16) {
             colorBuffer[i] = start[i] + (end[i] - start[i]) * fraction

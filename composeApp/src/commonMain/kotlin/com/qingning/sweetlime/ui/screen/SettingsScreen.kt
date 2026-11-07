@@ -10,6 +10,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.ui.effect.flowingPageBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -43,8 +44,6 @@ import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.data.ThemeMode
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
-import com.qingning.sweetlime.ui.UpdateDownloadState
-import com.qingning.sweetlime.ui.updateRowText
 import com.qingning.sweetlime.core.i18n.AppLanguage
 import com.qingning.sweetlime.core.i18n.AppLocale
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -83,18 +82,6 @@ import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.ui.components.TiltPressCard
 
-/**
- * 设置页（二级页，由顶栏右上角入口进入）。
- *
- * 排版顺序（自上而下）：
- * 1. 外观；
- * 2. 语言；
- * 3. 兼容性提示；
- * 4. 更新与协议；
- * 5. 关于。
- *
- * 顶栏也铺了一层全分辨率玻璃，往上滚动内容时会从它下面滑过去。
- */
 @Composable
 fun SettingsScreen(
     settings: SweetLimeSettings,
@@ -103,28 +90,26 @@ fun SettingsScreen(
     onOpenUrl: (String) -> Unit,
     onOpenPrivacy: () -> Unit,
     onOpenLicenses: () -> Unit,
-    /** 打开独立的「关于」页（仓库 / 作者 / 交流群 / 致谢）。 */
+
     onOpenAbout: () -> Unit = {},
-    /** 上一次检查更新的结果；由 App 持有，和主页横幅共用。 */
+
     updateResult: UpdateChecker.Result? = null,
-    /** 正在检查更新。 */
+
     checkingUpdate: Boolean = false,
-    /** 「下载 → 唤起安装器」的进度；和主页横幅共用同一份。 */
-    updateDownload: UpdateDownloadState = UpdateDownloadState.Idle,
-    /** 点「检查更新」：重新去更新源查一次。 */
+
     onCheckUpdate: () -> Unit = {},
-    /** 点「检查更新」/ 主页横幅的统一入口：查 → 下载 → 安装。 */
-    onUpdateAction: () -> Unit = {},
+
+    onOpenDownload: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showThemePopup by remember { mutableStateOf(false) }
     var showFlowStylePopup by remember { mutableStateOf(false) }
     var showLanguagePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
-    // 弹二级菜单时响一下（miuix 的 BasicComponent 自己不带这个反馈）。
+
     val clickHaptic = rememberClickHaptic()
     val density = LocalDensity.current
-    // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect，滚动时逐帧真高斯。
+
     val hazeState = remember { HazeState() }
     val hazeTint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
@@ -134,7 +119,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
-        // 采样层单独一层、不参与滚动：和详情页/工具页同一套结构（解决下拉露灰条）。
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -146,16 +131,12 @@ fun SettingsScreen(
                     .fillMaxSize()
                     .overScrollVertical()
                     .hyperScrollHaptic(),
-                // 内容层既是要展示的东西，也当顶部实时模糊的采样源。
-                // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
-                // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
-                
-            contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+
+            contentPadding = PaddingValues(bottom = 24.dp),
         ) {
             item {
                 Column {
 
-            // 空出顶栏高度，内容从玻璃下面开始；滚动时它从玻璃下面穿过去。
             Spacer(modifier = Modifier.height(topBarHeight))
 
             SmallTitle(text = tr("外观"))
@@ -244,22 +225,21 @@ fun SettingsScreen(
                     onCheckedChange = { settings.floatingBottomBar = it },
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                 )
-                // 震动反馈：控件点击震动 + 列表顶到边震动，全软件总开关。
+
                 SwitchPreference(
                     title = tr("震动反馈"),
                     checked = settings.hapticFeedback,
                     onCheckedChange = { settings.hapticFeedback = it },
                     startAction = { RowStartIcon(MiuixIcons.Tune) },
                 )
-                // 流光背景：整屏一层着色器动效。默认关，且需 Android 13+，
-                // 机型不支持时 BgEffectBackground 会自动退化成纯底色。
+
                 SwitchPreference(
                     title = tr("流光背景"),
                     checked = settings.flowingBackground,
                     onCheckedChange = { settings.flowingBackground = it },
                     startAction = { RowStartIcon(MiuixIcons.Layers) },
                 )
-                // 流光风格：跟随系统 / OS2 / OS3。开关关着的时候不显示（没有流光就无所谓风格）。
+
                 if (settings.flowingBackground) {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         BasicComponent(
@@ -331,8 +311,6 @@ fun SettingsScreen(
                 }
             }
 
-            // 语言：中文 / 英文 / 繁体。词表见 core/i18n/Strings.kt，
-            // 切换后靠 Compose 重组即时生效，不用重启 Activity。
             SmallTitle(text = tr("语言"))
             Card(
                 modifier = Modifier
@@ -349,8 +327,7 @@ fun SettingsScreen(
                         startAction = { RowStartIcon(rememberLanguageIcon()) },
                         endActions = {
                             Text(
-                                // 具体语言一律用它自己的写法，不跟着翻译走；
-                                // 「跟随系统」才翻译。
+
                                 text = languageRowLabel(settings.language),
                                 style = MiuixTheme.textStyles.body2,
                                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
@@ -369,7 +346,7 @@ fun SettingsScreen(
                         onDismissRequest = { showLanguagePopup = false },
                     ) {
                         ListPopupColumn {
-                            // 第一项是「跟随系统」，后面才是具体语言。
+
                             val options: List<Pair<String, String>> = buildList {
                                 add(AppLanguage.AUTO_CODE to tr("跟随系统"))
                                 AppLanguage.entries.forEach { add(it.code to it.label) }
@@ -378,8 +355,7 @@ fun SettingsScreen(
                                 DropdownImpl(
                                     text = label,
                                     optionSize = options.size,
-                                    // 比的是「选中的那一项」，不是生效后的语言：
-                                    // 选了跟随系统时，生效语言会和某一项同名。
+
                                     isSelected = settings.language == code,
                                     index = index,
                                     onSelectedIndexChange = {
@@ -395,7 +371,6 @@ fun SettingsScreen(
                 }
             }
 
-            // 兼容性提示：单独一张圆角卡，和上面的「外观」分开，也不再跟在关于信息后面。
             SmallTitle(text = tr("兼容性"))
             TiltPressCard(
                 modifier = Modifier
@@ -412,32 +387,26 @@ fun SettingsScreen(
                 )
             }
 
-            // 更新与协议：检查更新 + 隐私政策 + 开源许可。
             SmallTitle(text = tr("更新与协议"))
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
             ) {
-                // 第一次点：去查有没有新版；查到之后：在应用内下载并唤起系统安装器。
-                // 文案由 updateRowText 统一推出来，下载过程中不会突然跳回"点击检查"。
-                val updateSummary = updateRowText(
-                    result = updateResult,
-                    checking = checkingUpdate,
-                    state = updateDownload,
-                    currentVersion = APP_VERSION,
-                )
-                val hasNewer = updateResult is UpdateChecker.Result.Newer
+
+                val newer = updateResult as? UpdateChecker.Result.Newer
+                val updateSummary = when {
+                    checkingUpdate -> tr("正在检查…")
+                    newer != null -> trf("发现新版本 {}，点击前往 GitHub 下载", newer.latest)
+                    updateResult is UpdateChecker.Result.UpToDate -> trf("已是最新版本 {}", APP_VERSION)
+                    else -> tr("点击检查是否有新版本")
+                }
                 BasicComponent(
                     title = tr("检查更新"),
                     summary = updateSummary,
                     startAction = { RowStartIcon(MiuixIcons.Update) },
                     onClick = {
-                        if (hasNewer) {
-                            onUpdateAction()
-                        } else {
-                            onCheckUpdate()
-                        }
+                        if (newer != null) onOpenDownload() else onCheckUpdate()
                     },
                     endActions = {
                         Icon(
@@ -459,11 +428,9 @@ fun SettingsScreen(
                         )
                     },
                 )
-                // 「开源许可」挪到「关于」页里去了（那边和仓库、作者放在一起），
-                // 设置页不再重复一份。
+
             }
 
-            // 设置页这里只留一行入口，不再把四条信息摊在列表里。
             SmallTitle(text = tr("关于"))
             TiltPressCard(
                 modifier = Modifier
@@ -484,13 +451,12 @@ fun SettingsScreen(
                 )
             }
             Spacer(modifier = Modifier.height(48.dp))
-        
+
                 }
             }
         }
         }
 
-        // 顶部玻璃栏：内容上滑时从它下面穿过去并被模糊。
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -501,8 +467,7 @@ fun SettingsScreen(
                 modifier = Modifier
                     .matchParentSize()
                     .bleedHorizontal()
-                    // 顶栏的实时模糊（Haze）：下面内容滚过去时逐帧被糊，
-                // progressive 让「贴着最顶上最糊、往下渐隐到 0」。
+
                 .hazeEffect(
                     state = hazeState,
                     style = HazeStyle(
@@ -517,10 +482,7 @@ fun SettingsScreen(
                     )
                 },
             )
-            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
-            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
-            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
-            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -548,7 +510,6 @@ fun SettingsScreen(
     }
 }
 
-/** 设置项左侧的小图标：和这一行的标题文字**同一个颜色**（onBackground），免得深浅不一。 */
 @Composable
 private fun RowStartIcon(icon: ImageVector) {
     Icon(
@@ -558,7 +519,6 @@ private fun RowStartIcon(icon: ImageVector) {
     )
 }
 
-/** 同上，但图标是矢量资源（painter）而不是 Miuix 自带的 ImageVector。 */
 @Composable
 private fun RowStartIcon(icon: Painter) {
     Icon(
@@ -574,11 +534,9 @@ private fun themeLabel(mode: Int): String = when (mode) {
     else -> tr("跟随系统")
 }
 
-/** 「语言」这一行右侧的值：跟随系统 / 简体中文 / English / 繁體中文。 */
 private fun languageRowLabel(code: String): String =
     if (code == AppLanguage.AUTO_CODE) tr("跟随系统") else AppLanguage.fromCode(code).label
 
-/** 「流光风格」当前值：跟随系统 / OS 2 / OS 3。 */
 private fun flowStyleLabel(style: Int): String = when (style) {
     HyperOsStyle.OS2 -> "OS 2"
     HyperOsStyle.OS3 -> "OS 3"

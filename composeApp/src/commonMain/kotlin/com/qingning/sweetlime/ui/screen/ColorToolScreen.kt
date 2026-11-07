@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.core.i18n.tr
+import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,9 +30,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.ColorConverter
+import com.qingning.sweetlime.core.tools.CssGradient
 import com.qingning.sweetlime.core.tools.ColorInfo
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -43,6 +47,9 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
     var input by rememberSaveable { mutableStateOf("") }
+    var gradStart by rememberSaveable { mutableStateOf("#FF5722") }
+    var gradEnd by rememberSaveable { mutableStateOf("#2196F3") }
+    var gradAngle by rememberSaveable { mutableStateOf(90) }
     val info = remember(input) { ColorConverter.parse(input) }
     val lines = if (info == null) emptyList() else colorLines(info)
     val report = lines.joinToString("\n") { "${it.first}：${it.second}" }
@@ -50,15 +57,13 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            
-            
+
             .overScrollVertical(),
         contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
     ) {
         item {
             Column {
 
-        // 顶栏是浮层：这点高度必须写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
@@ -119,6 +124,71 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
                 }
             }
         }
+        SmallTitle(text = tr("渐变色"))
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextField(
+                        value = gradStart,
+                        onValueChange = { gradStart = it },
+                        label = tr("起始颜色"),
+                        useLabelAsPlaceholder = true,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextField(
+                        value = gradEnd,
+                        onValueChange = { gradEnd = it },
+                        label = tr("结束颜色"),
+                        useLabelAsPlaceholder = true,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(0, 45, 90, 135, 180).forEach { angle ->
+                        TextButton(
+                            text = trf("{}°", angle),
+                            onClick = { gradAngle = angle },
+                            colors = if (gradAngle == angle) {
+                                ButtonDefaults.textButtonColorsPrimary()
+                            } else {
+                                ButtonDefaults.textButtonColors()
+                            },
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                val startColor = ColorConverter.parse(gradStart)?.let {
+                    Color(it.red, it.green, it.blue, it.alpha)
+                } ?: MiuixTheme.colorScheme.surfaceContainerHigh
+                val endColor = ColorConverter.parse(gradEnd)?.let {
+                    Color(it.red, it.green, it.blue, it.alpha)
+                } ?: MiuixTheme.colorScheme.surfaceContainerHigh
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Brush.linearGradient(listOf(startColor, endColor))),
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                val css = CssGradient.linear(gradAngle, gradStart, gradEnd)
+                Text(
+                    text = css,
+                    style = MiuixTheme.textStyles.body2,
+                    color = MiuixTheme.colorScheme.onSurfaceContainer,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    text = tr("复制 CSS"),
+                    onClick = { onCopyText(css, tr("渐变色")) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(12.dp))
         TextButton(
             text = tr("复制全部"),
@@ -128,7 +198,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
         Spacer(modifier = Modifier.height(48.dp))
-    
+
             }
         }
     }
@@ -166,7 +236,3 @@ private fun ColorLine(label: String, value: String) {
         )
     }
 }
-
-/* -------------------------------------------------------------------------- */
-/* 4. 汇率计算                                                                  */
-/* -------------------------------------------------------------------------- */

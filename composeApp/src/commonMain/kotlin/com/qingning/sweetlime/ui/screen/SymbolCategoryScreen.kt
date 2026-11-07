@@ -67,22 +67,14 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 
-/** 分类页 chip 的统一宽度缓存（进程级）：键含分类标题 + 密度 + 字体缩放 + 字号。 */
 private val chipWidthCache = HashMap<String, androidx.compose.ui.unit.Dp>()
-/** 量 chip 宽度时最多抽多少个符号（均匀取样）。 */
+
 private const val CHIP_WIDTH_SAMPLE = 24
-/**
- * 顶栏高度的上一次测量值（进程级）。
- *
- * 顶栏是浮层，内容要靠它的高度让位：第一次进来只能 0 → 量完 → 再排版一次，
- * 这一下会让整个可见网格重排（掉帧的来源之一）。把量到的值记住，
- * 之后进任何分类页第一帧就是对的，不再有「先错位再回正」的二次排版。
- */
+
 private var cachedTopBarHeight = androidx.compose.ui.unit.Dp.Unspecified
 
-/** chip 的圆角形状：顶层常量，别在每个 chip 里重新 new。 */
 private val SymbolChipShape = RoundedCornerShape(10.dp)
-/** 特殊符号的某个分类（三级页）：符号网格，点击即复制。 */
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SymbolCategoryScreen(
@@ -93,17 +85,7 @@ fun SymbolCategoryScreen(
 ) {
     val safeIndex = index.coerceIn(0, SYMBOL_CATEGORIES.lastIndex)
     val category = SYMBOL_CATEGORIES[safeIndex]
-    // 关键：符号**按行切片**，每一行是一个独立的 lazy item。
-    // 以前是「一个 item 里 forEach 全部符号」——等于一进页面就把整页几百个 chip 全组合出来，
-    // 内容多的分类（特殊符号那种）必掉帧，LazyColumn 也白用了。
-    // 展示逻辑沿用原来的：chip 宽度跟着符号走（不拉伸到 1/6），
-    // 但同一分类里所有 chip 用**同一个宽度**（取该分类最宽的那个符号 + 固定内边距），
-    // 所以翅膀、表情这些宽字符也不会把后面的格子顶歪，列是齐的。
-    //
-    // 性能：量宽度只用**抽样**（最多 24 个、均匀取样）+ 结果按分类全局缓存。
-    // 之前是把整个分类（最多 208 个符号）全量 measure 一遍，一进页面就是两百多次文字测量，
-    // 全压在第一帧上 —— 这正是这个页面「进得慢、掉帧」的主因。
-    // 缓存是进程级的：退出再进同一分类，一次都不用量。
+
     val measurer = rememberTextMeasurer()
     val chipTextStyle = MiuixTheme.textStyles.body1
     val glyphDensity = LocalDensity.current
@@ -125,7 +107,7 @@ fun SymbolCategoryScreen(
             (widest + 32.dp).coerceIn(48.dp, 112.dp)
         }
     }
-    // 一行能排几个就排几个（最多 8 个），排不够就换行——跟原来一样是流式铺满。
+
     val availableWidth = screenWidth - 24.dp
     val perRow = (((availableWidth + 8.dp) / (chipWidth + 8.dp)).toInt()).coerceIn(2, 8)
     val symbolRows = remember(category.symbols, perRow) { category.symbols.chunked(perRow) }
@@ -141,8 +123,7 @@ fun SymbolCategoryScreen(
         )
     }
     val density = LocalDensity.current
-    // 加载动画：和分类页/详情页同一套 —— 圆环盖住「第一帧的真实开销」，
-    // 同时也是进页面的缓冲，最短停 LOADING_MIN_MS。
+
     var minElapsed by remember(safeIndex) { mutableStateOf(false) }
     LaunchedEffect(safeIndex) {
         delay(LOADING_MIN_MS)
@@ -154,9 +135,7 @@ fun SymbolCategoryScreen(
             .fillMaxSize()
             .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
-        // 内容层 = Haze 的采样源。整页铺满，滚动时符号从顶栏**下面穿过去**并被实时糊掉
-        // —— 这就是主页顶栏那种模糊。以前这里只铺了一层底，没东西可糊，所以看着没模糊。
-            // 采样层单独一层、不参与滚动（与详情页/设置页同一套）。
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -181,7 +160,7 @@ fun SymbolCategoryScreen(
                     }
                 }
             } else {
-            // 出场动画：和分类页同一套（300ms 淡入 + 轻微上移）。
+
             var contentVisible by remember(safeIndex) { mutableStateOf(false) }
             LaunchedEffect(safeIndex) {
                 withFrameNanos { }
@@ -201,27 +180,28 @@ fun SymbolCategoryScreen(
                 }
                 .overScrollVertical()
                 .hyperScrollHaptic(),
-            contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+            contentPadding = PaddingValues(bottom = 24.dp),
         ) {
             item {
                 Column {
-                    // 顶栏高度写在「滚动内容」里（不是外层占位），内容才能滚到顶栏下面去。
+
                     Spacer(modifier = Modifier.height(topBarHeight))
                     Text(
                         text = trf("共 {} 个符号 · 点击即复制", category.symbols.size),
                         style = MiuixTheme.textStyles.footnote1,
                         color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 2.dp),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
-            // 每一行单独成一个 item：LazyColumn 只组合可见的那几行。
+
             items(count = symbolRows.size, key = { it }, contentType = { "symbol_row" }) { rowIndex ->
-                // 每行按算好的列数排，每个 chip 都同一个宽度，所以列是对齐的。
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
                         .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -239,7 +219,6 @@ fun SymbolCategoryScreen(
             }
             }
 
-        // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。符号从它下面穿过去时逐帧被糊掉。
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -268,10 +247,7 @@ fun SymbolCategoryScreen(
                         )
                     },
             )
-            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
-            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
-            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
-            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -283,7 +259,7 @@ fun SymbolCategoryScreen(
                     ),
             )
             SmallTopAppBar(
-                // 顶栏自己不铺底：二级页的背景已经是「实流光」了，铺底会把顶部那块盖成纯白。
+
                 color = Color.Transparent,
                 title = category.title,
                 navigationIcon = {
@@ -304,7 +280,7 @@ fun SymbolCategoryScreen(
 private fun SymbolChip(symbol: String, onClick: () -> Unit, width: androidx.compose.ui.unit.Dp) {
     Box(
         modifier = Modifier
-            // 宽度由分类里最宽的符号决定 + 固定高度：不同宽度的符号也排在一条竖线上。
+
             .width(width)
             .height(44.dp)
             .clip(SymbolChipShape)
@@ -317,16 +293,14 @@ private fun SymbolChip(symbol: String, onClick: () -> Unit, width: androidx.comp
             style = MiuixTheme.textStyles.body1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             maxLines = 1,
-            // 固定宽度 + 不换行：省掉一次「换行位置」的排版计算。
+
             softWrap = false,
         )
     }
 }
-/** 加载动画的最短时长（毫秒）。 */
+
 private const val LOADING_MIN_MS = 400L
 
-/** 出场动画时长（毫秒）。 */
 private const val CONTENT_FADE_MS = 300
 
-/** 出场时内容从下方约 12dp 滑到位的像素偏移。 */
 private const val CONTENT_SLIDE_PX = 36f

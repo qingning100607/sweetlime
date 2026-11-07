@@ -44,7 +44,10 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.TOOL_ENTRIES
+import com.qingning.sweetlime.core.mapping.KAOMOJI_RANGE
+import com.qingning.sweetlime.core.mapping.KAOMOJI_START
 import com.qingning.sweetlime.core.mapping.SYMBOL_CATEGORIES
+import com.qingning.sweetlime.core.mapping.SYMBOL_MORE_RANGE
 import com.qingning.sweetlime.core.tools.DaxieConverter
 import com.qingning.sweetlime.core.tools.hanziToChai
 import com.qingning.sweetlime.core.tools.hanziToPinyin
@@ -68,13 +71,12 @@ import com.qingning.sweetlime.core.codePointLength
 internal fun toolTitle(id: String): String =
     TOOL_ENTRIES.firstOrNull { it.id == id }?.title ?: tr("工具")
 
-/** 单个工具的二级页：目录见 [TOOL_ENTRIES]，每个 id 对应一个页面。 */
 @Composable
 fun ToolScreen(
     toolId: String,
     onBack: () -> Unit,
     onCopyText: (String, String) -> Unit,
-    /** 需要给用户一句提示（比如「已保存到下载」）时调它，由外层弹 Snackbar。 */
+
     onMessage: (String) -> Unit = {},
     onOpenSymbolCategory: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -88,22 +90,30 @@ fun ToolScreen(
             .fillMaxSize()
             .flowingPageBackground(MiuixTheme.colorScheme.surface),
     ) {
-        // 内容层：Haze 的采样源。顶部先空出顶栏高度，滚动时内容从顶栏下面穿过去并被实时糊。
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
-                // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
+
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer(),
         ) {
-            // 顶栏是浮层：把它的高度往下传，各工具页自己把那点高度写进「滚动内容」里。
-            // （写在外层占位里的话，内容永远滑不到顶栏下面 → 顶栏就没有东西可糊。）
+
             CompositionLocalProvider(LocalTopBarInset provides topBarHeight) {
             Column(modifier = Modifier.fillMaxSize()) {
                 when (toolId) {
-            "symbol" -> SymbolCategoryList(onOpen = onOpenSymbolCategory)
-            "kaomoji" -> KaomojiToolScreen(onCopyText = onCopyText)
+            "symbol" -> SymbolCategoryList(
+                sections = SYMBOL_SECTIONS + SYMBOL_MORE_SECTIONS,
+                onOpen = onOpenSymbolCategory,
+            )
+            "kaomoji" -> SymbolCategoryList(
+                sections = KAOMOJI_SECTIONS,
+                onOpen = onOpenSymbolCategory,
+            )
+            "symbol_more" -> SymbolCategoryList(
+                sections = SYMBOL_MORE_SECTIONS,
+                onOpen = onOpenSymbolCategory,
+            )
             "pinyin" -> ConverterToolScreen(
                 placeholder = tr("输入汉字，例如：你好世界"),
                 hint = tr("查不到的字（标点、英文、数字）会原样保留。多音字取字典里靠前的那一个读音。"),
@@ -121,25 +131,21 @@ fun ToolScreen(
             "daxie" -> DaxieToolScreen(onCopyText = onCopyText)
             "base64" -> Base64ToolScreen(onCopyText = onCopyText)
             "md5" -> Md5ToolScreen(onCopyText = onCopyText)
-            "sniff" -> SnifferToolScreen(onCopyText = onCopyText, onMessage = onMessage)
             "qqname" -> QqNameToolScreen(onCopyText = onCopyText)
             "level" -> LevelToolScreen()
             "url" -> UrlToolScreen(onCopyText = onCopyText)
             "radix" -> RadixToolScreen(onCopyText = onCopyText)
             "color" -> ColorToolScreen(onCopyText = onCopyText)
+            "dup" -> DupCheckToolScreen(onCopyText = onCopyText)
             "currency" -> CurrencyToolScreen(onCopyText = onCopyText)
             "bmi" -> BmiToolScreen(onCopyText = onCopyText)
-            "editor" -> CodeEditorToolScreen(onCopyText = onCopyText)
-            // 兜底：toolId 正常只可能来自路由，走到这里说明 id 对不上
-            // （路由恢复异常、版本调整过工具表等）。没有这个分支就是一整页空白，
-            // 连顶栏都没有，用户只能靠系统返回键退出。
+
             else -> UnknownTool()
                 }
             }
             }
         }
 
-        // 顶栏浮层：实时模糊（Haze）+ 标题 + 返回。内容从它下面穿过去时会被逐帧糊掉。
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -164,10 +170,7 @@ fun ToolScreen(
                         )
                     },
             )
-            // 兜底：过渡动画（预测性返回预览）时页面是被平移的，Haze 采到的是平移**之前**的画面，
-            // 顶栏最上面那一条（状态栏那条）于是会把旧位置的文字透出来。
-            // 这里在玻璃之上再蒙一层自上而下由浓变无的主题底色，把那一条压实；
-            // 静止时下面本来就有模糊 + 主题色，观感几乎不变。
+
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -179,7 +182,7 @@ fun ToolScreen(
                     ),
             )
             SmallTopAppBar(
-                // 顶栏自己不铺底：背景已经由外层铺好了。
+
                 color = Color.Transparent,
                 title = toolTitle(toolId),
                 navigationIcon = {
@@ -196,11 +199,8 @@ fun ToolScreen(
     }
 }
 
-/* -------------------------------------------------------------------------- */
-/* 特殊符号：分类目录（竖向）                                                    */
-/* -------------------------------------------------------------------------- */
 @Composable
-private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
+private fun SymbolCategoryList(sections: List<Pair<String, List<Int>>>, onOpen: (Int) -> Unit) {
     val categories = SYMBOL_CATEGORIES
     val topInset = LocalTopBarInset.current
     androidx.compose.foundation.lazy.LazyColumn(
@@ -208,19 +208,19 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
             .fillMaxSize()
             .overScrollVertical()
             .hyperScrollHaptic(),
-        // 顶栏是浮层：顶栏高度写进 contentPadding，条目才能滑到顶栏下面被实时糊。
+
         contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
         item(key = "symbol_hint") {
             Text(
-                text = trf("共 {} 个分类 · 点一个查看全部符号", categories.size),
+                text = trf("共 {} 个分类 · 点一个查看全部符号", sections.sumOf { it.second.size }),
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
-        // 44 个符号分类按用途分六组，一组一张卡（组内索引仍是原来的下标，onOpen 不受影响）。
-        SYMBOL_SECTIONS.forEachIndexed { sectionIndex, (title, range) ->
+
+        sections.forEachIndexed { sectionIndex, (title, indices) ->
             item(key = "symbol_section_$sectionIndex") {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -232,7 +232,7 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
                             .padding(horizontal = 12.dp)
                             .padding(bottom = 12.dp),
                     ) {
-                        range.forEach { index ->
+                        indices.forEach { index ->
                             val category = categories.getOrNull(index) ?: return@forEach
                             BasicComponent(
                                 title = category.title,
@@ -254,9 +254,6 @@ private fun SymbolCategoryList(onOpen: (Int) -> Unit) {
     }
 }
 
-/* -------------------------------------------------------------------------- */
-/* 通用「输入 → 输出」页                                                        */
-/* -------------------------------------------------------------------------- */
 @Composable
 internal fun ConverterToolScreen(
     placeholder: String,
@@ -265,10 +262,7 @@ internal fun ConverterToolScreen(
     convert: (String) -> String,
     onCopyText: (String, String) -> Unit,
     extra: (@Composable () -> Unit)? = null,
-    /**
-     * 和 [extra] 一样是插在输入框下面的额外内容，区别是它能拿到**当前输入**。
-     * MD5 那种「同一个输入要给出好几种形式」的页面用它。
-     */
+
     extraForInput: (@Composable (String) -> Unit)? = null,
 ) {
     var input by rememberSaveable { mutableStateOf("") }
@@ -278,12 +272,11 @@ internal fun ConverterToolScreen(
             .fillMaxSize()
             .overScrollVertical()
             .hyperScrollHaptic(),
-        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+        contentPadding = PaddingValues(bottom = 24.dp),
     ) {
         item {
             Column {
 
-        // 顶栏是浮层：这点高度写在「滚动内容」里，内容才能滑到顶栏下面被实时糊。
         TopBarInsetSpacer()
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
@@ -292,11 +285,15 @@ internal fun ConverterToolScreen(
             label = placeholder,
             useLabelAsPlaceholder = true,
             maxLines = 4,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
         )
         if (extra != null) {
             Spacer(modifier = Modifier.height(8.dp))
-            extra()
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                extra()
+            }
         }
         if (extraForInput != null && input.isNotBlank()) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -307,28 +304,26 @@ internal fun ConverterToolScreen(
             text = hint,
             style = MiuixTheme.textStyles.footnote1,
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = 18.dp),
         )
         SmallTitle(text = resultLabel)
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = result.ifEmpty { tr("（输入后这里会实时显示结果）") },
-                style = MiuixTheme.textStyles.title2,
-                color = if (result.isEmpty()) {
-                    MiuixTheme.colorScheme.onSurfaceContainerVariant
-                } else {
-                    MiuixTheme.colorScheme.onSurfaceContainer
-                },
-                modifier = Modifier.padding(16.dp),
-            )
+        if (result.isNotEmpty()) {
+            Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                Text(
+                    text = result,
+                    style = MiuixTheme.textStyles.title2,
+                    color = MiuixTheme.colorScheme.onSurfaceContainer,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
         }
-        // 结果也标一个字数额（按码点算，一个 emoji 算一个字）。
+
         if (result.isNotEmpty()) {
             Text(
                 text = trf("{} 字", result.codePointLength()),
                 style = MiuixTheme.textStyles.footnote1,
                 color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp),
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
@@ -336,19 +331,16 @@ internal fun ConverterToolScreen(
             text = tr("复制结果"),
             onClick = { if (result.isNotEmpty()) onCopyText(result, resultLabel) },
             enabled = result.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
         Spacer(modifier = Modifier.height(48.dp))
-    
+
             }
         }
     }
 }
 
-/* -------------------------------------------------------------------------- */
-/* 数字大写                                                                    */
-/* -------------------------------------------------------------------------- */
 @Composable
 private fun DaxieToolScreen(onCopyText: (String, String) -> Unit) {
     var toUpperMode by rememberSaveable { mutableStateOf(true) }
@@ -382,7 +374,6 @@ private fun DaxieToolScreen(onCopyText: (String, String) -> Unit) {
     )
 }
 
-/** 二选一的选择行（竖排，选中项右侧打勾）。 */
 @Composable
 internal fun ModeRow(
     title: String,
@@ -404,16 +395,6 @@ internal fun ModeRow(
     )
 }
 
-/* -------------------------------------------------------------------------- */
-/* 未知工具：兜底页                                                              */
-/* -------------------------------------------------------------------------- */
-
-/**
- * toolId 认不出来时的兜底。
- *
- * 正常路径不会走到这里；但路由恢复异常、或者以后工具表调整过，
- * 没有兜底就是一整页空白 —— 用户会以为应用卡死了。
- */
 @Composable
 private fun UnknownTool() {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -431,12 +412,21 @@ private fun UnknownTool() {
     }
 }
 
-/** 特殊符号分类的分组：标题 + 分类下标区间。 */
-private val SYMBOL_SECTIONS: List<Pair<String, IntRange>> = listOf(
-    "常用与热门" to 0..1,
-    "图案与表情" to 2..8,
-    "生活与娱乐" to 9..17,
-    "数学与单位" to 18..23,
-    "星座与形状" to 24..30,
-    "文字与符号" to 31..43,
+private val SYMBOL_SECTIONS: List<Pair<String, List<Int>>> = listOf(
+    "常用与热门" to (0..1).toList(),
+    "图案与表情" to (2..8).toList(),
+    "生活与娱乐" to (9..17).toList(),
+    "数学与单位" to (18..23).toList(),
+    "星座与形状" to (24..30).toList(),
+    "文字与符号" to (31..43).toList(),
+)
+
+private val SYMBOL_MORE_SECTIONS: List<Pair<String, List<Int>>> = listOf(
+    "新增分类" to SYMBOL_MORE_RANGE.toList(),
+)
+
+private val KAOMOJI_SECTIONS: List<Pair<String, List<Int>>> = listOf(
+    "情绪" to (KAOMOJI_START..KAOMOJI_START + 4).toList(),
+    "动作与动物" to (KAOMOJI_START + 5..KAOMOJI_START + 10).toList(),
+    "其他" to (KAOMOJI_START + 11..KAOMOJI_RANGE.last).toList(),
 )

@@ -26,7 +26,7 @@ class Base64CodecTest {
 
     @Test
     fun acceptsUrlSafeAlphabet() {
-        // -和 _是 url-safe变体，应当与 +/得到同一个结果。
+
         assertEquals(Base64Codec.decode("+/+/"), Base64Codec.decode("-_-_"))
     }
 }

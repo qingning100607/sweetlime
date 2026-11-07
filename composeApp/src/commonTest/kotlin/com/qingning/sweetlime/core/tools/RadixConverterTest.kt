@@ -24,7 +24,7 @@ class RadixConverterTest {
 
     @Test
     fun doesNotOverflowLong() {
-        // 2^96 - 1：超出 Long 的十进制数也得算对。
+
         assertEquals(
             "ffffffffffffffffffffffff",
             RadixConverter.convert("79228162514264337593543950335", 10, 16),

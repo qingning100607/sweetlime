@@ -20,11 +20,6 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/**
- * 纯文字说明页（隐私政策 / 开源许可共用）。
- *
- * 每段一个加粗小标题 + 一段正文；顶栏用二级页统一的柔光玻璃外壳。
- */
 @Composable
 fun DocScreen(
     title: String,

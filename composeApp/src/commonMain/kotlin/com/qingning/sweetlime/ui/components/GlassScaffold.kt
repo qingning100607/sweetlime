@@ -37,12 +37,6 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-/**
- * 二级页的通用外壳：**带柔光玻璃的顶栏 + 从玻璃下面穿过去的内容**。
- *
- * 内容层自己负责滚动（[content] 拿到的是「顶栏挡住了多高」，可以先垫一个等高的 Spacer，
- * 也可以直接当 contentPadding 用），顶栏永远是浮在上面的那一层。
- */
 @Composable
 fun GlassTopBarScaffold(
     title: String,
@@ -53,7 +47,7 @@ fun GlassTopBarScaffold(
 ) {
     var topBarHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
-    // 顶栏的「实时模糊」走 Haze：内容层是 source、顶栏是 effect（逐帧真高斯 + 渐变）。
+
     val hazeState = remember { HazeState() }
     val tint = MiuixTheme.colorScheme.surface
     val flowing = LocalFlowingBackground.current
@@ -63,13 +57,11 @@ fun GlassTopBarScaffold(
             .fillMaxSize()
             .flowingPageBackground(tint),
     ) {
-        // 内容层：Haze 的采样源。顶栏是它的**兄弟**节点（不是子节点），
-        // 所以列表从顶栏下面滑过去时会被实时糊掉。
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                // 采样源里先铺一层「和整页一样的底」：不然采样区是透明的，
-                // 那片区域就等于没糊 —— 之前设置页顶栏看着比主页“淡”就是这个原因。
+
                 .hazeSource(state = hazeState)
                 .pageBackdropLayer(),
         ) {

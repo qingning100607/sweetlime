@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 
 class StyleAuditTest {
 
-    /** 取样：大小写、数字、中文、空格、括号各来一点。 */
     private val sample = "Ab1中你好(x)"
 
     @Test
@@ -34,19 +33,11 @@ class StyleAuditTest {
         assertEquals(emptySet(), dup.keys, "样式 id 撞车：$dup")
     }
 
-    /**
-     * 已知重复：**现在是空的**。
-     *
-     * 曾经有 4 对（花样网名 3 对 + 翅膀装饰 1 对）同组同名、输出也一模一样，
-     * 用户会看到两条完全一样的条目；已按用户要求删掉重复的那一条。
-     *
-     * 这里钉的是「不允许重复」：以后往表里加样式时，一旦撞出同组重名，测试立刻红。
-     */
     private val knownDuplicates = emptySet<Pair<StyleGroup, String>>()
 
     @Test
     fun styleTitlesAreUniqueWithinGroup() {
-        // 同一分组里两个样式同名，用户就分不清点哪个（跨分组同名可以接受）
+
         val dup = TransformRegistry.all
             .groupingBy { it.group to it.title }
             .eachCount()

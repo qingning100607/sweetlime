@@ -7,15 +7,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * 颜文字库的自检。
- *
- * 这批数据的错法很隐蔽：重复一条、少一个括号、混进一个替换字符，
- * 肉眼扫一遍根本看不出来，所以硬性质全部交给测试守住。
- *
- * 注意：**括号数量不对称是合法的** —— 颜文字本来就有一堆故意只开不闭的写法
- * （`（￣▽￣"）`、`∪.∪ )...zzz`、`(¦3[▓▓]`、`Σ(°Д°;` 都是经典款），所以这里不查括号。
- */
 class KaomojiDataTest {
 
     private fun hasHanzi(text: String): Boolean = text.any { it in '\u4e00'..'\u9fff' }

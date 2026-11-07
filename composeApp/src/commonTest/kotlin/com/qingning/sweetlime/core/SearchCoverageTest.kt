@@ -5,16 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * 搜索覆盖回归：**新加的东西必须能被搜到**。
- *
- * 起因：用户问「新添的功能有没有添加到搜索那里可以搜到」。
- * 光靠肉眼翻一遍顶不住以后 —— 加功能时忘了登记（不管是忘了进 TOOL_ENTRIES，
- * 还是样式没进注册表），这里会直接红。
- *
- * 判据：用**它自己的名字**搜，结果里必须出现它自己。
- * 搜索用的名字是界面语言下的（测试里就是简体中文），所以这里不需要额外翻译。
- */
 class SearchCoverageTest {
 
     @Test

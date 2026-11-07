@@ -18,17 +18,15 @@ class TabPagerState(
     private val coroutineScope: CoroutineScope,
     private val animatePageChanges: Boolean = true,
 ) {
-    /** 底栏要读的选中页：点击立刻变，不等动画。 */
+
     var selectedPage by mutableIntStateOf(pagerState.currentPage)
         private set
 
-    /** 是否正在执行「点底栏 -> 带动画滚过去」这段导航。 */
     var isNavigating by mutableStateOf(false)
         private set
 
     private var navJob: Job? = null
 
-    
     fun animateToPage(targetIndex: Int) {
         if (targetIndex == selectedPage) return
 
@@ -46,7 +44,7 @@ class TabPagerState(
                     pagerState.scrollToPage(targetIndex)
                 }
             } finally {
-                // 只有「还是这一段导航」时才收尾，避免被后来的点击覆盖。
+
                 if (navJob == myJob) {
                     isNavigating = false
                     if (pagerState.currentPage != targetIndex) {
@@ -57,7 +55,6 @@ class TabPagerState(
         }
     }
 
-    /** 手滑翻页后回写选中态；导航进行中不回写（否则会把图标拽回去）。 */
     fun syncPage() {
         if (!isNavigating && selectedPage != pagerState.currentPage) {
             selectedPage = pagerState.currentPage

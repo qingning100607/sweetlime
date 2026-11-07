@@ -37,29 +37,18 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 import kotlin.math.abs
 import kotlin.math.round
 
-/** 气泡走到外沿对应的倾角：超过 15° 就贴边不动了。 */
 private const val LEVEL_MAX_DEG = 15f
 
-/** 判「已水平」的容差：±0.5°。 */
 private const val LEVEL_TOLERANCE = 0.5f
 
-/**
- * 水平仪：把手机平放，气泡居中就是水平。
- *
- * 读数来自加速度计（见 [rememberTilt]），这里只负责显示与校准：
- * 校准就是把「当前位置」记成 0°（比如桌子本身有点斜，先归零再看别处）。
- */
 @Composable
 internal fun LevelToolScreen() {
     val reading = rememberTilt()
 
-    // 校准偏移：点「校准归零」时把当前读数记进来，之后显示的都是「相对校准点」的角度。
     var zeroX by rememberSaveable { mutableStateOf(0f) }
     var zeroY by rememberSaveable { mutableStateOf(0f) }
     var calibrated by rememberSaveable { mutableStateOf(false) }
 
-    // 传感器是异步的：拿到第一帧读数前先显示「正在读取」，
-    // 2.5 秒还没有就说明这台设备没有加速度计，给个明确说法。
     var gotReading by remember { mutableStateOf(false) }
     var timedOut by remember { mutableStateOf(false) }
     LaunchedEffect(reading) {
@@ -159,7 +148,6 @@ internal fun LevelToolScreen() {
     }
 }
 
-/** 一格读数：上面是名字、下面是大号角度（或状态文案）。 */
 @Composable
 private fun ReadOut(label: String, degrees: Float? = null, text: String? = null, highlight: Boolean = false) {
     Column {
@@ -177,17 +165,12 @@ private fun ReadOut(label: String, degrees: Float? = null, text: String? = null,
     }
 }
 
-/** 把角度格式化成「12.3°」。commonMain 里没有 String.format，所以自己算。 */
 private fun formatDegrees(degrees: Float): String {
     val scaled = round(abs(degrees) * 10f).toInt()
     val sign = if (degrees < 0f) "-" else ""
     return "$sign${scaled / 10}.${scaled % 10}°"
 }
 
-/**
- * 气泡盘：外圈是 ±15° 的量程，中间小圈是「已水平」的判定范围，
- * 气泡跟着两个方向的倾角走，越倾斜越靠外。
- */
 @Composable
 private fun BubbleLevel(x: Float, y: Float, level: Boolean) {
     val plateColor = MiuixTheme.colorScheme.surfaceContainerHigh
@@ -205,16 +188,13 @@ private fun BubbleLevel(x: Float, y: Float, level: Boolean) {
         val r = size.minDimension / 2f
         val center = Offset(size.width / 2f, size.height / 2f)
 
-        // 盘面 + 外圈
         drawCircle(color = plateColor, radius = r, center = center)
         drawCircle(color = lineColor, radius = r, center = center, style = Stroke(width = 1.dp.toPx()))
 
-        // 十字参考线
         val arm = r * 0.88f
         drawLine(lineColor, Offset(center.x - arm, center.y), Offset(center.x + arm, center.y), 1.dp.toPx())
         drawLine(lineColor, Offset(center.x, center.y - arm), Offset(center.x, center.y + arm), 1.dp.toPx())
 
-        // 「已水平」的目标圈
         val bubbleR = r * 0.18f
         drawCircle(
             color = targetColor,
@@ -223,20 +203,19 @@ private fun BubbleLevel(x: Float, y: Float, level: Boolean) {
             style = Stroke(width = 2.dp.toPx()),
         )
 
-        // 气泡：倾角按量程映射成位移，超出就贴边（coerceIn 顺手做了这个限制）
         val travel = r - bubbleR - 6.dp.toPx()
         val bx = (x / LEVEL_MAX_DEG).coerceIn(-1f, 1f) * travel
         val by = (y / LEVEL_MAX_DEG).coerceIn(-1f, 1f) * travel
         val bubbleCenter = Offset(center.x + bx, center.y + by)
         drawCircle(color = bubbleColor, radius = bubbleR, center = bubbleCenter)
-        // 一点高光，让气泡看着是「球」而不是色块
+
         drawCircle(
             color = glossColor,
             radius = bubbleR * 0.32f,
             center = Offset(bubbleCenter.x - bubbleR * 0.28f, bubbleCenter.y - bubbleR * 0.28f),
         )
         if (level) {
-            // 水平时给气泡描一圈，屏幕上一眼能看出来
+
             drawCircle(
                 color = bubbleColor.copy(alpha = 0.35f),
                 radius = bubbleR * 1.35f,

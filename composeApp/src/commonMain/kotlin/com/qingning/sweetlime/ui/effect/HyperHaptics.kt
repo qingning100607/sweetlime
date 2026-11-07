@@ -27,7 +27,6 @@ import top.yukonga.miuix.kmp.utils.OverScrollState
 
 object HyperHaptics {
 
-    /** HyperLight 里写死的那个 miuix 常量（ac0.java 的 268435469）。 */
     const val MIUI_HAPTIC_SLIDE: Int = 0x1000000D
 
     private val compatClass: Class<*>? by lazy {
@@ -43,26 +42,17 @@ object HyperHaptics {
         }
     }
 
-    /** 设置里「震动反馈」的总开关；App 每次组合时把设置同步进来，改了立刻生效。 */
     var enabled: Boolean = true
 
-    /** 设备上有没有 miuix 的 HapticCompat（HyperOS 一般都有）。 */
     fun hasMiuixCompat(): Boolean = compatMethod != null
 
-    /**
-     * HyperLight 的入口判断：马达是否支持 CLICK(1) / QUICK_FALL(7) / TICK(2)。
-     *
-     * 走 `VibratorManager`（API 31+，本项目 minSdk 33）：旧的
-     * `Context.VIBRATOR_SERVICE` 静态字段在 31 起已经标废弃，用它会多一条编译告警。
-     */
     fun hasRichHaptics(context: Context): Boolean = runCatching {
-        // minSdk 33 ⇒ VibratorManager 一定在，直接走它，不去碰已废弃的 VIBRATOR_SERVICE 字段。
+
         val vibrator = (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)
             ?.defaultVibrator
         vibrator?.areAllPrimitivesSupported(1, 7, 2) == true
     }.getOrDefault(false)
 
-    /** HyperOS 原生那支：miuix.view.HapticCompat.performHapticFeedbackAsync(view, type)。 */
     fun performMiuixAsync(view: View, type: Int = MIUI_HAPTIC_SLIDE): Boolean {
         if (!enabled) return false
         val m = compatMethod ?: return false
@@ -72,20 +62,18 @@ object HyperHaptics {
         }.getOrDefault(false)
     }
 
-    
     fun performClick(view: View?): Boolean {
         if (!enabled) return false
         if (view == null) return false
         return runCatching { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
             .getOrDefault(false)
     }
-    /** HyperLight 的映射表：只放行下面这些值，未知值不震。 */
+
     private fun constantFor(raw: Int): Int = when (raw) {
         16, 6, 13, 23, 3, 0, 17, 27, 26, 9, 22, 21, 1 -> raw
         else -> -1
     }
 
-    /** 直接给一个 Android 震动常量。 */
     internal fun performRaw(view: View?, raw: Int): Boolean {
         if (!enabled) return false
         if (view == null) return false
@@ -95,18 +83,16 @@ object HyperHaptics {
     }
 }
 
-/** 对应 HyperLight 的 fw.java：Compose 震动类型 -> Android 常量，原值转发。 */
 private class HyperHapticFeedback(private val view: View) : HapticFeedback {
 
     override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) {
-        // ① HyperOS 原生优先（ac0.java 那一支）
+
         if (HyperHaptics.performMiuixAsync(view)) return
-        // ② 再按映射表转发（fw.java 那一支）
+
         HyperHaptics.performRaw(view, rawConstantOf(hapticFeedbackType))
     }
 }
 
-/** Compose 的震动类型 -> Android 常量；没列到的按 CONTEXT_CLICK 处理。 */
 private fun rawConstantOf(type: HapticFeedbackType): Int = when (type) {
     HapticFeedbackType.VirtualKey -> HapticFeedbackConstants.VIRTUAL_KEY
     HapticFeedbackType.LongPress -> HapticFeedbackConstants.LONG_PRESS
@@ -114,17 +100,12 @@ private fun rawConstantOf(type: HapticFeedbackType): Int = when (type) {
     else -> HapticFeedbackConstants.CONTEXT_CLICK
 }
 
-/** 全局控件震动：把上面这套塞进 `LocalHapticFeedback`，所有 Compose 控件自动生效。 */
 @Composable
 fun rememberHyperHapticFeedback(): HapticFeedback {
     val view = LocalView.current
     return remember(view) { HyperHapticFeedback(view) }
 }
 
-/**
- * 对应 rb0.java 的边界震动：miuix 的 [OverScrollState] 进入回弹（顶到边还在拉）时响一次。
- * 只在支持高精度原语的设备上启用，避免弱马达一路嗡嗡响。
- */
 @Composable
 fun EdgeScrollHaptic(
     overScrollState: OverScrollState,
@@ -141,7 +122,7 @@ fun EdgeScrollHaptic(
             val now = System.currentTimeMillis()
             if (now - last < 120L) return@collect
             last = now
-            // 能走 HyperOS 原生就走原生，否则用 HyperLight 同款的 CLOCK_TICK(4)
+
             if (!HyperHaptics.performMiuixAsync(view)) {
                 view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
             }
@@ -149,17 +130,6 @@ fun EdgeScrollHaptic(
     }
 }
 
-/**
- * 滑动时的震动反馈 —— 对应 HyperLight 的 `haptic_feedback_for_slide`：
- * 它是在「滑动进度」回调里调 miuix 的 `performHapticFeedbackAsync(view, 0x1000000D)`
- * （反编译里的 `ac0.java`），这里换成挂在滚动容器上：
- *
- * - 拖动过程中每滑过 [step] 轻震一次（对应 HyperLight 的 slide 震动）；
- * - 顶到边界还在拉时额外响一次 CLOCK_TICK（对应 `rb0.java`）。
- *
- * 注意：这个 modifier 只是**读取**滚动增量，永远返回「未消费」，
- * 所以挂在哪一段都不会影响 miuix 那套回弹。
- */
 @Composable
 fun Modifier.hyperScrollHaptic(
     step: Dp = 40.dp,
@@ -179,10 +149,9 @@ private class SlideHapticConnection(
     private val stepPx: Float,
 ) : NestedScrollConnection {
 
-    // 两个方向各自「是否已经报过这一下」（= HyperLight rb0.java 里的 pz0 状态位）
     private var armedTop = false
     private var armedBottom = false
-    // 是否已经贴在边界上（贴着不重复震，离开才重置）
+
     private var atEdge = false
     private var lastTickAt = 0L
 
@@ -191,7 +160,7 @@ private class SlideHapticConnection(
         val now = SystemClock.uptimeMillis()
         if (now - lastTickAt < 70L) return
         lastTickAt = now
-        // 和 HyperLight 一样：HyperOS 原生马达优先，拿不到再退回 Android 常量
+
         if (!HyperHaptics.performMiuixAsync(view)) {
             view.performHapticFeedback(constant)
         }
@@ -202,8 +171,7 @@ private class SlideHapticConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        // 顶到顶部还继续下拉（available.y > 0）/ 拉到底部还继续上拉（available.y < 0）各震一下；
-        // available == 0f 时不清标志位 —— 贴边慢拉时这个值会抖，清了就会一直震。
+
         if (available.y > 0f) {
             if (!armedTop) {
                 armedTop = true

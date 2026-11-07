@@ -13,11 +13,6 @@ import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.tools.UrlCodec
 import top.yukonga.miuix.kmp.basic.Card
 
-/**
- * URL 编解码（工具箱里 id = `url`）。
- *
- * 布局和 Base64 那个一模一样：上面一个「模式」卡，下面输入 → 实时出结果。
- */
 @Composable
 internal fun UrlToolScreen(onCopyText: (String, String) -> Unit) {
     var encodeMode by rememberSaveable { mutableStateOf(true) }

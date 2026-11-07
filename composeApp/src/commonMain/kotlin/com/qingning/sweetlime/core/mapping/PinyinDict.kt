@@ -1,11 +1,5 @@
 package com.qingning.sweetlime.core.mapping
 
-/**
- * 汉字 → 带声调拼音字典（对齐汉字转拼音页的 pydic，共 20850 条）。
- *
- * 原始数据是一个很长的 "汉字拼音,汉字拼音,..." 字符串，超过 JVM 单个字符串常量的
- * 65535 字节上限，所以按 7000 字一段拆开，用时再拼起来并按需解析。
- */
 private val PINYIN_RAW: String = buildString {
     append(py0())
     append(py1())
@@ -57,7 +51,6 @@ private fun py14(): String = ",霅zhá,鍘zhá,譗zhá,挿zhǎ,揷zhǎ,厏zhǎ,�
 
 private fun py15(): String = "邹zōu,驺zōu,诹zōu,陬zōu,菆zōu,棷zōu,棸zōu,鄒zōu,緅zōu,鄹zōu,鯫zōu,黀zōu,齺zōu,芻zōu,鲰zōu,辶zǒu,赱zǒu,走zǒu,鯐zǒu,搊zǒu,奏zòu,揍zòu,租zū,菹zū,錊zū,伜zú,倅zú,紣zú,綷zú,顇zú,卆zú,足zú,卒zú,哫zú,崒zú,崪zú,族zú,稡zú,箤zú,踤zú,踿zú,镞zú,鏃zú,诅zǔ,阻zǔ,俎zǔ,爼zǔ,祖zǔ,組zǔ,詛zǔ,靻zǔ,鎺zǔ,组zǔ,鉆zuān,劗zuān,躜zuān,鑚zuān,躦zuān,繤zuǎn,缵zuǎn,纂zuǎn,纉zuǎn,籫zuǎn,纘zuǎn,欑zuàn,赚zuàn,賺zuàn,鑽zuàn,钻zuàn,攥zuàn,厜zuī,嗺zuī,樶zuī,蟕zuī,纗zuī,嶉zuǐ,槯zuǐ,嶊zuǐ,噿zuǐ,濢zuǐ,璻zuǐ,嘴zuǐ,睟zuì,枠zuì,栬zuì,絊zuì,酔zuì,晬zuì,最zuì,祽zuì,罪zuì,辠zuì,蕞zuì,醉zuì,嶵zuì,檇zuì,檌zuì,穝zuì,墫zūn,尊zūn,嶟zūn,遵zūn,樽zūn,繜zūn,罇zūn,鶎zūn,鐏zūn,鱒zūn,鷷zūn,鳟zūn,僔zǔn,噂zǔn,撙zǔn,譐zǔn,拵zùn,捘zùn,銌zùn,咗zuo,昨zuó,秨zuó,捽zuó,椊zuó,稓zuó,筰zuó,鈼zuó,阝zuǒ,左zuǒ,佐zuǒ,繓zuǒ,酢zuò,作zuò,坐zuò,阼zuò,岝zuò,岞zuò,怍zuò,侳zuò,祚zuò,胙zuò,唑zuò,座zuò,袏zuò,做zuò,葄zuò,蓙zuò,飵zuò,糳zuò,疮chuāng,牕chuāng,噇chuáng,闖chuǎng,剏chuàng,霜shuāng,欆shuāng,驦shuāng,慡shuǎng,灀shuàng,窓chuāng,瘡chuāng,闯chuǎng,仺chuàng,剙chuàng,雙shuāng,礵shuāng,鸘shuāng,樉shuǎng,谁shuí,鹴shuāng,爽shuǎng,鏯shuǎng,孀shuāng,孇shuāng,騻shuāng,焋zhuàng,幢zhuàng,撞zhuàng,隹zhuī,傱shuǎn"
 
-/** 懒解析成 Map：同字多音时取字典里靠前的那一个（与原站 indexOf 的行为一致）。 */
 internal val PINYIN_MAP: Map<Char, String> by lazy {
     val map = HashMap<Char, String>(32768)
     var start = 0

@@ -2,29 +2,21 @@ package com.qingning.sweetlime.core.tools
 
 import kotlin.math.roundToInt
 
-/**
- * 一个颜色，以及它在各种写法下的表示。
- *
- * 放在最外层（而不是塞进 [ColorConverter] 里面）是为了让 HSL / HSV 的换算直接写在类里 ——
- * 嵌套类访问外部 object 的成员会绕一圈，不如各管各的清楚。
- */
 class ColorInfo(
     val alpha: Int,
     val red: Int,
     val green: Int,
     val blue: Int,
 ) {
-    /** `#RRGGBB`。 */
+
     val hex: String get() = "#${part(red)}${part(green)}${part(blue)}"
 
-    /** 带透明度的 `#AARRGGBB`。 */
     val hexAlpha: String get() = "#${part(alpha)}${part(red)}${part(green)}${part(blue)}"
 
     val rgb: String get() = "rgb($red, $green, $blue)"
 
     val rgba: String get() = "rgba($red, $green, $blue, $alphaPercent%)"
 
-    /** `0xAARRGGBB`，Android / Compose 里最常用的写法。 */
     val argb: String get() = "0x${part(alpha)}${part(red)}${part(green)}${part(blue)}".uppercase()
 
     val hsl: String get() {
@@ -37,10 +29,8 @@ class ColorInfo(
         return "hsv(${h.roundToInt()}, ${(s * 100).roundToInt()}%, ${(v * 100).roundToInt()}%)"
     }
 
-    /** 透明度百分比，0–100。 */
     val alphaPercent: Int get() = (alpha * 100f / 255f).roundToInt()
 
-    /** 给 Compose `Color(...)` 用的一串数字。 */
     val argbLong: Long
         get() = (alpha.toLong() shl 24) or (red.toLong() shl 16) or (green.toLong() shl 8) or blue.toLong()
 
@@ -81,20 +71,10 @@ class ColorInfo(
     }
 }
 
-/**
- * 颜色代码转换。
- *
- * 输入随便给：`#FF5722`、`FF5722`、`0xFF5722`、`#80FF5722`（带透明度）、
- * `rgb(255, 87, 34)`、`rgba(255,87,34,0.5)`、`hsl(14, 100%, 56%)` 都能认。
- * 输出一次性给全：HEX / RGB / RGBA / HSL / HSV / `0xAARRGGBB`。
- *
- * 八位十六进制按 **AARRGGBB** 解析（Android / Compose 的习惯，透明度在前）。
- */
 object ColorConverter {
 
     private const val NO_MATCH = "\u0000"
 
-    /** 解析任意写法的颜色；认不出来返回 null。 */
     fun parse(text: String): ColorInfo? {
         val s = text.trim().lowercase()
         if (s.isEmpty()) return null
@@ -155,7 +135,6 @@ object ColorConverter {
         return ColorInfo(a, r, g, b)
     }
 
-    /** 透明度写法：`0.5`（0–1）或 `50%`（也可写 `50`）。 */
     private fun alphaOf(raw: String): Int? {
         val value = raw.removeSuffix("%").toFloatOrNull() ?: return null
         val scaled = if (raw.endsWith("%") || value > 1f) value * 255f / 100f else value * 255f
