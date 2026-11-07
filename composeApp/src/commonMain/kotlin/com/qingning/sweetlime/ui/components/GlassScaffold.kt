@@ -1,13 +1,9 @@
 package com.qingning.sweetlime.ui.components
 
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.ui.effect.flowingPageBackground
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth

@@ -5,8 +5,6 @@ import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import com.qingning.sweetlime.ui.effect.pageBackdropLayer
 import com.qingning.sweetlime.core.i18n.tr
@@ -21,8 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +41,6 @@ import com.qingning.sweetlime.data.ThemeMode
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.core.i18n.AppLanguage
-import com.qingning.sweetlime.core.i18n.AppLocale
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl

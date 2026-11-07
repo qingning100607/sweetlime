@@ -1,5 +1,4 @@
 package com.qingning.sweetlime.ui.screen
-import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -26,7 +25,6 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Copy

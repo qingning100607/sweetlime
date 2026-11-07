@@ -1,10 +1,7 @@
 package com.qingning.sweetlime.ui.screen
 import com.qingning.sweetlime.ui.effect.bleedHorizontal
-import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.lazy.LazyColumn
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import com.qingning.sweetlime.ui.effect.LocalTopBarInset
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
@@ -24,8 +21,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

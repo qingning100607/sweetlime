@@ -9,21 +9,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import kotlin.math.abs
 
 import android.content.Context
 import android.os.VibratorManager
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import top.yukonga.miuix.kmp.utils.OverScrollState
 
 object HyperHaptics {
 
@@ -104,30 +100,6 @@ private fun rawConstantOf(type: HapticFeedbackType): Int = when (type) {
 fun rememberHyperHapticFeedback(): HapticFeedback {
     val view = LocalView.current
     return remember(view) { HyperHapticFeedback(view) }
-}
-
-@Composable
-fun EdgeScrollHaptic(
-    overScrollState: OverScrollState,
-    enabled: Boolean = true,
-) {
-    val view = LocalView.current
-    val context = LocalContext.current
-    val rich = remember(context) { HyperHaptics.hasRichHaptics(context) }
-    if (!enabled) return
-    LaunchedEffect(overScrollState, rich, view) {
-        var last = 0L
-        snapshotFlow { overScrollState.isOverScrollActive }.collect { active ->
-            if (!active) return@collect
-            val now = System.currentTimeMillis()
-            if (now - last < 120L) return@collect
-            last = now
-
-            if (!HyperHaptics.performMiuixAsync(view)) {
-                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-            }
-        }
-    }
 }
 
 @Composable

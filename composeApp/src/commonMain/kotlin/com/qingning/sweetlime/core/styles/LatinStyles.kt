@@ -5,7 +5,6 @@ import com.qingning.sweetlime.core.TextTransform
 import com.qingning.sweetlime.core.mapping.codePointToString
 import com.qingning.sweetlime.core.mapping.mapEach
 import com.qingning.sweetlime.core.mapping.mathRange
-import com.qingning.sweetlime.core.transform
 
 private val SCRIPT_EXCEPTIONS = mapOf(
     'B' to "\u212C", 'E' to "\u2130", 'F' to "\u2131", 'H' to "\u210B",

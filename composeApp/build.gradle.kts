@@ -84,8 +84,8 @@ android {
         applicationId = "com.qingning.sweetlime"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2983
-        versionName = "2.9.83"
+        versionCode = 2984
+        versionName = "2.9.84"
     }
     // 正式签名（打包用）。密钥文件与口令都从 local.properties 取：
     //   sweetlime.storeFile     密钥路径（相对 composeApp/，默认 sweetlime-release.jks）

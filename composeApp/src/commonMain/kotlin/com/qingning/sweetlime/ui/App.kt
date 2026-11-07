@@ -1,36 +1,23 @@
 package com.qingning.sweetlime.ui
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.ui.platform.LocalHapticFeedback
 
 import com.qingning.sweetlime.ui.effect.rememberHyperHapticFeedback
 
-import com.qingning.sweetlime.core.i18n.AppLanguage
 import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import androidx.compose.runtime.SideEffect
-import kotlinx.coroutines.Job
-import top.yukonga.miuix.kmp.utils.PagerInterceptionMode
-import top.yukonga.miuix.kmp.utils.pagerGestureOverride
 import androidx.compose.foundation.pager.PagerDefaults
 import top.yukonga.miuix.kmp.utils.PagerGestureNestedScrollConnection
 import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
-import top.yukonga.miuix.kmp.utils.springAnimateToPage
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -53,14 +40,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -89,7 +72,6 @@ import com.qingning.sweetlime.data.RecentStore
 import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.ui.components.FloatingBottomBar
 import com.qingning.sweetlime.ui.components.FloatingBottomBarItem
-import com.qingning.sweetlime.ui.components.glassBar
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -98,7 +80,6 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
-import com.qingning.sweetlime.ui.effect.flowingPageLayer
 import com.qingning.sweetlime.ui.effect.glassBarBackdrop
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.components.rememberTabPagerState
@@ -132,9 +113,6 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.BlendColorEntry
 import top.yukonga.miuix.kmp.blur.BlurColors
-import top.yukonga.miuix.kmp.blur.Backdrop
-import top.yukonga.miuix.kmp.blur.drawBackdrop
-import top.yukonga.miuix.kmp.blur.effect
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.textureBlur
@@ -150,7 +128,6 @@ import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
 import top.yukonga.miuix.kmp.nav.core.rememberNavSystemCornerRadius
 import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
 import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
-import top.yukonga.miuix.kmp.nav.transition.NavTransitions
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.LocalOverScrollState
 import top.yukonga.miuix.kmp.utils.MiuixOverscrollFactory

@@ -1,9 +1,6 @@
 package com.qingning.sweetlime.ui.screen
 import com.qingning.sweetlime.ui.effect.bleedHorizontal
-import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -292,7 +289,6 @@ fun GroupScreen(
     }
 }
 
-private val GROUP_LOADING_SIZE = 44.dp
 
 private const val LOADING_MIN_MS = 400L
 

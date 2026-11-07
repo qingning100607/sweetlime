@@ -2,7 +2,6 @@ package com.qingning.sweetlime.core.styles
 
 import com.qingning.sweetlime.core.StyleGroup
 import com.qingning.sweetlime.core.TextTransform
-import com.qingning.sweetlime.core.transform
 import com.qingning.sweetlime.core.forEachCodePoint
 
 private val reverseStyle: TextTransform =

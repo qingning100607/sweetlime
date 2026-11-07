@@ -1,6 +1,5 @@
 package com.qingning.sweetlime.ui.screen
 import com.qingning.sweetlime.ui.effect.bleedHorizontal
-import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,8 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -39,8 +36,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.graphicsLayer
@@ -383,7 +378,6 @@ SmallTitle(text = tr("原文"))
     }
 }
 
-private val DETAIL_LOADING_SIZE = 44.dp
 
 private const val LOADING_MIN_MS = 400L
 

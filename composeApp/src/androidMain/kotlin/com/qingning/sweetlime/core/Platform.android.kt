@@ -12,14 +12,12 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.Settings
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
-import androidx.core.content.FileProvider
 import com.qingning.sweetlime.AppContext
 import com.qingning.sweetlime.R
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +27,6 @@ import java.net.URL
 
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,7 +54,6 @@ import androidx.compose.runtime.setValue
 import kotlin.math.atan2
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import android.content.pm.PackageManager.PackageInfoFlags
 @Composable
 actual fun rememberLimeLogo(): Painter = painterResource(R.drawable.lime)
 @Composable

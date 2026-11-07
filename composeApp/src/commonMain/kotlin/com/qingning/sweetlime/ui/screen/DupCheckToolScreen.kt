@@ -22,7 +22,6 @@ import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.i18n.trf
 import com.qingning.sweetlime.core.tools.ContentDupCheck
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
-import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.SmallTitle

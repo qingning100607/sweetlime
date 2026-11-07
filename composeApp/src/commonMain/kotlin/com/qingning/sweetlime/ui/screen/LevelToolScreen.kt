@@ -3,7 +3,6 @@ package com.qingning.sweetlime.ui.screen
 import com.qingning.sweetlime.core.i18n.tr
 import com.qingning.sweetlime.core.rememberTilt
 import com.qingning.sweetlime.ui.effect.TopBarInsetSpacer
-import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
