@@ -1,6 +1,6 @@
 {
-  "version": "2.9.82",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.82",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.82/SweetLime-release.apk",
-  "notes": "更新逻辑调整\n工具栏新增内容重复率\n颜文字并入符号\n新增五类符号\n花样网名改为网名\n转换条目内飞鸟文并入网名\n颜色转换内添加渐变色\n震动范围调整为只在tab页生效\n删代码编辑器"
+  "version": "2.9.83",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.83",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.83/SweetLime-release.apk",
+  "notes": "补全语言"
 }
