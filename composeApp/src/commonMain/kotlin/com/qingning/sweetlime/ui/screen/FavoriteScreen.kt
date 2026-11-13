@@ -142,7 +142,7 @@ fun FavoriteScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
+                            .padding(horizontal = 16.dp)
                             .padding(bottom = 12.dp),
                     ) {
                         Text(
@@ -178,7 +178,7 @@ fun FavoriteScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp)
+                                .padding(horizontal = 16.dp)
                                 .padding(bottom = 12.dp)
 
                                 .animateContentSize(

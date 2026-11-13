@@ -61,7 +61,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
             .fillMaxSize()
 
             .overScrollVertical(),
-        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+        contentPadding = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
     ) {
         item {
             Column {
@@ -93,7 +93,7 @@ internal fun BmiToolScreen(onCopyText: (String, String) -> Unit) {
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 6.dp),
         )
-        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("计算结果"))
+        SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("计算结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 if (report == null) {

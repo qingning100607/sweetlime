@@ -64,7 +64,7 @@ fun SearchScreen(
                     maxLines = 3,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 16.dp),
                 )
             }
 
@@ -105,7 +105,7 @@ fun SearchScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 16.dp),
                     ) {
                         for (i in sectionStart until sectionEnd) {
                             val hit = hits[i]
@@ -237,7 +237,7 @@ private fun HintCard(text: String) {
         modifier = Modifier
             .fillMaxWidth()
 
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 16.dp)
             .padding(top = 10.dp),
     ) {
         Text(

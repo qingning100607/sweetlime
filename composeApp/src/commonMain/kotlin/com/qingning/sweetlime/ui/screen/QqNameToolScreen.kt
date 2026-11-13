@@ -81,7 +81,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
 
-        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("内容"))
+        SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("内容"))
         TextField(
             value = nickname,
             onValueChange = { nickname = it },
@@ -112,7 +112,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
         }
 
         if (useColor) {
-            SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("颜色"))
+            SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("颜色"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Box(
                     modifier = Modifier
@@ -187,7 +187,7 @@ internal fun QqNameToolScreen(onCopyText: (String, String) -> Unit) {
             )
         }
 
-        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("生成结果"))
+        SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("生成结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = result,

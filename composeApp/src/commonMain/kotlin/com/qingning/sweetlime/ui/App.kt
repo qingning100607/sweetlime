@@ -71,6 +71,9 @@ import com.qingning.sweetlime.data.FavoritesStore
 import com.qingning.sweetlime.data.RecentStore
 import com.qingning.sweetlime.data.SweetLimeSettings
 import com.qingning.sweetlime.ui.components.FloatingBottomBar
+import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
+import top.yukonga.miuix.kmp.glass.GlassNavigationBar
+import top.yukonga.miuix.kmp.glass.GlassNavigationItem
 import com.qingning.sweetlime.ui.components.FloatingBottomBarItem
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
@@ -278,6 +281,7 @@ fun SweetLimeApp() {
                         input = input,
                         onInputChange = { input = it },
                         floatingBottomBar = settings.floatingBottomBar,
+                        floatingBarStyle = settings.floatingBarStyle,
                         onCopy = ::copy,
                         onOpenGroup = { push(Route.Group(it.name)) },
                         onOpenTool = { push(Route.Tool(it)) },
@@ -437,6 +441,7 @@ private fun RootScaffold(
     input: String,
     onInputChange: (String) -> Unit,
     floatingBottomBar: Boolean,
+    floatingBarStyle: Int,
     onCopy: (TransformItem) -> Unit,
     onOpenGroup: (StyleGroup) -> Unit,
     onOpenTool: (String) -> Unit,
@@ -646,6 +651,23 @@ private fun RootScaffold(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
+if (floatingBarStyle == 1) {
+                            GlassNavigationBar(
+                                modifier = Modifier.padding(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 8.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                                ),
+                                items = listOf(
+                                    GlassNavigationItem(MiuixIcons.ConvertFile, tr("转换"), tr("转换")),
+                                    GlassNavigationItem(MiuixIcons.Tune, tr("工具"), tr("工具")),
+                                    GlassNavigationItem(MiuixIcons.Favorites, tr("收藏"), tr("收藏")),
+                                ),
+                                selectedIndex = tabState.selectedPage,
+                                onSelect = { tabState.animateToPage(it) },
+                                backdrop = if (isRuntimeShaderSupported()) backdrop else null,
+                            )
+                        } else {
                     FloatingBottomBar(
                         modifier = Modifier.padding(
                             start = 28.dp,
@@ -663,6 +685,7 @@ private fun RootScaffold(
                         LiquidBarItem(1, tabState.selectedPage, activateTab, MiuixIcons.Tune, tr("工具"))
                         LiquidBarItem(2, tabState.selectedPage, activateTab, MiuixIcons.Favorites, tr("收藏"))
                     }
+                        }
                 }
             } else {
 

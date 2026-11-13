@@ -179,7 +179,7 @@ fun DetailScreen(
             Spacer(modifier = Modifier.height(topBarHeight))
 
 SmallTitle(text = tr("原文"))
-            Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+            Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 TextField(
                     value = text,
                     onValueChange = {
@@ -247,7 +247,7 @@ SmallTitle(text = tr("原文"))
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 16.dp)
                         .clip(effectChunkShape(index, effectChunks.size)),
                     cornerRadius = 0.dp,
                 ) {
@@ -266,7 +266,7 @@ SmallTitle(text = tr("原文"))
             }
         } else {
             item {
-                Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                     Text(
                         text = effectText,
                         style = MiuixTheme.textStyles.title2,
@@ -296,7 +296,7 @@ SmallTitle(text = tr("原文"))
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 TextButton(
@@ -377,7 +377,6 @@ SmallTitle(text = tr("原文"))
         }
     }
 }
-
 
 private const val LOADING_MIN_MS = 400L
 

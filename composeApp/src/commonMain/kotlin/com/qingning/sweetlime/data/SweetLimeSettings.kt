@@ -24,6 +24,7 @@ class SweetLimeSettings(private val store: KeyValueStore) {
 
     private var flowingStyleState by mutableStateOf(store.getInt(KEY_FLOWING_STYLE, HyperOsStyle.AUTO))
     private var hapticState by mutableStateOf(store.getBoolean(KEY_HAPTIC, true))
+    private var floatingBarStyleState by mutableStateOf(store.getInt(KEY_FLOATING_BAR_STYLE, 0))
 
     private var languageState by mutableStateOf(store.getString(KEY_LANGUAGE, "zh"))
 
@@ -69,6 +70,12 @@ class SweetLimeSettings(private val store: KeyValueStore) {
             store.putInt(KEY_FLOWING_STYLE, value)
         }
 
+    var floatingBarStyle: Int
+        get() = floatingBarStyleState
+        set(value) {
+            floatingBarStyleState = value
+            store.putInt(KEY_FLOATING_BAR_STYLE, value)
+        }
     var hapticFeedback: Boolean
         get() = hapticState
         set(value) {
@@ -92,5 +99,6 @@ class SweetLimeSettings(private val store: KeyValueStore) {
         const val KEY_FLOWING_STYLE = "flowing_background_style"
         const val KEY_LANGUAGE = "language"
         const val KEY_HAPTIC = "haptic_feedback"
+        const val KEY_FLOATING_BAR_STYLE = "floating_bar_style"
     }
 }

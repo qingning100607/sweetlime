@@ -1,6 +1,6 @@
 {
-  "version": "2.9.84",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.84",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.84/SweetLime-release.apk",
-  "notes": "清理无用代码"
+  "version": "2.9.86",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.86",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.86/SweetLime-release.apk",
+  "notes": "- 弹窗改回原样式\n- 底栏新增 OS4 样式\n- 卡片边距对齐\n- 上下标补齐\n- 清理源码注释"
 }

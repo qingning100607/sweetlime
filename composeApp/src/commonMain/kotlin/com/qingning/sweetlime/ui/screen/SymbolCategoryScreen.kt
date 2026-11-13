@@ -195,7 +195,7 @@ fun SymbolCategoryScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 16.dp)
                         .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {

@@ -40,7 +40,7 @@ fun DocScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 16.dp),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         sections.forEachIndexed { index, doc ->

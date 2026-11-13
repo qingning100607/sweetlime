@@ -474,6 +474,7 @@ internal val EN: Map<String, String> = mapOf(
     "韩文符号" to "Korean symbols",
     "音乐符号" to "Music symbols",
     "骰子符号" to "Dice symbols",
+    "底栏样式" to "Bar style",
 )
 
 internal val TW: Map<String, String> = mapOf(
@@ -950,6 +951,7 @@ internal val TW: Map<String, String> = mapOf(
     "love符号" to "Love符號",
     "数字符号" to "數字符號",
     "字母符号" to "字母符號",
+    "底栏样式" to "底欄樣式",
 )
 
 private fun table(lang: AppLanguage): Map<String, String>? = when (lang) {

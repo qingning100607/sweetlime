@@ -121,7 +121,7 @@ internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 6.dp),
         )
-        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("换算结果"))
+        SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("换算结果"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val message = when {

@@ -60,7 +60,7 @@ private fun BaseSelector(selected: Int, onSelect: (Int) -> Unit) {
         Card(modifier = Modifier.fillMaxWidth()) {
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items((RadixConverter.MIN_BASE..RadixConverter.MAX_BASE).toList()) { base ->

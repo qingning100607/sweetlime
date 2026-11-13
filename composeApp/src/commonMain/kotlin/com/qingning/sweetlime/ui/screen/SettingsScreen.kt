@@ -98,6 +98,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     var showThemePopup by remember { mutableStateOf(false) }
+    var showBarStylePopup by remember { mutableStateOf(false) }
     var showFlowStylePopup by remember { mutableStateOf(false) }
     var showLanguagePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
@@ -138,7 +139,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 16.dp),
             ) {
                 SwitchPreference(
                     title = tr("动态取色"),
@@ -220,6 +221,61 @@ fun SettingsScreen(
                     onCheckedChange = { settings.floatingBottomBar = it },
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                 )
+                if (settings.floatingBottomBar) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        BasicComponent(
+                            title = tr("底栏样式"),
+                            onClick = {
+                                clickHaptic()
+                                showBarStylePopup = true
+                            },
+                            startAction = { RowStartIcon(MiuixIcons.Sidebar) },
+                            endActions = {
+                                Text(
+                                    text = barStyleLabel(settings.floatingBarStyle),
+                                    style = MiuixTheme.textStyles.body2,
+                                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(
+                                    imageVector = MiuixIcons.Basic.ArrowUpDown,
+                                    contentDescription = null,
+                                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                                )
+                            },
+                        )
+                        OverlayListPopup(
+                            show = showBarStylePopup,
+                            alignment = PopupPositionProvider.Align.End,
+                            onDismissRequest = { showBarStylePopup = false },
+                        ) {
+                            ListPopupColumn {
+                                DropdownImpl(
+                                    text = "iOS",
+                                    optionSize = 2,
+                                    isSelected = settings.floatingBarStyle == 0,
+                                    index = 0,
+                                    onSelectedIndexChange = {
+                                        clickHaptic()
+                                        settings.floatingBarStyle = 0
+                                        showBarStylePopup = false
+                                    },
+                                )
+                                DropdownImpl(
+                                    text = "OS4",
+                                    optionSize = 2,
+                                    isSelected = settings.floatingBarStyle == 1,
+                                    index = 1,
+                                    onSelectedIndexChange = {
+                                        clickHaptic()
+                                        settings.floatingBarStyle = 1
+                                        showBarStylePopup = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
 
                 SwitchPreference(
                     title = tr("震动反馈"),
@@ -310,7 +366,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 16.dp),
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     BasicComponent(
@@ -370,7 +426,7 @@ fun SettingsScreen(
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 16.dp),
             ) {
                 BasicComponent(
                     title = tr("兼容性提示"),
@@ -386,7 +442,7 @@ fun SettingsScreen(
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 16.dp),
             ) {
 
                 val newer = updateResult as? UpdateChecker.Result.Newer
@@ -430,7 +486,7 @@ fun SettingsScreen(
             TiltPressCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 16.dp),
             ) {
                 BasicComponent(
                     title = tr("关于 SweetLime"),
@@ -537,3 +593,6 @@ private fun flowStyleLabel(style: Int): String = when (style) {
     HyperOsStyle.OS3 -> "OS 3"
     else -> tr("跟随系统")
 }
+
+
+private fun barStyleLabel(style: Int): String = if (style == 1) "OS4" else "iOS"

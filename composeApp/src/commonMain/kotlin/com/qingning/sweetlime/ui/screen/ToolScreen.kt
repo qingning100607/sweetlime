@@ -224,7 +224,7 @@ private fun SymbolCategoryList(sections: List<Pair<String, List<Int>>>, onOpen: 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
+                            .padding(horizontal = 16.dp)
                             .padding(bottom = 12.dp),
                     ) {
                         indices.forEach { index ->
@@ -282,11 +282,11 @@ internal fun ConverterToolScreen(
             maxLines = 4,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 16.dp),
         )
         if (extra != null) {
             Spacer(modifier = Modifier.height(8.dp))
-            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 extra()
             }
         }
@@ -303,7 +303,7 @@ internal fun ConverterToolScreen(
         )
         SmallTitle(text = resultLabel)
         if (result.isNotEmpty()) {
-            Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+            Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 Text(
                     text = result,
                     style = MiuixTheme.textStyles.title2,
@@ -326,7 +326,7 @@ internal fun ConverterToolScreen(
             text = tr("复制结果"),
             onClick = { if (result.isNotEmpty()) onCopyText(result, resultLabel) },
             enabled = result.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             colors = ButtonDefaults.textButtonColorsPrimary(),
         )
         Spacer(modifier = Modifier.height(48.dp))
@@ -397,7 +397,7 @@ private fun UnknownTool() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 16.dp),
         ) {
             BasicComponent(
                 title = tr("这个工具不存在"),

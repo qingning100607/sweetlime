@@ -57,7 +57,7 @@ internal fun DupCheckToolScreen(onCopyText: (String, String) -> Unit) {
                     maxLines = 4,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 16.dp),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
@@ -68,7 +68,7 @@ internal fun DupCheckToolScreen(onCopyText: (String, String) -> Unit) {
                     maxLines = 4,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 16.dp),
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
@@ -79,7 +79,7 @@ internal fun DupCheckToolScreen(onCopyText: (String, String) -> Unit) {
                 )
                 SmallTitle(text = tr("重复率"))
                 if (result != null) {
-                    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                         Text(
                             text = trf("{}%", result.similarityPercent),
                             style = MiuixTheme.textStyles.title2,
@@ -98,7 +98,7 @@ internal fun DupCheckToolScreen(onCopyText: (String, String) -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(

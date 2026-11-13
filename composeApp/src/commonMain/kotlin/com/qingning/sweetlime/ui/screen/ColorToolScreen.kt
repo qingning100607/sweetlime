@@ -57,7 +57,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             .fillMaxSize()
 
             .overScrollVertical(),
-        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+        contentPadding = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
     ) {
         item {
             Column {
@@ -80,7 +80,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier.padding(horizontal = 6.dp),
         )
-        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("颜色预览"))
+        SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("颜色预览"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Box(
@@ -111,7 +111,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
             }
         }
         if (info != null) {
-            SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("各种写法"))
+            SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("各种写法"))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     lines.forEachIndexed { index, line ->
@@ -122,7 +122,7 @@ internal fun ColorToolScreen(onCopyText: (String, String) -> Unit) {
                 }
             }
         }
-        SmallTitle(modifier = Modifier.offset(x = (-12).dp), text = tr("渐变色"))
+        SmallTitle(modifier = Modifier.offset(x = (-16).dp), text = tr("渐变色"))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

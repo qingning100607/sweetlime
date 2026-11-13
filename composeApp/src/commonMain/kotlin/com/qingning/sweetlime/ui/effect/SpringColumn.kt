@@ -25,7 +25,7 @@ val SPRING_SLACK: Dp = 48.dp
 @Composable
 fun SpringColumn(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+    contentPadding: PaddingValues = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {

@@ -67,7 +67,7 @@ internal fun LevelToolScreen() {
             .fillMaxSize()
             .overScrollVertical()
 ,
-        contentPadding = PaddingValues(bottom = 24.dp, start = 12.dp, end = 12.dp),
+        contentPadding = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
     ) {
         item {
             Column {

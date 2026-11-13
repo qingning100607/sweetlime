@@ -54,6 +54,14 @@ object OpenSourceLicenses {
             "Copyright compose-miuix-ui contributors\nLicense: Apache License 2.0",
         ),
         Doc(
+            "miuix-glass (glass surfaces)",
+            "Copyright compose-miuix-ui contributors / Halcyon contributors\n" +
+                "License: Apache License 2.0\n\n" +
+                "Used for the OS4 glass dropdown popups and the glass capsule " +
+                "navigation bar. Source files were taken from the Apache-2.0 " +
+                "licensed miuix-glass package and adapted.",
+        ),
+        Doc(
             "Haze",
             "Copyright Chris Banes\nLicense: Apache License 2.0\nhttps://github.com/chrisbanes/haze\n\nUsed for the live frosted glass on the top bar, the bottom bar and the\nfloating capsule (HazeState / hazeSource / hazeEffect with a progressive\nvertical gradient). No source files were copied; only the published API\nis used.",
         ),

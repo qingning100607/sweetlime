@@ -131,7 +131,7 @@ fun GroupScreen(
                     .fillMaxWidth()
 
                     .padding(top = topBarHeight)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 Text(
                     text = tr("先在主页输入文字，再进来看这个分类的效果。"),
@@ -200,7 +200,7 @@ fun GroupScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
+                            .padding(horizontal = 16.dp)
 
                             .clip(groupRowShape(index, shown.size)),
                         cornerRadius = 0.dp,
@@ -288,7 +288,6 @@ fun GroupScreen(
         }
     }
 }
-
 
 private const val LOADING_MIN_MS = 400L
 
