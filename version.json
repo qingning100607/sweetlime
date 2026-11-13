@@ -2,5 +2,5 @@
   "version": "2.9.86",
   "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.86",
   "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.86/SweetLime-release.apk",
-  "notes": "- 弹窗改回原样式\n- 底栏新增 OS4 样式\n- 卡片边距对齐\n- 上下标补齐\n- 清理源码注释"
+  "notes": "- 弹窗动画改为玻璃下拉，修正重复震动\n- 设置新增底栏样式（iOS / OS4）\n- 卡片左右边距统一\n- 上下标字符补全\n- 清理源码与构建脚本注释"
 }
