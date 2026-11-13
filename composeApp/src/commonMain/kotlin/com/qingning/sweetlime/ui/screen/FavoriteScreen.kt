@@ -62,6 +62,9 @@ import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.window.WindowBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import com.qingning.sweetlime.ui.components.GlassEntriesPopup
+import top.yukonga.miuix.kmp.basic.DropdownEntry
+import top.yukonga.miuix.kmp.basic.DropdownItem
 
 private const val GROUP_EXPAND_MS = 280
 
@@ -363,30 +366,24 @@ private fun FavoriteRow(
                 }
             },
         )
-        OverlayListPopup(
-            show = showMove,
-            alignment = PopupPositionProvider.Align.End,
-            onDismissRequest = { showMove = false },
-        ) {
-            ListPopupColumn {
-
-                val options = buildList {
-                    add("")
-                    addAll(groups)
-                }
-                options.forEachIndexed { index, group ->
-                    DropdownImpl(
-                        text = if (group.isEmpty()) tr("未分组") else group,
-                        optionSize = options.size,
-                        isSelected = group == currentGroup,
-                        index = index,
-                        onSelectedIndexChange = {
-                            onMove(group)
-                            showMove = false
-                        },
-                    )
-                }
-            }
+        val moveOptions = buildList {
+            add("")
+            addAll(groups)
         }
+        GlassEntriesPopup(
+            show = showMove,
+            entries = listOf(
+                DropdownEntry(
+                    items = moveOptions.map { group ->
+                        DropdownItem(
+                            text = if (group.isEmpty()) tr("未分组") else group,
+                            selected = group == currentGroup,
+                            onClick = { onMove(group) },
+                        )
+                    },
+                ),
+            ),
+            onDismissRequest = { showMove = false },
+        )
     }
 }

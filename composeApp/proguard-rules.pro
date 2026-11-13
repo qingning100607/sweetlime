@@ -1,4 +1,3 @@
-# ---- kotlinx.serialization（miuix-nav 的 Route 需要）----
 -keepattributes *Annotation*, InnerClasses, Signature, RuntimeVisibleAnnotations
 -dontnote kotlinx.serialization.**
 -keepclassmembers class kotlinx.serialization.json.** {
@@ -13,5 +12,4 @@
     *** INSTANCE;
 }
 
-# ---- Compose / Miuix 常用保留 ----
 -dontwarn org.jetbrains.annotations.**

@@ -43,6 +43,9 @@ import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs
 import kotlin.math.round
+import com.qingning.sweetlime.ui.components.GlassEntriesPopup
+import top.yukonga.miuix.kmp.basic.DropdownEntry
+import top.yukonga.miuix.kmp.basic.DropdownItem
 
 @Composable
 internal fun CurrencyToolScreen(onCopyText: (String, String) -> Unit) {
@@ -201,26 +204,21 @@ private fun CurrencyPickRow(
         )
 
         val options = remember(AppLocale.current) { CurrencyApi.COMMON }
-
-        OverlayListPopup(
+        GlassEntriesPopup(
             show = expanded,
-            alignment = PopupPositionProvider.Align.End,
+            entries = listOf(
+                DropdownEntry(
+                    items = options.map { entry ->
+                        DropdownItem(
+                            text = "${entry.first} ${entry.second}",
+                            selected = entry.second == code,
+                            onClick = { onPick(entry.second) },
+                        )
+                    },
+                ),
+            ),
             onDismissRequest = onDismiss,
-        ) {
-            ListPopupColumn {
-                options.forEachIndexed { index, entry ->
-                    DropdownImpl(
-                        text = "${entry.first} ${entry.second}",
-                        optionSize = options.size,
-                        isSelected = entry.second == code,
-                        index = index,
-                        onSelectedIndexChange = {
-                                                        onPick(entry.second)
-                        },
-                    )
-                }
-            }
-        }
+        )
     }
 }
 

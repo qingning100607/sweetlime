@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 生成 SweetLime 的应用图标（可复现，不依赖设计稿）。
 
@@ -25,7 +24,6 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(REPO, "composeApp", "src", "androidMain", "res")
 SS = 4  # 超采样倍数，最后一次性缩小做抗锯齿
 
-# 密度 -> 画布边长（108dp * 倍率）
 DENSITIES = {
     "mdpi": 108,
     "hdpi": 162,
@@ -34,12 +32,10 @@ DENSITIES = {
     "xxxhdpi": 432,
 }
 
-# ---- 配色 ----
 BG_FROM = (155, 225, 93)     # #9BE15D 青柠黄绿
 BG_TO = (0, 168, 107)        # #00A86B 青柠绿
 WHITE = (255, 255, 255)
 
-# ---- 几何（单位：108 画布的 dp）----
 CENTER = (54.0, 58.0)        # 柠檬片圆心（略低于正中，给上方留出叶子的位置）
 R_RIND = 23.0                # 外皮半径
 R_FLESH = 19.6               # 果肉半径（外皮与果肉之间留一圈深色做分界）
@@ -56,7 +52,6 @@ LEAF_HALF = 4.0
 
 SAFE_RADIUS = 34.0           # 安全区半径，见文件头说明
 
-
 def bg_layer(size: int) -> Image.Image:
     """背景层：对角渐变，铺满整个画布（掩码裁完也不会露白）。"""
     w = size * SS
@@ -72,16 +67,13 @@ def bg_layer(size: int) -> Image.Image:
             )
     return img.resize((size, size), Image.LANCZOS)
 
-
 def _scaled(p):
     return (p[0] * SS, p[1] * SS)
-
 
 def _disc(draw, center, r, color):
     cx, cy = _scaled(center)
     rr = r * SS
     draw.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], fill=color)
-
 
 def fruit_silhouette(mono: bool) -> Image.Image:
     """前景层：白色柠檬片 + 叶子。mono=True 时只留剪影（给主题图标用）。"""
@@ -89,15 +81,12 @@ def fruit_silhouette(mono: bool) -> Image.Image:
     img = Image.new("RGBA", (w, w), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
-    # 外皮（整圆）
     _disc(d, CENTER, R_RIND, WHITE + (255,))
 
     if not mono:
-        # 外皮与果肉之间的分界：用背景色画一个略大的圆，再盖上果肉
         _disc(d, CENTER, R_FLESH + 1.3, BG_TO + (255,))
         _disc(d, CENTER, R_FLESH, WHITE + (255,))
 
-        # 分瓣线：从中心小圆向外辐射，用背景色，端头圆润
         cx, cy = _scaled(CENTER)
         for i in range(SEG_COUNT):
             a = math.radians(-90 + i * (360 / SEG_COUNT))
@@ -110,17 +99,14 @@ def fruit_silhouette(mono: bool) -> Image.Image:
                 rr = SEG_WIDTH * SS / 2
                 d.ellipse([x - rr, y - rr, x + rr, y + rr], fill=BG_TO + (255,))
 
-        # 中心小圆盖回白色，形成「芯」
         _disc(d, CENTER, R_CORE, WHITE + (255,))
 
-    # 果柄
     d.line(
         [_scaled(STEM_FROM)[0], _scaled(STEM_FROM)[1],
          _scaled(STEM_TO)[0], _scaled(STEM_TO)[1]],
         fill=WHITE + (255,), width=round(2.6 * SS),
     )
 
-    # 叶子：两段二次曲线拼成的杏仁形
     a, b = LEAF_A, LEAF_B
     mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
     dx, dy = b[0] - a[0], b[1] - a[1]
@@ -143,7 +129,6 @@ def fruit_silhouette(mono: bool) -> Image.Image:
 
     return img
 
-
 def check(img: Image.Image, name: str, verbose: bool = True) -> bool:
     """校验：所有不透明像素必须在安全区内。返回是否通过。"""
     alpha = img.split()[3]
@@ -158,7 +143,6 @@ def check(img: Image.Image, name: str, verbose: bool = True) -> bool:
     if verbose:
         print(f"  {name}: 最远像素距中心 {worst:.1f}dp " + ("OK" if ok else "!! 超安全区"))
     return ok
-
 
 def main() -> None:
     all_ok = True
@@ -179,7 +163,6 @@ def main() -> None:
         all_ok &= check(fg, "前景")
         all_ok &= check(mono, "单色")
 
-    # 预览图（给人看的，不进 APK）
     prev = Image.new("RGBA", (108 * 3 + 40, 108 + 20), (240, 240, 240, 255))
     bg = bg_layer(108).convert("RGBA")
     fg = fruit_silhouette(False).resize((108, 108), Image.LANCZOS)
@@ -194,7 +177,6 @@ def main() -> None:
     prev.convert("RGB").save(out)
     print("预览图:", out)
     print("安全区校验:", "全部通过" if all_ok else "有层超出安全区，请调整几何")
-
 
 if __name__ == "__main__":
     main()

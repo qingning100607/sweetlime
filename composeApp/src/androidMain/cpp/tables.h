@@ -1,9 +1,3 @@
-/*
- * 本文件由 /root/gen_cpp_tables.py 从 Kotlin 源码自动生成，**不要手改**。
- *
- * 内容：花体映射需要的「补位表 / 小型大写 / 盲文 / 符文」，以及数学字母符号区的区间参数。
- * 来源：core/styles/LatinStyles.kt、core/styles/AliasStyles.kt —— 保证两边永远同一份数据。
- */
 #pragma once
 #include <cstdint>
 

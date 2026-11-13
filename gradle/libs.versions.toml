@@ -4,7 +4,6 @@ kotlin = "2.4.10"
 compose = "1.12.1"
 miuix = "0.9.4"
 androidx-activity = "1.13.0"
-# 预测性返回（系统手势预览）要用这个，KernelSU 也是它（同一版本 1.1.2）。
 navigationevent = "1.1.2"
 haze = "1.7.3"
 
@@ -23,11 +22,7 @@ miuix-blur = { module = "top.yukonga.miuix.kmp:miuix-blur", version.ref = "miuix
 miuix-nav = { module = "top.yukonga.miuix.kmp:miuix-nav", version.ref = "miuix" }
 miuix-squircle = { module = "top.yukonga.miuix.kmp:miuix-squircle", version.ref = "miuix" }
 
-# 顶栏「滑动时实时模糊」用的库：KernelSU 之外，HyperLight 那类 App 用的也是它。
-# 它内部就是一条 AGSL 着色器（RenderEffect.createRuntimeShaderEffect），逐帧对背后内容做真高斯模糊。
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
-# Compose 的常用三件套：插件提供的 compose.runtime / .foundation / .ui 访问器已被废弃，
-# 官方要求「直接写坐标」；版本仍跟插件共用 [versions].compose，避免两边漂开。
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }

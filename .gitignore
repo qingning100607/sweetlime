@@ -10,13 +10,11 @@
 local.properties
 /composeApp/build
 
-# 签名密钥与口令：绝对不进版本库
 *.jks
 *.keystore
 *.p12
 local.properties
 
-# 构建产物与工具缓存
 build/
 */build/
 .kotlin/

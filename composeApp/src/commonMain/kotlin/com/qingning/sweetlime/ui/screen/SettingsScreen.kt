@@ -1,5 +1,4 @@
 package com.qingning.sweetlime.ui.screen
-import com.qingning.sweetlime.ui.effect.rememberClickHaptic
 import com.qingning.sweetlime.ui.effect.bleedHorizontal
 import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 
@@ -43,7 +42,6 @@ import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.core.i18n.AppLanguage
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
@@ -72,10 +70,11 @@ import top.yukonga.miuix.kmp.icon.extended.Sidebar
 import top.yukonga.miuix.kmp.icon.extended.Theme
 import top.yukonga.miuix.kmp.icon.extended.Tune
 import top.yukonga.miuix.kmp.icon.extended.Update
-import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import com.qingning.sweetlime.ui.components.TiltPressCard
+import com.qingning.sweetlime.ui.components.OpaqueDropdownPopupTheme
+import com.qingning.sweetlime.ui.components.Os4DropdownPreference
 
 @Composable
 fun SettingsScreen(
@@ -97,13 +96,8 @@ fun SettingsScreen(
     onOpenDownload: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var showThemePopup by remember { mutableStateOf(false) }
-    var showBarStylePopup by remember { mutableStateOf(false) }
-    var showFlowStylePopup by remember { mutableStateOf(false) }
-    var showLanguagePopup by remember { mutableStateOf(false) }
     var topBarHeight by remember { mutableStateOf(0.dp) }
 
-    val clickHaptic = rememberClickHaptic()
     val density = LocalDensity.current
 
     val hazeState = remember { HazeState() }
@@ -148,72 +142,20 @@ fun SettingsScreen(
                     onCheckedChange = { settings.monet = it },
                     startAction = { RowStartIcon(MiuixIcons.Theme) },
                 )
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    BasicComponent(
+                OpaqueDropdownPopupTheme {
+                    Os4DropdownPreference(
                         title = tr("主题模式"),
-                        onClick = {
- clickHaptic()
- showThemePopup = true
- },
+                        items = listOf(tr("跟随系统"), tr("浅色"), tr("深色")),
+                        selectedIndex = settings.themeMode.coerceIn(ThemeMode.SYSTEM, ThemeMode.DARK),
                         startAction = { RowStartIcon(MiuixIcons.Hide) },
-                        endActions = {
-                            Text(
-                                text = themeLabel(settings.themeMode),
-                                style = MiuixTheme.textStyles.body2,
-                                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowUpDown,
-                                contentDescription = null,
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
+                        onSelectedIndexChange = { index ->
+                            settings.themeMode = when (index) {
+                                1 -> ThemeMode.LIGHT
+                                2 -> ThemeMode.DARK
+                                else -> ThemeMode.SYSTEM
+                            }
                         },
                     )
-                    OverlayListPopup(
-                        show = showThemePopup,
-                        alignment = PopupPositionProvider.Align.End,
-                        onDismissRequest = { showThemePopup = false },
-                    ) {
-                        ListPopupColumn {
-                            DropdownImpl(
-                                text = tr("跟随系统"),
-                                optionSize = 3,
-                                isSelected = settings.themeMode == ThemeMode.SYSTEM,
-                                index = 0,
-                                onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                    settings.themeMode = ThemeMode.SYSTEM
-                                    showThemePopup = false
-                                },
-                            )
-                            DropdownImpl(
-                                text = tr("浅色"),
-                                optionSize = 3,
-                                isSelected = settings.themeMode == ThemeMode.LIGHT,
-                                index = 1,
-                                onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                    settings.themeMode = ThemeMode.LIGHT
-                                    showThemePopup = false
-                                },
-                            )
-                            DropdownImpl(
-                                text = tr("深色"),
-                                optionSize = 3,
-                                isSelected = settings.themeMode == ThemeMode.DARK,
-                                index = 2,
-                                onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                    settings.themeMode = ThemeMode.DARK
-                                    showThemePopup = false
-                                },
-                            )
-                        }
-                    }
                 }
                 SwitchPreference(
                     title = tr("悬浮底栏"),
@@ -222,58 +164,14 @@ fun SettingsScreen(
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                 )
                 if (settings.floatingBottomBar) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        BasicComponent(
+                    OpaqueDropdownPopupTheme {
+                        Os4DropdownPreference(
                             title = tr("底栏样式"),
-                            onClick = {
-                                clickHaptic()
-                                showBarStylePopup = true
-                            },
+                            items = listOf("iOS", "OS4"),
+                            selectedIndex = settings.floatingBarStyle.coerceIn(0, 1),
                             startAction = { RowStartIcon(MiuixIcons.Sidebar) },
-                            endActions = {
-                                Text(
-                                    text = barStyleLabel(settings.floatingBarStyle),
-                                    style = MiuixTheme.textStyles.body2,
-                                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Icon(
-                                    imageVector = MiuixIcons.Basic.ArrowUpDown,
-                                    contentDescription = null,
-                                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                                )
-                            },
+                            onSelectedIndexChange = { index -> settings.floatingBarStyle = index },
                         )
-                        OverlayListPopup(
-                            show = showBarStylePopup,
-                            alignment = PopupPositionProvider.Align.End,
-                            onDismissRequest = { showBarStylePopup = false },
-                        ) {
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = "iOS",
-                                    optionSize = 2,
-                                    isSelected = settings.floatingBarStyle == 0,
-                                    index = 0,
-                                    onSelectedIndexChange = {
-                                        clickHaptic()
-                                        settings.floatingBarStyle = 0
-                                        showBarStylePopup = false
-                                    },
-                                )
-                                DropdownImpl(
-                                    text = "OS4",
-                                    optionSize = 2,
-                                    isSelected = settings.floatingBarStyle == 1,
-                                    index = 1,
-                                    onSelectedIndexChange = {
-                                        clickHaptic()
-                                        settings.floatingBarStyle = 1
-                                        showBarStylePopup = false
-                                    },
-                                )
-                            }
-                        }
                     }
                 }
 
@@ -292,72 +190,14 @@ fun SettingsScreen(
                 )
 
                 if (settings.flowingBackground) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        BasicComponent(
+                    OpaqueDropdownPopupTheme {
+                        Os4DropdownPreference(
                             title = tr("流光风格"),
-                            onClick = {
- clickHaptic()
- showFlowStylePopup = true
- },
+                            items = listOf(tr("跟随系统"), "OS 2", "OS 3"),
+                            selectedIndex = settings.flowingStyle.coerceIn(HyperOsStyle.AUTO, HyperOsStyle.OS3),
                             startAction = { RowStartIcon(MiuixIcons.Image) },
-                            endActions = {
-                                Text(
-                                    text = flowStyleLabel(settings.flowingStyle),
-                                    style = MiuixTheme.textStyles.body2,
-                                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Icon(
-                                    imageVector = MiuixIcons.Basic.ArrowUpDown,
-                                    contentDescription = null,
-                                    tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                                )
-                            },
+                            onSelectedIndexChange = { index -> settings.flowingStyle = index },
                         )
-                        OverlayListPopup(
-                            show = showFlowStylePopup,
-                            alignment = PopupPositionProvider.Align.End,
-                            onDismissRequest = { showFlowStylePopup = false },
-                        ) {
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = tr("跟随系统"),
-                                    optionSize = 3,
-                                    isSelected = settings.flowingStyle == HyperOsStyle.AUTO,
-                                    index = 0,
-                                    onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                        settings.flowingStyle = HyperOsStyle.AUTO
-                                        showFlowStylePopup = false
-                                    },
-                                )
-                                DropdownImpl(
-                                    text = "OS 2",
-                                    optionSize = 3,
-                                    isSelected = settings.flowingStyle == HyperOsStyle.OS2,
-                                    index = 1,
-                                    onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                        settings.flowingStyle = HyperOsStyle.OS2
-                                        showFlowStylePopup = false
-                                    },
-                                )
-                                DropdownImpl(
-                                    text = "OS 3",
-                                    optionSize = 3,
-                                    isSelected = settings.flowingStyle == HyperOsStyle.OS3,
-                                    index = 2,
-                                    onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                        settings.flowingStyle = HyperOsStyle.OS3
-                                        showFlowStylePopup = false
-                                    },
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -368,57 +208,20 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
             ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    BasicComponent(
+                OpaqueDropdownPopupTheme {
+                    val languageOptions = buildList {
+                        add(AppLanguage.AUTO_CODE to tr("跟随系统"))
+                        AppLanguage.entries.forEach { add(it.code to it.label) }
+                    }
+                    Os4DropdownPreference(
                         title = tr("语言"),
-                        onClick = {
- clickHaptic()
- showLanguagePopup = true
- },
+                        items = languageOptions.map { it.second },
+                        selectedIndex = languageOptions.indexOfFirst { it.first == settings.language }.coerceAtLeast(0),
                         startAction = { RowStartIcon(rememberLanguageIcon()) },
-                        endActions = {
-                            Text(
-
-                                text = languageRowLabel(settings.language),
-                                style = MiuixTheme.textStyles.body2,
-                                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = MiuixIcons.Basic.ArrowUpDown,
-                                contentDescription = null,
-                                tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                            )
+                        onSelectedIndexChange = { index ->
+                            languageOptions.getOrNull(index)?.first?.let { settings.language = it }
                         },
                     )
-                    OverlayListPopup(
-                        show = showLanguagePopup,
-                        alignment = PopupPositionProvider.Align.End,
-                        onDismissRequest = { showLanguagePopup = false },
-                    ) {
-                        ListPopupColumn {
-
-                            val options: List<Pair<String, String>> = buildList {
-                                add(AppLanguage.AUTO_CODE to tr("跟随系统"))
-                                AppLanguage.entries.forEach { add(it.code to it.label) }
-                            }
-                            options.forEachIndexed { index, (code, label) ->
-                                DropdownImpl(
-                                    text = label,
-                                    optionSize = options.size,
-
-                                    isSelected = settings.language == code,
-                                    index = index,
-                                    onSelectedIndexChange = {
-                                   clickHaptic()
-                                    clickHaptic()
-                                        settings.language = code
-                                        showLanguagePopup = false
-                                    },
-                                )
-                            }
-                        }
-                    }
                 }
             }
 
@@ -578,21 +381,3 @@ private fun RowStartIcon(icon: Painter) {
         tint = MiuixTheme.colorScheme.onBackground,
     )
 }
-
-private fun themeLabel(mode: Int): String = when (mode) {
-    ThemeMode.LIGHT -> tr("浅色")
-    ThemeMode.DARK -> tr("深色")
-    else -> tr("跟随系统")
-}
-
-private fun languageRowLabel(code: String): String =
-    if (code == AppLanguage.AUTO_CODE) tr("跟随系统") else AppLanguage.fromCode(code).label
-
-private fun flowStyleLabel(style: Int): String = when (style) {
-    HyperOsStyle.OS2 -> "OS 2"
-    HyperOsStyle.OS3 -> "OS 3"
-    else -> tr("跟随系统")
-}
-
-
-private fun barStyleLabel(style: Int): String = if (style == 1) "OS4" else "iOS"

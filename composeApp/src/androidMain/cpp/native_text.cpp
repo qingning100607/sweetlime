@@ -1,16 +1,3 @@
-/*
- * SweetLime 的原生实现（Android / arm64-v8a）。
- *
- * 为什么这些功能用 C++：
- *   - MD5 / Base64 / URL 编解码：逐字节循环，Kotlin 侧每步都要处理装箱与边界检查；
- *   - 花体映射（数学字母区、圆圈、小型大写、倒置、盲文、符文、全角半角、间隔、反转）：
- *     逐字符查表 + 拼字符串，长文本时分配压力全在 Kotlin 那侧，这里一次分配就够。
- *
- * 行为必须和 Kotlin 版**逐字节一致** —— 设备上有一份「Kotlin ↔ C++ 对拍」自检
- * （NativeSelfCheck.kt），对不上会打进 logcat；Kotlin 版同时作为非 Android 的兜底。
- *
- * 表（tables.h）由 /root/gen_cpp_tables.py 从 Kotlin 源码自动生成，不手抄。
- */
 #include <jni.h>
 #include <cstdint>
 #include <cstring>
@@ -23,8 +10,6 @@
 namespace {
 
 using u16 = std::u16string;
-
-// ---------------------------------------------------------------- 基础工具
 
 void appendCodePoint(u16 &out, uint32_t cp) {
     if (cp <= 0xFFFF) {
@@ -40,15 +25,11 @@ bool isHighSurrogate(char16_t c) { return c >= 0xD800 && c <= 0xDBFF; }
 
 bool isLowSurrogate(char16_t c) { return c >= 0xDC00 && c <= 0xDFFF; }
 
-/** UTF-16 -> UTF-8（只在 URL 解码那条路上用到：把非 %XX 的字符原样落成字节）。 */
 void appendUtf8(std::vector<uint8_t> &out, char16_t hi, char16_t lo = 0) {
     uint32_t cp;
     if (isHighSurrogate(hi) && lo != 0 && isLowSurrogate(lo)) {
         cp = 0x10000 + ((uint32_t) (hi - 0xD800) << 10) + (uint32_t) (lo - 0xDC00);
     } else if (isHighSurrogate(hi) || isLowSurrogate(hi)) {
-        // 孤立代理（半个 emoji）：Java 的 String.getBytes(UTF-8) 会写成 '?'，
-        // Kotlin 那份就是走 Java 的，所以这里也写 '?' —— 两边结果才对得上。
-        // （真实 URL 里不会出现这种字符，但「对拍」要求任何输入都一致。）
         out.push_back((uint8_t) '?');
         return;
     } else {
@@ -72,14 +53,11 @@ void appendUtf8(std::vector<uint8_t> &out, char16_t hi, char16_t lo = 0) {
 }
 
 const Pair16 *findPair(const Pair16 *table, int count, uint16_t from) {
-    // 表都不大（最多 80 项），线性扫足够；按 from 递增排过，命中就走，未到就继续。
     for (int i = 0; i < count; i++) {
         if (table[i].from == from) return &table[i];
     }
     return nullptr;
 }
-
-// ---------------------------------------------------------------- MD5（RFC 1321）
 
 uint32_t rotateLeft(uint32_t v, int bits) { return (v << bits) | (v >> (32 - bits)); }
 
@@ -101,10 +79,8 @@ const int MD5_S[64] = {
     6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
 };
 
-/** 32 位小写十六进制 MD5，和 Kotlin 版逐字节一致。 */
 std::string md5Hex(const uint8_t *data, size_t len) {
     const uint64_t bitLength = (uint64_t) len * 8ULL;
-    // 和 Kotlin 一样：((len + 8) / 64 + 1) * 64
     const size_t padded = ((len + 8) / 64 + 1) * 64;
     std::vector<uint8_t> msg(padded, 0);
     if (len) std::memcpy(msg.data(), data, len);
@@ -164,8 +140,6 @@ std::string md5Hex(const uint8_t *data, size_t len) {
     return out;
 }
 
-// ---------------------------------------------------------------- Base64
-
 const char *B64_TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 std::string base64Encode(const uint8_t *data, size_t len) {
@@ -185,7 +159,6 @@ std::string base64Encode(const uint8_t *data, size_t len) {
     return out;
 }
 
-/** Kotlin 的 Char.isWhitespace() 常遇到的那几档（ASCII 空白 + 常见 Unicode 空白）。 */
 bool isWhitespace(char16_t c) {
     switch (c) {
         case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x20:
@@ -197,9 +170,7 @@ bool isWhitespace(char16_t c) {
     }
 }
 
-/** 容错解码：忽略空白、接受 URL-safe 的 - 与 _、允许缺省 padding。非法字符返回 false。 */
 bool base64Decode(const u16 &text, std::vector<uint8_t> &out) {
-    // 先按 Kotlin 的顺序：去空白 → -/_ 换回 +/ → 去掉尾部 =
     std::u16string clean;
     clean.reserve(text.size());
     for (char16_t c : text) {
@@ -229,8 +200,6 @@ bool base64Decode(const u16 &text, std::vector<uint8_t> &out) {
     }
     return true;
 }
-
-// ---------------------------------------------------------------- URL 编解码
 
 bool isSafeUrl(char16_t c) {
     if ((c >= u'A' && c <= u'Z') || (c >= u'a' && c <= u'z') || (c >= u'0' && c <= u'9')) return true;
@@ -268,7 +237,6 @@ int hexValue(char16_t c) {
     return -1;
 }
 
-/** + 当空格；%XX 两位十六进制；其余字符按 UTF-8 原样落下。失败返回 false。 */
 bool urlDecode(const u16 &text, std::vector<uint8_t> &out) {
     size_t i = 0;
     while (i < text.size()) {
@@ -296,8 +264,6 @@ bool urlDecode(const u16 &text, std::vector<uint8_t> &out) {
     return true;
 }
 
-// ---------------------------------------------------------------- 花体映射
-
 const MathStyleDef *findMathStyle(const std::string &id) {
     for (int i = 0; i < kMathStyleCount; i++) {
         if (id == kMathStyles[i].id) return &kMathStyles[i];
@@ -305,7 +271,6 @@ const MathStyleDef *findMathStyle(const std::string &id) {
     return nullptr;
 }
 
-/** 数学字母符号区那一套：先查补位表，再按区间平移。映射不到就原样保留。 */
 void mapMathChar(const MathStyleDef &def, char16_t ch, u16 &out) {
     if (const Pair16 *p = def.exceptions ? findPair(def.exceptions, def.exceptionCount, ch) : nullptr) {
         appendCodePoint(out, p->to);
@@ -322,7 +287,6 @@ void mapMathChar(const MathStyleDef &def, char16_t ch, u16 &out) {
     }
 }
 
-/** 圆圈体：A-Z→①..、a-z→ⓐ..、0→⓪、1-9→①..（和 Kotlin 的 circledTransform 一致）。 */
 void mapCircled(char16_t ch, u16 &out, bool bold) {
     if (bold) {
         if (ch >= u'A' && ch <= u'Z') {
@@ -349,7 +313,6 @@ void mapCircled(char16_t ch, u16 &out, bool bold) {
     }
 }
 
-/** 整体按码点倒序（不拆代理对）。 */
 void reverseByCodePoint(const u16 &in, u16 &out) {
     size_t i = in.size();
     while (i > 0) {
@@ -365,9 +328,6 @@ void reverseByCodePoint(const u16 &in, u16 &out) {
     }
 }
 
-/**
- * 21 个样式的原生映射。返回 false =「这个 id 不归我管」，由 Kotlin 版接管。
- */
 bool mapStyle(const std::string &id, const u16 &in, u16 &out) {
     if (const MathStyleDef *def = findMathStyle(id)) {
         out.reserve(in.size() * 2);
@@ -389,7 +349,6 @@ bool mapStyle(const std::string &id, const u16 &in, u16 &out) {
         return true;
     }
     if (id == "latin_upside_down") {
-        // Kotlin：按 \n 分行，每行先整体倒序、再把每个字符换成倒过来看的字形。
         out.reserve(in.size() * 2);
         size_t start = 0;
         while (start <= in.size()) {
@@ -443,8 +402,6 @@ bool mapStyle(const std::string &id, const u16 &in, u16 &out) {
         const char16_t mark = id == "alias_dot_spacing" ? u'\u00B7' : u'\u22C6';
         out.reserve(in.size() * 2);
         bool first = true;
-        // 按**码点**走：emoji / 增补平面字符是代理对，按 code unit 走会把分隔符
-        // 插进两个代理中间，产出非法 UTF-16（渲染成 �）。与 Kotlin 侧保持一致。
         for (size_t i = 0; i < in.size();) {
             const char16_t ch = in[i];
             const size_t len = (ch >= 0xD800 && ch <= 0xDBFF && i + 1 < in.size() &&
@@ -488,8 +445,6 @@ bool mapStyle(const std::string &id, const u16 &in, u16 &out) {
     }
     return false;
 }
-
-// ---------------------------------------------------------------- JNI 桥
 
 u16 toString(JNIEnv *env, jstring s) {
     if (s == nullptr) return u16();
