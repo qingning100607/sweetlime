@@ -47,6 +47,7 @@ import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.glass.internal.drawGlassStroke
 import kotlin.math.roundToInt
 
+
 @Immutable
 data class GlassPopupSizing(
     val minWidth: Dp = GlassPopupDefaults.MinWidth,
@@ -54,6 +55,7 @@ data class GlassPopupSizing(
     val maxHeight: Dp = GlassPopupDefaults.MaxHeight,
     val safeMargin: Dp = GlassPopupDefaults.SafeMargin,
 )
+
 
 @Immutable
 data class GlassPopupVisuals(
@@ -65,11 +67,13 @@ data class GlassPopupVisuals(
     val containerColor: Color,
 )
 
+
 @Immutable
 data class GlassPopupFrame(
     val rect: Rect,
     val cornerRadius: Dp,
 )
+
 
 @Immutable
 class GlassPopupPlacement internal constructor(
@@ -77,6 +81,7 @@ class GlassPopupPlacement internal constructor(
 
     val alignTop: Boolean,
 )
+
 
 internal fun placeGlassPopup(
     anchor: Rect,
@@ -100,6 +105,7 @@ internal fun placeGlassPopup(
     return GlassPopupPlacement(Rect(left, top, left + size.width, top + size.height), alignTop)
 }
 
+
 internal fun placeAdjacentGlassPopup(
     anchor: Rect,
     size: Size,
@@ -115,6 +121,7 @@ internal fun placeAdjacentGlassPopup(
     val top = wanted.coerceIn(margin, (page.height - size.height - margin).coerceAtLeast(margin))
     return GlassPopupPlacement(Rect(left, top, left + size.width, top + size.height), alignTop = openBelow)
 }
+
 
 @Composable
 internal fun GlassPopupSurface(
@@ -146,7 +153,6 @@ internal fun GlassPopupSurface(
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                         val change = event.changes.firstOrNull { it.id == down.id } ?: break
-
                         val released = change.changedToUp()
                         change.consume()
                         if (!change.pressed) {
@@ -178,7 +184,6 @@ internal fun GlassPopupSurface(
             }
             .graphicsLayer {
                 panelLayer()
-
                 outsets = shadowOutsets
             }
             .then(reveal)
@@ -240,20 +245,19 @@ internal fun GlassPopupSurface(
         measured.cornerRadius = current.cornerRadius
         val panelWidth = current.rect.width.roundToInt().coerceAtLeast(0)
         val panelHeight = current.rect.height.roundToInt().coerceAtLeast(0)
-
         val background = measurables[0].measure(Constraints.fixed(panelWidth, panelHeight))
         layout(panelWidth, panelHeight) {
             background.place(0, 0)
             foreground.placeWithLayer(0, 0) {
                 transformOrigin = TransformOrigin(0f, 0f)
                 contentLayer(measured.end, measured.rect)
-
                 translationX = measured.rect.left - measured.rect.left.roundToInt()
                 translationY = measured.rect.top - measured.rect.top.roundToInt()
             }
         }
     }
 }
+
 
 @Composable
 internal fun BoxScope.GlassPopupBackground(
@@ -295,6 +299,7 @@ internal fun BoxScope.GlassPopupBackground(
     )
 }
 
+
 internal fun Density.popupShadowOutsets(shadow: GlassShadow?): LayerOutsets {
     if (shadow == null) return LayerOutsets.Zero
     val sourceScale = density / GlassDefaults.SourceDensity
@@ -309,11 +314,13 @@ internal fun Density.popupShadowOutsets(shadow: GlassShadow?): LayerOutsets {
     )
 }
 
+
 private class MeasuredPanel {
     var end: Size = Size.Zero
     var rect: Rect = Rect.Zero
     var cornerRadius: Dp = 0.dp
 }
+
 
 private class MeasuredCorner(private val measured: MeasuredPanel) : CornerSize {
     override fun toPx(shapeSize: Size, density: Density): Float = with(density) { measured.cornerRadius.toPx() }

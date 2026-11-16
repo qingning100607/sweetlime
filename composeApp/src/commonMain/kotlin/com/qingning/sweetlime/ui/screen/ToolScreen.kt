@@ -206,14 +206,6 @@ private fun SymbolCategoryList(sections: List<Pair<String, List<Int>>>, onOpen: 
 
         contentPadding = PaddingValues(top = 8.dp + topInset, bottom = 48.dp),
     ) {
-        item(key = "symbol_hint") {
-            Text(
-                text = trf("共 {} 个分类 · 点一个查看全部符号", sections.sumOf { it.second.size }),
-                style = MiuixTheme.textStyles.footnote1,
-                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
-        }
 
         sections.forEachIndexed { sectionIndex, (title, indices) ->
             item(key = "symbol_section_$sectionIndex") {

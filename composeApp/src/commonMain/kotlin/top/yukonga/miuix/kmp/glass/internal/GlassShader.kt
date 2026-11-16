@@ -6,9 +6,9 @@ internal const val GLASS_SHADER_KEY = "MiuixGlass"
 internal const val GLASS_MASK_SHADER_KEY = "MiuixGlassMask"
 
 private val GLASS_SDF_SOURCE: String = """
-uniform float2 in_size;         // component size
-uniform float4 in_radii;        // topLeft, topRight, bottomRight, bottomLeft
-uniform float in_smoothing;     // 0 = circular corner, 1 = continuous corner
+uniform float2 in_size;
+uniform float4 in_radii;
+uniform float in_smoothing;
 
 float roundedBoxSdf(float2 p, float2 b, float r) {
     float2 d = p - b + r;
@@ -127,10 +127,10 @@ const float kMaxBevelSlope = 1.7;
 internal val GLASS_RIM_SHADER: String = """
 $GLASS_SDF_SOURCE
 $GLASS_RIM_SOURCE
-uniform float4 in_rimEdge;      // edge width, edge pow, surface opacity, unused
-uniform float4 in_lightDir;     // direction xyz, angle range * pi
-uniform float4 in_lightAmt;     // intensity, opposite intensity, unused, unused
-uniform float4 in_surface;      // the material's own colour, standing in for what is underneath
+uniform float4 in_rimEdge;
+uniform float4 in_lightDir;
+uniform float4 in_lightAmt;
+uniform float4 in_surface;
 
 half4 main(float2 coord) {
     float d = silhouetteSdf(coord);
@@ -162,18 +162,18 @@ half4 main(float2 coord) {
 internal val GLASS_SHADER: String = """
 uniform shader child;
 
-uniform float2 in_pad;          // component origin inside the padded layer
-uniform float2 in_maxCoord;     // sampling clamp of the padded layer
-uniform float4 in_alphaEdge;    // alpha, edge width, thickness, reflect offset
-uniform float4 in_iorRefl;      // ior, reflect strength, reflect lighten, colour gamma
-uniform float4 in_tint;         // tint rgb, tint strength
-uniform float4 in_whiteMixBg;   // colour white, colour mix, backdrop saturation, backdrop brightness
-uniform float4 in_darker;       // darker start, darker end, darker, inner bottom
-uniform float4 in_lightDir;     // direction xyz, angle range * pi
-uniform float4 in_lightAmt;     // intensity, opposite intensity, luminance amount, overspill
-uniform float4 in_lumCurve;     // cubic coefficients A, B, C, D
-uniform float4 in_satBri;       // saturation, brightness, burn, unshade
-uniform float4 in_edgePow;      // edge pow, wide-sample radius
+uniform float2 in_pad;
+uniform float2 in_maxCoord;
+uniform float4 in_alphaEdge;
+uniform float4 in_iorRefl;
+uniform float4 in_tint;
+uniform float4 in_whiteMixBg;
+uniform float4 in_darker;
+uniform float4 in_lightDir;
+uniform float4 in_lightAmt;
+uniform float4 in_lumCurve;
+uniform float4 in_satBri;
+uniform float4 in_edgePow;
 
 const float3 kCurveWeights = float3(0.2125, 0.7153, 0.0721);
 const float3 kShadowTint = float3(0.07874, 0.02848, 0.09278);
@@ -331,14 +331,14 @@ internal const val GLASS_STROKE_SHADER_KEY = "MiuixGlassStroke"
 
 internal val GLASS_STROKE_SHADER: String = """
 $GLASS_SDF_SOURCE
-uniform float2 in_halfViewFloor; // half size, floored, so the fold lands on a pixel boundary
-uniform float2 in_strokeBand;    // stroke width, inner blur radius
-uniform float4 in_strokeColor;   // stroke rgb, stroke opacity
-uniform float in_strokeAlpha;    // surface opacity
-uniform float4 in_light1;        // direction xyz, intensity
-uniform float4 in_light1Color;   // colour rgb, unused
-uniform float4 in_light2;        // direction xyz, intensity
-uniform float4 in_light2Color;   // colour rgb, unused
+uniform float2 in_halfViewFloor;
+uniform float2 in_strokeBand;
+uniform float4 in_strokeColor;
+uniform float in_strokeAlpha;
+uniform float4 in_light1;
+uniform float4 in_light1Color;
+uniform float4 in_light2;
+uniform float4 in_light2Color;
 
 float3 rimNormal(float2 coord, float2 half2d, float sdf, float radius, float inner) {
     float2 offset = coord - in_halfViewFloor;
@@ -395,9 +395,9 @@ internal const val GLASS_SHADOW_SHADER_KEY = "MiuixGlassShadow"
 
 internal val GLASS_SHADOW_SHADER: String = """
 $GLASS_SDF_SOURCE
-uniform float2 in_shadowOffset;  // displacement in pixels
-uniform float2 in_shadowShape;   // reach, dispersion
-uniform float4 in_shadowColor;   // rgb, strength
+uniform float2 in_shadowOffset;
+uniform float2 in_shadowShape;
+uniform float4 in_shadowColor;
 
 half4 main(float2 coord) {
     float d = silhouetteSdf(coord - in_shadowOffset);
@@ -414,10 +414,10 @@ internal const val GLASS_COLOR_BLEND_SHADER_KEY = "MiuixGlassColorBlend"
 internal val GLASS_COLOR_BLEND_SHADER: String = """
 uniform shader child;
 
-uniform float4 in_blend0;     // layer 0 colour, straight; w = amount
-uniform float4 in_blend1;     // layer 1
-uniform float4 in_blend2;     // layer 2
-uniform float4 in_blendMode;  // mode of layers 0..2; w = how many layers are live
+uniform float4 in_blend0;
+uniform float4 in_blend1;
+uniform float4 in_blend2;
+uniform float4 in_blendMode;
 
 const float3 kLumWeights = float3(0.3, 0.59, 0.11);
 

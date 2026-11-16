@@ -1,6 +1,6 @@
 {
-  "version": "2.9.86",
-  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.86",
-  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.86/SweetLime-release.apk",
-  "notes": "- 弹窗动画改为玻璃下拉，修正重复震动\n- 设置新增底栏样式（iOS / OS4）\n- 卡片左右边距统一\n- 上下标字符补全\n- 清理源码与构建脚本注释"
+  "version": "2.9.90",
+  "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.90",
+  "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.90/SweetLime-release.apk",
+  "notes": "- 收藏页分组改为展开时按需加载并缓存，滚动不再重复加载\n- 关于作者改为 𝑺𝒘𝒆𝒆𝒕𝑳𝒊𝒎𝒆，QQ 号改为点击进群\n- 删除工具字符素材里的多余提示文案\n- 玻璃弹窗与上游实现保持一致"
 }

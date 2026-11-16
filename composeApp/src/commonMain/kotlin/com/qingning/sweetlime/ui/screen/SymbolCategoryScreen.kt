@@ -180,12 +180,6 @@ fun SymbolCategoryScreen(
                 Column {
 
                     Spacer(modifier = Modifier.height(topBarHeight))
-                    Text(
-                        text = trf("共 {} 个符号 · 点击即复制", category.symbols.size),
-                        style = MiuixTheme.textStyles.footnote1,
-                        color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 2.dp),
-                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }

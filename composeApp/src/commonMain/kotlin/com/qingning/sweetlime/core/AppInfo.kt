@@ -1,9 +1,9 @@
 package com.qingning.sweetlime.core
 
-const val APP_VERSION: String = "2.9.86"
+const val APP_VERSION: String = "2.9.90"
 
-const val AUTHOR_NAME = "青柠不酸只甜"
-const val AUTHOR_QQ = "2892546640"
+const val AUTHOR_NAME = "𝑺𝒘𝒆𝒆𝒕𝑳𝒊𝒎𝒆"
+const val AUTHOR_LINK = "https://qm.qq.com/q/rfHhIfKufC"
 const val COMMUNITY_GROUP = "948634109"
 const val COMMUNITY_LINK =
     "https://qun.qq.com/universal-share/share?ac=1&authKey=sMa6YUzkpV1kbRJ0YnvjD64JYC1umKbUQrz1gegRCY%2BOI8k4i%2BIAr4%2BMxUnB1H%2F%2B&busi_data=eyJncm91cENvZGUiOiI5NDg2MzQxMDkiLCJ0b2tlbiI6IlR0YTVCMkoxZmlpamk4QlIrMUdkdnpiTTkxd2pCUWVHR1dGcGRjR2hpWDJQMUxGZElaak9EclV6VldKU1Y5ZEIiLCJ1aW4iOiIyODkyNTQ2NjQwIn0%3D&data=hoiaXBFDEHpITCqTeUfXNAPFTgh3eruetmVD5xefVPOgjsKXMQD69-GUT2jJ3FroOeaVRForPWXhUcw6oVmchA&svctype=4&tempid=h5_group_info"

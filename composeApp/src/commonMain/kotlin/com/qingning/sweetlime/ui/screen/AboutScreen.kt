@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.qingning.sweetlime.core.APP_VERSION
 import com.qingning.sweetlime.core.AUTHOR_NAME
-import com.qingning.sweetlime.core.AUTHOR_QQ
+import com.qingning.sweetlime.core.AUTHOR_LINK
 import com.qingning.sweetlime.core.COMMUNITY_GROUP
 import com.qingning.sweetlime.core.COMMUNITY_LINK
 import com.qingning.sweetlime.core.REPO_URL
@@ -384,8 +384,8 @@ private fun AboutContent(
                     FrostedCard(backdrop, blurEnable, cardBlend, scrollProgress) {
                         BasicComponent(
                             title = tr("作者"),
-                            summary = trf("{} · QQ {}", AUTHOR_NAME, AUTHOR_QQ),
-                            onClick = { onCopyText(AUTHOR_QQ, tr("作者 QQ")) },
+                            summary = AUTHOR_NAME,
+                            onClick = { onOpenUrl(AUTHOR_LINK) },
                         )
                         BasicComponent(
                             title = tr("交流群"),

@@ -10,8 +10,8 @@ class ToolEntry(
 
 val TOOL_ENTRIES: List<ToolEntry>
     get() = listOf(
-    ToolEntry("symbol", tr("特殊符号"), tr("常用、图案、装饰等分类，点击即复制")),
-    ToolEntry("kaomoji", tr("颜文字"), tr("开心、难过、动物、魔法等分类，点击即复制")),
+    ToolEntry("symbol", tr("特殊符号"), tr("常用、图案、装饰等分类")),
+    ToolEntry("kaomoji", tr("颜文字"), tr("开心、难过、动物、魔法等分类")),
     ToolEntry("symbol_more", tr("扩展符号"), tr("序号、制表、几何、星形等新增分类")),
     ToolEntry("pinyin", tr("汉字拼音"), tr("整句转带声调拼音：你好世界 → nǐ hǎo shì jiè")),
     ToolEntry("chai", tr("汉字拆分"), tr("把汉字拆成部件：卧项功 → 臣卜工页工力")),

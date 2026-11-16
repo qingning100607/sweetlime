@@ -67,6 +67,8 @@ import com.qingning.sweetlime.core.copyToClipboard
 import com.qingning.sweetlime.core.createKeyValueStore
 import com.qingning.sweetlime.core.openUrl
 import com.qingning.sweetlime.core.shareText
+import com.qingning.sweetlime.ui.components.GlassBackdropHost
+import com.qingning.sweetlime.ui.components.LocalGlassBackdrop
 import com.qingning.sweetlime.data.FavoritesStore
 import com.qingning.sweetlime.data.RecentStore
 import com.qingning.sweetlime.data.SweetLimeSettings
@@ -331,7 +333,8 @@ fun SweetLimeApp() {
                 }
 
                 entry<Route.Tool>(swipeDismiss = navSwipeDismiss) { route ->
-                    ToolScreen(
+                    GlassBackdropHost {
+                        ToolScreen(
                         toolId = route.id,
                         onBack = { goBack() },
                         onCopyText = ::copyRaw,
@@ -339,6 +342,8 @@ fun SweetLimeApp() {
                         onMessage = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
                         onOpenSymbolCategory = { push(Route.Symbols(it)) },
                     )
+                    }
+
                 }
 
                 entry<Route.Symbols>(swipeDismiss = navSwipeDismiss) { route ->
@@ -350,7 +355,8 @@ fun SweetLimeApp() {
                 }
 
                 entry<Route.Settings>(swipeDismiss = navSwipeDismiss) {
-                    SettingsScreen(
+                    GlassBackdropHost {
+                        SettingsScreen(
                         settings = settings,
                         onBack = { goBack() },
                         onCopyText = ::copyRaw,
@@ -363,6 +369,8 @@ fun SweetLimeApp() {
                         onCheckUpdate = { checkUpdate() },
                         onOpenDownload = { openUpdateDownload() },
                     )
+                    }
+
                 }
 
                 entry<Route.Search>(swipeDismiss = navSwipeDismiss) {
@@ -527,6 +535,9 @@ private fun RootScaffold(
                     bottom = bottomBarHeight + 24.dp,
                 )
             }
+CompositionLocalProvider(
+    LocalGlassBackdrop provides if (flowing) null else backdrop,
+) {
             HorizontalPager(
                 state = tabPagerState,
                 modifier = Modifier.fillMaxSize(),
@@ -562,6 +573,8 @@ private fun RootScaffold(
                 )
             }
             }
+}
+
         }
 
         Box(

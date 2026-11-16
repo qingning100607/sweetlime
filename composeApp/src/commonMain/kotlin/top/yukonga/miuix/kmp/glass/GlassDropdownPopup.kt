@@ -26,12 +26,16 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.blur.Backdrop
 
+
 object GlassDropdownDefaults {
+
 
     val CornerRadius: Dp = 24.dp
 
+
     val StartCornerRadius: Dp = 4.dp
 }
+
 
 @Composable
 fun BoxScope.GlassDropdownPopup(
@@ -62,6 +66,7 @@ fun BoxScope.GlassDropdownPopup(
     )
 }
 
+
 @Composable
 internal fun BoxScope.GlassDropdownPopupContent(
     show: Boolean,
@@ -79,7 +84,6 @@ internal fun BoxScope.GlassDropdownPopupContent(
     adjacent: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-
     val visibility = remember { MutableTransitionState(false) }
     LaunchedEffect(show) {
         visibility.targetState = show
@@ -123,7 +127,6 @@ internal fun BoxScope.GlassDropdownPopupContent(
         anchor?.dropdownRetainedValueAlpha = 0f
         onDispose {
             if (anchor?.dropdownBackProgressState === backProgress) {
-
                 anchor.dropdownRetainedValueAlpha = backProgress.value.coerceIn(0f, 1f)
                 anchor.dropdownBackProgressState = null
             }
@@ -181,6 +184,7 @@ internal fun BoxScope.GlassDropdownPopupContent(
         content = content,
     )
 }
+
 
 private fun arcFrame(
     anchor: Rect,
@@ -241,7 +245,6 @@ internal fun placeGlassDropdownPopup(
 ): GlassPopupPlacement {
     if (adjacent) return placeAdjacentGlassPopup(row, size, margin, page, gap)
     if (valueAnchor == null) return placeGlassPopup(row, size, margin, page, direction)
-
     val wantedLeft = if (valueAnchor.center.x <= page.width / 2f) {
         valueAnchor.left
     } else {
