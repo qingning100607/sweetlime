@@ -384,7 +384,7 @@ private fun AboutContent(
                     FrostedCard(backdrop, blurEnable, cardBlend, scrollProgress) {
                         BasicComponent(
                             title = tr("作者"),
-                            summary = AUTHOR_NAME,
+                            summary = AUTHOR_NAME + " • " + tr("瞳孔和心跳的距离 在与你对视时清零"),
                             onClick = { onOpenUrl(AUTHOR_LINK) },
                         )
                         BasicComponent(

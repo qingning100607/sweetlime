@@ -2,7 +2,7 @@ package com.qingning.sweetlime.core
 
 const val APP_VERSION: String = "2.9.90"
 
-const val AUTHOR_NAME = "𝑺𝒘𝒆𝒆𝒕𝑳𝒊𝒎𝒆"
+const val AUTHOR_NAME = "𝙎𝙬𝙚𝙚𝙩𝙇𝙞𝙢𝙚"
 const val AUTHOR_LINK = "https://qm.qq.com/q/rfHhIfKufC"
 const val COMMUNITY_GROUP = "948634109"
 const val COMMUNITY_LINK =
