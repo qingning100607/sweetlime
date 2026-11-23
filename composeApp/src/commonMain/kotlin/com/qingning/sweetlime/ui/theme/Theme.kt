@@ -1,7 +1,6 @@
 package com.qingning.sweetlime.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.qingning.sweetlime.data.ThemeMode
@@ -31,16 +30,8 @@ fun SweetLimeTheme(
         else -> isSystemInDarkTheme()
     }
     MiuixTheme(controller = controller) {
-        ApplySystemBarAppearance(dark = dark)
-        val colors = MiuixTheme.colorScheme
-        val themed = if (!dark && !monet) {
-            colors.copy(surface = LIGHT_SURFACE, background = LIGHT_SURFACE)
-        } else {
-            colors
-        }
-        MiuixTheme(colors = themed) {
-            content()
-        }
+                ApplySystemBarAppearance(dark = dark)
+        content()
     }
 }
 
@@ -58,5 +49,3 @@ private fun resolveMode(monet: Boolean, themeMode: Int): ColorSchemeMode {
         else -> ColorSchemeMode.MonetSystem
     }
 }
-
-private val LIGHT_SURFACE = Color(0xFFF0F1F2)

@@ -4,7 +4,6 @@
   "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.91/SweetLime-release.apk",
   "notes": [
     "关于页「开放源代码」说明文案改为「查看依赖与许可证信息」",
-    "浅色模式背景改为灰色，白色卡片层次更清晰",
     "开放源代码页点击卡片时显示灰色按压反馈",
     "移除收藏页展开分组的震动",
     "英文花体新增「方块字母」「黑方块字母」两个样式",
