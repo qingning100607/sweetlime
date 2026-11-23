@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.rotate
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
 import com.qingning.sweetlime.core.listPreview
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TextFieldDefaults
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import androidx.compose.ui.graphics.Color
@@ -130,6 +131,11 @@ fun HomeScreen(
                 label = tr("输入要转换的文字"),
                 useLabelAsPlaceholder = true,
                 maxLines = 3,
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
+                    labelColor = MiuixTheme.colorScheme.onSurfaceContainer,
+                    borderColor = MiuixTheme.colorScheme.dividerLine,
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
