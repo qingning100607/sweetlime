@@ -15,9 +15,7 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 | 详情页 | 大字号预览、原文对照、复制 / 收藏 |
 | 收藏页 | 按 `样式 + 原文` 持久化，含最近使用记录 |
 | 搜索 | 一个输入框搜全站：汉字释义、拼音、拆字、花体样式、符号、工具箱 |
-| 工具箱 | 符号表、拼音、拆字、大写金额、Base64、进制、颜色、汇率、BMI、代码编辑器 |
-| 设置页 | 动态取色（Monet）、深色模式+流光背景（跟随系统 / 浅色 / 深色）、隐私与兼容性说明 |
-| 手势 | 系统预测性返回：跟手滑动详情页，同时底层主界面高斯模糊（最大 28dp） |
+| 工具箱 | 符号表、拼音、拆字、大写金额、Base64、进制、颜色、汇率、BMI |
 
 样式清单（`core/styles/`）：
 
@@ -34,7 +32,7 @@ UI 使用 [Miuix](https://github.com/compose-miuix-ui/miuix)（Compose Multiplat
 | UI 库 | Miuix **0.9.4**（`miuix-ui` / `icons` / `preference` / `blur` / `squircle`） |
 | AGP / Gradle | **9.1.0** / **9.3.1** |
 | 依赖 | androidx activity-compose 1.13.0 |
-| SDK | compileSdk **37**、minSdk **33**（毛玻璃与预测性返回的下限）、targetSdk **36** |
+| SDK | compileSdk **37**、minSdk **33** targetSdk **36** |
 | 版本 | versionCode **2991** / versionName **2.9.91** |
 
 > compileSdk 必须是 37：Miuix 0.9.4 与 androidx.compose 1.12.1 的 AAR 元数据要求 37；
