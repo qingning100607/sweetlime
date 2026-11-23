@@ -32,12 +32,13 @@ fun SweetLimeTheme(
     }
     MiuixTheme(controller = controller) {
         ApplySystemBarAppearance(dark = dark)
-        if (!dark && !monet) {
-            val colors = MiuixTheme.colorScheme
-            MiuixTheme(colors = colors.copy(surface = LIGHT_SURFACE, background = LIGHT_SURFACE)) {
-                content()
-            }
+        val colors = MiuixTheme.colorScheme
+        val themed = if (!dark && !monet) {
+            colors.copy(surface = LIGHT_SURFACE, background = LIGHT_SURFACE)
         } else {
+            colors
+        }
+        MiuixTheme(colors = themed) {
             content()
         }
     }

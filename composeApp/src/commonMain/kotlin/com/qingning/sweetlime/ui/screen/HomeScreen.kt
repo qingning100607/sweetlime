@@ -133,7 +133,7 @@ fun HomeScreen(
                 maxLines = 3,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
-                    labelColor = MiuixTheme.colorScheme.onSurfaceContainer,
+                    labelColor = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                     borderColor = MiuixTheme.colorScheme.dividerLine,
                 ),
                 modifier = Modifier
