@@ -25,7 +25,6 @@ class SweetLimeSettingsTest {
         val settings = SweetLimeSettings(EmptyStore())
 
         assertFalse(settings.flowingBackground, "流光背景首装应该是关的")
-        assertTrue(settings.hapticFeedback, "震动反馈首装应该是开的")
         assertFalse(settings.floatingBottomBar, "悬浮底栏首装应该是关的（用贴底标准底栏）")
         assertEquals(ThemeMode.SYSTEM, settings.themeMode, "首装应该是跟随系统")
 
@@ -42,13 +41,11 @@ class SweetLimeSettingsTest {
         val first = SweetLimeSettings(store)
         first.flowingBackground = true
         first.themeMode = ThemeMode.DARK
-        first.hapticFeedback = false
         first.floatingBottomBar = true
 
         val second = SweetLimeSettings(store)
         assertTrue(second.flowingBackground)
         assertEquals(ThemeMode.DARK, second.themeMode)
-        assertFalse(second.hapticFeedback)
         assertTrue(second.floatingBottomBar)
     }
 

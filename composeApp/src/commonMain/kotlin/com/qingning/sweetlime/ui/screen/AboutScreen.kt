@@ -370,8 +370,8 @@ private fun AboutContent(
                             onClick = { onOpenUrl(REPO_URL) },
                         )
                         BasicComponent(
-                            title = tr("开源许可"),
-                            summary = tr("用到的开源项目与许可证"),
+                            title = tr("开放源代码"),
+                            summary = tr("查看依赖与许可证信息"),
                             onClick = onOpenLicenses,
                         )
                     }

@@ -106,7 +106,7 @@ fun DetailScreen(
     val hasEffect = contentReady && resolved != text && text.isNotEmpty()
 
     val effectText = when {
-        text.isEmpty() -> tr("上面输入文字，这里就是转换后的效果。")
+        text.isEmpty() -> ""
         hasEffect -> resolved
         else -> tr("这段文字在这个样式里没有变化。")
     }

@@ -4,6 +4,7 @@ import com.qingning.sweetlime.ui.effect.hyperScrollHaptic
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,6 +62,7 @@ import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Add
 import top.yukonga.miuix.kmp.icon.extended.ExpandMore
+import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.basic.ArrowUpDown
 import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.Delete
@@ -178,8 +180,8 @@ fun FavoriteScreen(
                         val collapsed = favorites.isCollapsed(group)
                         val haptics = rememberHyperHapticFeedback()
                         val arrowTurn by animateFloatAsState(
-                            targetValue = if (collapsed) -90f else 0f,
-                            animationSpec = tween(GROUP_EXPAND_MS, easing = FastOutSlowInEasing),
+                            targetValue = if (collapsed) 0f else 90f,
+                            animationSpec = spring(dampingRatio = 0.75f, stiffness = 400f),
                             label = "groupArrow",
                         )
                         Card(
@@ -199,7 +201,6 @@ fun FavoriteScreen(
                                     .fillMaxWidth()
                                     .combinedClickable(
                                         onClick = {
-                                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                             favorites.toggleCollapsed(group)
                                         },
                                         onLongClick = if (!canDelete) {
@@ -217,12 +218,12 @@ fun FavoriteScreen(
                                     summary = trf("已收藏 {} 条", list.size),
                                     endActions = {
                                         Icon(
-                                            imageVector = MiuixIcons.ExpandMore,
+                                            imageVector = MiuixIcons.Basic.ArrowRight,
                                             contentDescription = if (collapsed) tr("展开") else tr("收起"),
                                             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
                                             modifier = Modifier
                                                 .padding(end = 16.dp)
-                                                .size(22.dp)
+                                                .size(20.dp)
                                                 .rotate(arrowTurn),
                                         )
                                     },

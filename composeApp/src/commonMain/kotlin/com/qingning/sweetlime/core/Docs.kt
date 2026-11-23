@@ -40,63 +40,133 @@ object PrivacyPolicy {
     )
 }
 
-object OpenSourceLicenses {
-    val TITLE: String get() = tr("开源许可")
+class LibraryLicense(
+    val name: String,
+    val artifactVersion: String? = null,
+    val developers: String? = null,
+    val description: String? = null,
+    val licenses: String? = null,
+    val url: String? = null,
+)
 
-    val SECTIONS: List<Doc> = listOf(
-        Doc(
-            "Kotlin & Compose Multiplatform",
-            "Copyright JetBrains s.r.o. and The Android Open Source Project\n" +
-                "License: Apache License 2.0",
-        ),
-        Doc(
-            "compose-miuix-ui (miuix)",
-            "Copyright compose-miuix-ui contributors\nLicense: Apache License 2.0",
-        ),
-        Doc(
-            "miuix-glass (glass surfaces)",
-            "Copyright compose-miuix-ui contributors / Halcyon contributors\n" +
-                "License: Apache License 2.0\n\n" +
-                "Used for the OS4 glass dropdown popups and the glass capsule " +
-                "navigation bar. Source files were taken from the Apache-2.0 " +
-                "licensed miuix-glass package and adapted.",
-        ),
-        Doc(
-            "Haze",
-            "Copyright Chris Banes\nLicense: Apache License 2.0\nhttps://github.com/chrisbanes/haze\n\nUsed for the live frosted glass on the top bar, the bottom bar and the\nfloating capsule (HazeState / hazeSource / hazeEffect with a progressive\nvertical gradient). No source files were copied; only the published API\nis used.",
-        ),
-        Doc(
-            "AndroidX (activity-compose)",
-            "Copyright The Android Open Source Project\nLicense: Apache License 2.0",
-        ),
-        Doc(
-            "Data Sources",
-            "Style code tables, " + SYMBOL_CATEGORIES.size + " categories of special characters, Chinese Pinyin and\n" +
-                "character-decomposition data were compiled from publicly available sources\n" +
-                "and are provided for learning and reference only. If your work is included\n" +
-                "here and you would prefer it not to be, please contact the author and it\n" +
-                "will be removed as soon as possible.",
-        ),
-        Doc(
-            "Kotlin Coroutines",
-            "Copyright JetBrains s.r.o. and contributors\nLicense: Apache License 2.0",
-        ),
-        Doc(
-            "androidx.navigationevent",
-            "Copyright The Android Open Source Project\nLicense: Apache License 2.0",
-        ),
-        Doc(
-            "miuix squircle / blur / nav",
-            "Copyright compose-miuix-ui contributors\nLicense: Apache License 2.0",
-        ),
-        Doc(
-            "Apache License 2.0 (Summary)",
-            "You may freely use, modify and distribute this software provided that you:\n" +
-                "- retain the copyright and license notices;\n" +
-                "- state which files you modified;\n" +
-                "- do not use the original authors' names to endorse your derivative work.\n" +
-                "This is a summary only; the software is provided \"AS IS\", without\n" +
-                "warranties or conditions of any kind, and the full license text governs.",
-        ),
-    )
+object OpenSourceLicenses {
+    val TITLE: String get() = tr("开放源代码")
+
+    val LIBRARIES: List<LibraryLicense>
+        get() = listOf(
+            LibraryLicense(
+                name = "Kotlin",
+                artifactVersion = "2.4.10",
+                developers = "JetBrains s.r.o.",
+                description = "Kotlin compiler and standard library. All app code is written in Kotlin.",
+                licenses = "Apache License 2.0",
+                url = "https://github.com/JetBrains/kotlin",
+            ),
+            LibraryLicense(
+                name = "Compose Multiplatform",
+                artifactVersion = "1.12.1",
+                developers = "JetBrains s.r.o.",
+                description = "Declarative UI toolkit that renders every screen of this app.",
+                licenses = "Apache License 2.0",
+                url = "https://github.com/JetBrains/compose-multiplatform",
+            ),
+            LibraryLicense(
+                name = "compose-miuix-ui : ui",
+                artifactVersion = "0.9.4",
+                developers = "compose-miuix-ui contributors",
+                description = "Core UI components: app bars, cards, buttons, text and scaffolds.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "compose-miuix-ui : icons",
+                artifactVersion = "0.9.4",
+                developers = "compose-miuix-ui contributors",
+                description = "Icon set used across the interface.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "compose-miuix-ui : preference",
+                artifactVersion = "0.9.4",
+                developers = "compose-miuix-ui contributors",
+                description = "Settings rows, switches and dropdown preferences.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "compose-miuix-ui : blur",
+                artifactVersion = "0.9.4",
+                developers = "compose-miuix-ui contributors",
+                description = "Backdrop blur backend behind the glass surfaces and bars.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "compose-miuix-ui : nav",
+                artifactVersion = "0.9.4",
+                developers = "compose-miuix-ui contributors",
+                description = "Navigation display effects and page transitions.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "compose-miuix-ui : squircle",
+                artifactVersion = "0.9.4",
+                developers = "compose-miuix-ui contributors",
+                description = "Squircle corner shapes for cards and panels.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "miuix-glass",
+                developers = "compose-miuix-ui contributors / Halcyon contributors",
+                description = "Glass shaders and materials for the OS4 dropdown popups and the " +
+                    "capsule navigation bar. Adapted from the Apache-2.0 licensed miuix-glass sources.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "Haze",
+                artifactVersion = "1.7.3",
+                developers = "Chris Banes",
+                description = "Live frosted blur on the top bar, the bottom bar and the floating capsule. " +
+                    "Public API only, no source files copied.",
+                licenses = "Apache License 2.0",
+                url = "https://github.com/chrisbanes/haze",
+            ),
+            LibraryLicense(
+                name = "AndroidX Activity Compose",
+                artifactVersion = "1.13.0",
+                developers = "The Android Open Source Project",
+                description = "Hosts the Compose UI inside the Android activity.",
+                licenses = "Apache License 2.0",
+                url = "https://developer.android.com/jetpack/androidx/releases/activity",
+            ),
+            LibraryLicense(
+                name = "AndroidX NavigationEvent",
+                artifactVersion = "1.1.2",
+                developers = "The Android Open Source Project",
+                description = "Back gesture and predictive back events.",
+                licenses = "Apache License 2.0",
+            ),
+            LibraryLicense(
+                name = "Kotlin Coroutines",
+                developers = "JetBrains s.r.o.",
+                description = "Coroutines and Flow for background work and animations.",
+                licenses = "Apache License 2.0",
+                url = "https://github.com/Kotlin/kotlinx.coroutines",
+            ),
+            LibraryLicense(
+                name = "Data Sources",
+                developers = "SweetLime",
+                description = "Style code tables, " + SYMBOL_CATEGORIES.size + " symbol categories, " +
+                    "pinyin and character-breakdown data compiled from public sources, " +
+                    "for reference only. Contact the author if you want your work removed.",
+                licenses = "Public sources",
+            ),
+            LibraryLicense(
+                name = "Apache License 2.0",
+                developers = "Apache Software Foundation",
+                description = "These libraries may be used, modified and redistributed if you keep the " +
+                    "copyright and license notices, state which files you changed, and do not use the " +
+                    "original authors' names to endorse your work. The software is provided as is, " +
+                    "without warranty. This is a summary only; the full license text governs.",
+                licenses = "Apache License 2.0",
+                url = "https://www.apache.org/licenses/LICENSE-2.0",
+            ),
+        )
 }

@@ -3,9 +3,9 @@ package com.qingning.sweetlime.ui
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 
-import com.qingning.sweetlime.ui.effect.rememberHyperHapticFeedback
 
 import com.qingning.sweetlime.core.i18n.AppLocale
 import com.qingning.sweetlime.core.i18n.tr
@@ -87,8 +87,8 @@ import com.qingning.sweetlime.ui.effect.BgEffectBackground
 import com.qingning.sweetlime.ui.effect.FlowingSurface
 import com.qingning.sweetlime.ui.effect.glassBarBackdrop
 import com.qingning.sweetlime.ui.effect.HyperOsStyle
+import com.qingning.sweetlime.ui.effect.rememberHyperHapticFeedback
 import com.qingning.sweetlime.ui.components.rememberTabPagerState
-import com.qingning.sweetlime.ui.effect.HyperHaptics
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.ui.effect.bleedHorizontal
 import com.qingning.sweetlime.ui.nav.Route
@@ -98,6 +98,7 @@ import com.qingning.sweetlime.ui.screen.DocScreen
 import com.qingning.sweetlime.ui.screen.FavoriteScreen
 import com.qingning.sweetlime.ui.screen.GroupScreen
 import com.qingning.sweetlime.ui.screen.HomeScreen
+import com.qingning.sweetlime.ui.screen.LicensesScreen
 import com.qingning.sweetlime.ui.screen.SearchScreen
 import com.qingning.sweetlime.ui.screen.SettingsScreen
 import com.qingning.sweetlime.ui.screen.SymbolCategoryScreen
@@ -148,7 +149,6 @@ fun SweetLimeApp() {
     val store = remember { createKeyValueStore() }
     val settings = remember(store) { SweetLimeSettings(store) }
 
-    HyperHaptics.enabled = settings.hapticFeedback
     val favorites = remember(store) { FavoritesStore(store) }
     val recent = remember(store) { RecentStore(store) }
 
@@ -221,11 +221,11 @@ fun SweetLimeApp() {
 
         val overScrollState = remember { OverScrollState() }
 
-        val hyperHaptic = rememberHyperHapticFeedback()
+        val haptic = rememberHyperHapticFeedback()
         CompositionLocalProvider(
             LocalOverscrollFactory provides MiuixOverscrollFactory,
             LocalOverScrollState provides overScrollState,
-            LocalHapticFeedback provides hyperHaptic,
+            LocalHapticFeedback provides haptic,
         ) {
 
         Scaffold(
@@ -288,8 +288,17 @@ fun SweetLimeApp() {
                         onOpenGroup = { push(Route.Group(it.name)) },
                         onOpenTool = { push(Route.Tool(it)) },
                         onOpenItem = { openStyle(it.styleId, it.input) },
-                        onOpenSettings = { push(Route.Settings) },
                         onOpenSearch = { push(Route.Search) },
+                        settings = settings,
+                        onCopyText = ::copyRaw,
+                        onOpenUrl = ::openUrl,
+                        onOpenPrivacy = { push(Route.Privacy) },
+                        onOpenLicenses = { push(Route.Licenses) },
+                        onOpenAbout = { push(Route.About) },
+                        updateResult = updateResult,
+                        checkingUpdate = checkingUpdate,
+                        onCheckUpdate = { checkUpdate() },
+                        onOpenDownload = { openUpdateDownload() },
                         recentIds = recent.ids,
                         onOpenRecent = { openStyle(it) },
                         newVersion = newerRelease?.latest,
@@ -404,10 +413,11 @@ fun SweetLimeApp() {
                 }
 
                 entry<Route.Licenses>(swipeDismiss = navSwipeDismiss) {
-                    DocScreen(
+                    LicensesScreen(
                         title = OpenSourceLicenses.TITLE,
-                        sections = OpenSourceLicenses.SECTIONS,
+                        libraries = OpenSourceLicenses.LIBRARIES,
                         onBack = { goBack() },
+                        onOpenUrl = ::openUrl,
                     )
                 }
 
@@ -454,8 +464,17 @@ private fun RootScaffold(
     onOpenGroup: (StyleGroup) -> Unit,
     onOpenTool: (String) -> Unit,
     onOpenItem: (TransformItem) -> Unit,
-    onOpenSettings: () -> Unit,
     onOpenSearch: () -> Unit,
+    settings: SweetLimeSettings,
+    onCopyText: (String, String) -> Unit,
+    onOpenUrl: (String) -> Unit,
+    onOpenPrivacy: () -> Unit,
+    onOpenLicenses: () -> Unit,
+    onOpenAbout: () -> Unit,
+    updateResult: UpdateChecker.Result?,
+    checkingUpdate: Boolean,
+    onCheckUpdate: () -> Unit,
+    onOpenDownload: () -> Unit,
     recentIds: List<String>,
     onOpenRecent: (String) -> Unit,
     newVersion: String?,
@@ -470,7 +489,7 @@ private fun RootScaffold(
 
     val scrollBehavior = MiuixScrollBehavior()
 
-    val tabPagerState = rememberPagerState(pageCount = { 3 })
+    val tabPagerState = rememberPagerState(pageCount = { 4 })
 
     val pagerScope = rememberCoroutineScope()
     val tabState = rememberTabPagerState(pagerState = tabPagerState, coroutineScope = pagerScope)
@@ -498,8 +517,6 @@ private fun RootScaffold(
 
     var warmPages by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
-
-        HyperHaptics.hasMiuixCompat()
         delay(1_200)
         warmPages = 1
         delay(3_000)
@@ -565,12 +582,29 @@ CompositionLocalProvider(
                     outerPadding = contentPadding,
                     onOpenTool = onOpenTool,
                 )
-                else -> FavoriteScreen(
+                2 -> FavoriteScreen(
                     favorites = favorites,
                     outerPadding = contentPadding,
                     onCopy = onCopy,
                     onOpen = onOpenItem,
                 )
+                else -> GlassBackdropHost {
+                    SettingsScreen(
+                        settings = settings,
+                        onBack = {},
+                        onCopyText = onCopyText,
+                        onOpenUrl = onOpenUrl,
+                        onOpenPrivacy = onOpenPrivacy,
+                        onOpenLicenses = onOpenLicenses,
+                        onOpenAbout = onOpenAbout,
+                        updateResult = updateResult,
+                        checkingUpdate = checkingUpdate,
+                        onCheckUpdate = onCheckUpdate,
+                        onOpenDownload = onOpenDownload,
+                        showTopBar = false,
+                        outerPadding = contentPadding,
+                    )
+                }
             }
             }
 }
@@ -613,26 +647,27 @@ CompositionLocalProvider(
                         ),
                     ),
             )
+            val pageTitle = when (tabState.selectedPage) {
+                0 -> tr("转换")
+                1 -> tr("工具")
+                2 -> tr("收藏")
+                else -> tr("设置")
+            }
             TopAppBar(
 
-                title = "SweetLime",
-                largeTitle = "SweetLime",
+                title = pageTitle,
+                largeTitle = pageTitle,
                 color = Color.Transparent,
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(onClick = onOpenSearch) {
-                        Icon(
-                            imageVector = MiuixIcons.Search,
-                            contentDescription = tr("搜索"),
-                            tint = MiuixTheme.colorScheme.onSurface,
-                        )
-                    }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(
-                            imageVector = MiuixIcons.Settings,
-                            contentDescription = tr("设置"),
-                            tint = MiuixTheme.colorScheme.onSurface,
-                        )
+                    if (tabState.selectedPage != 3) {
+                        IconButton(onClick = onOpenSearch) {
+                            Icon(
+                                imageVector = MiuixIcons.Search,
+                                contentDescription = tr("搜索"),
+                                tint = MiuixTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                 },
             )
@@ -675,6 +710,7 @@ if (floatingBarStyle == 1) {
                                     GlassNavigationItem(MiuixIcons.ConvertFile, tr("转换"), tr("转换")),
                                     GlassNavigationItem(MiuixIcons.Tune, tr("工具"), tr("工具")),
                                     GlassNavigationItem(MiuixIcons.Favorites, tr("收藏"), tr("收藏")),
+                                    GlassNavigationItem(MiuixIcons.Settings, tr("设置"), tr("设置")),
                                 ),
                                 selectedIndex = tabState.selectedPage,
                                 onSelect = { tabState.animateToPage(it) },
@@ -686,17 +722,18 @@ if (floatingBarStyle == 1) {
                             start = 28.dp,
                             end = 28.dp,
 
-                            bottom = 12.dp +
+                            bottom = 28.dp +
                                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
                         ),
                         selectedIndex = tabState.selectedPage,
                         onSelected = { tabState.animateToPage(it) },
                         backdrop = backdrop,
-                        tabsCount = 3,
+                        tabsCount = 4,
                     ) { activateTab ->
                         LiquidBarItem(0, tabState.selectedPage, activateTab, MiuixIcons.ConvertFile, tr("转换"))
                         LiquidBarItem(1, tabState.selectedPage, activateTab, MiuixIcons.Tune, tr("工具"))
                         LiquidBarItem(2, tabState.selectedPage, activateTab, MiuixIcons.Favorites, tr("收藏"))
+                        LiquidBarItem(3, tabState.selectedPage, activateTab, MiuixIcons.Settings, tr("设置"))
                     }
                         }
                 }
@@ -733,6 +770,12 @@ if (floatingBarStyle == 1) {
                         onClick = { tabState.animateToPage(2) },
                         icon = MiuixIcons.Favorites,
                         label = tr("收藏"),
+                    )
+                    NavigationBarItem(
+                        selected = tabState.selectedPage == 3,
+                        onClick = { tabState.animateToPage(3) },
+                        icon = MiuixIcons.Settings,
+                        label = tr("设置"),
                     )
                     }
                 }

@@ -30,7 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.qingning.sweetlime.core.APP_VERSION
 import com.qingning.sweetlime.core.rememberLanguageIcon
@@ -41,6 +43,7 @@ import com.qingning.sweetlime.ui.effect.HyperOsStyle
 import com.qingning.sweetlime.ui.effect.LocalFlowingBackground
 import com.qingning.sweetlime.core.i18n.AppLanguage
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -94,8 +97,11 @@ fun SettingsScreen(
     onCheckUpdate: () -> Unit = {},
 
     onOpenDownload: () -> Unit = {},
+    showTopBar: Boolean = true,
+    outerPadding: PaddingValues = PaddingValues(),
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     var topBarHeight by remember { mutableStateOf(0.dp) }
 
     val density = LocalDensity.current
@@ -122,12 +128,18 @@ fun SettingsScreen(
                     .overScrollVertical()
                     .hyperScrollHaptic(),
 
-            contentPadding = PaddingValues(bottom = 24.dp),
+            contentPadding = PaddingValues(
+                bottom = outerPadding.calculateBottomPadding() + 24.dp,
+            ),
         ) {
             item {
                 Column {
 
-            Spacer(modifier = Modifier.height(topBarHeight))
+            Spacer(
+                modifier = Modifier.height(
+                    if (showTopBar) topBarHeight else outerPadding.calculateTopPadding(),
+                ),
+            )
 
             SmallTitle(text = tr("外观"))
             Card(
@@ -139,7 +151,10 @@ fun SettingsScreen(
                     title = tr("动态取色"),
                     summary = tr("跟随壁纸生成配色（Monet）"),
                     checked = settings.monet,
-                    onCheckedChange = { settings.monet = it },
+                    onCheckedChange = {
+                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        settings.monet = it
+                    },
                     startAction = { RowStartIcon(MiuixIcons.Theme) },
                 )
                 OpaqueDropdownPopupTheme {
@@ -160,14 +175,17 @@ fun SettingsScreen(
                 SwitchPreference(
                     title = tr("悬浮底栏"),
                     checked = settings.floatingBottomBar,
-                    onCheckedChange = { settings.floatingBottomBar = it },
+                    onCheckedChange = {
+                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        settings.floatingBottomBar = it
+                    },
                     startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                 )
                 if (settings.floatingBottomBar) {
                     OpaqueDropdownPopupTheme {
                         Os4DropdownPreference(
                             title = tr("底栏样式"),
-                            items = listOf("iOS", "OS4"),
+                            items = listOf(tr("液态玻璃"), "HyperOS4"),
                             selectedIndex = settings.floatingBarStyle.coerceIn(0, 1),
                             startAction = { RowStartIcon(MiuixIcons.Sidebar) },
                             onSelectedIndexChange = { index -> settings.floatingBarStyle = index },
@@ -175,30 +193,33 @@ fun SettingsScreen(
                     }
                 }
 
-                SwitchPreference(
-                    title = tr("震动反馈"),
-                    checked = settings.hapticFeedback,
-                    onCheckedChange = { settings.hapticFeedback = it },
-                    startAction = { RowStartIcon(MiuixIcons.Tune) },
-                )
 
                 SwitchPreference(
                     title = tr("流光背景"),
                     checked = settings.flowingBackground,
-                    onCheckedChange = { settings.flowingBackground = it },
+                    onCheckedChange = {
+                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        settings.flowingBackground = it
+                    },
                     startAction = { RowStartIcon(MiuixIcons.Layers) },
                 )
 
-                if (settings.flowingBackground) {
-                    OpaqueDropdownPopupTheme {
-                        Os4DropdownPreference(
-                            title = tr("流光风格"),
-                            items = listOf(tr("跟随系统"), "OS 2", "OS 3"),
-                            selectedIndex = settings.flowingStyle.coerceIn(HyperOsStyle.AUTO, HyperOsStyle.OS3),
-                            startAction = { RowStartIcon(MiuixIcons.Image) },
-                            onSelectedIndexChange = { index -> settings.flowingStyle = index },
+                OpaqueDropdownPopupTheme {
+                    Os4DropdownPreference(
+                        title = tr("流光风格"),
+                        items = listOf(tr("跟随系统"), "OS 2", "OS 3"),
+                        selectedIndex = settings.flowingStyle.coerceIn(HyperOsStyle.AUTO, HyperOsStyle.OS3),
+                        startAction = { RowStartIcon(MiuixIcons.Image) },
+                        enabled = settings.flowingBackground,
+                        titleColor = if (settings.flowingBackground) {
+                            BasicComponentDefaults.titleColor()
+                        } else {
+                            BasicComponentDefaults.titleColor(
+                                color = MiuixTheme.colorScheme.onSurfaceContainerVariant,
+                            )
+                        },
+                        onSelectedIndexChange = { index -> settings.flowingStyle = index },
                         )
-                    }
                 }
             }
 
@@ -311,6 +332,7 @@ fun SettingsScreen(
         }
         }
 
+        if (showTopBar) {
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -360,6 +382,7 @@ fun SettingsScreen(
                     }
                 },
             )
+        }
         }
     }
 }

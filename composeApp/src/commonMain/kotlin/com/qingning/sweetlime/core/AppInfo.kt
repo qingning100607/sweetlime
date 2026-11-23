@@ -1,6 +1,6 @@
 package com.qingning.sweetlime.core
 
-const val APP_VERSION: String = "2.9.90"
+const val APP_VERSION: String = "2.9.91"
 
 const val AUTHOR_NAME = "𝙎𝙬𝙚𝙚𝙩𝙇𝙞𝙢𝙚"
 const val AUTHOR_LINK = "https://qm.qq.com/q/rfHhIfKufC"

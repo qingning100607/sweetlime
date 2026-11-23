@@ -66,8 +66,8 @@ android {
         applicationId = "com.qingning.sweetlime"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2990
-        versionName = "2.9.90"
+        versionCode = 2991
+        versionName = "2.9.91"
     }
     signingConfigs {
         create("release") {

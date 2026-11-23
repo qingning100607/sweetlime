@@ -6,6 +6,18 @@ import com.qingning.sweetlime.core.mapping.codePointToString
 import com.qingning.sweetlime.core.mapping.mapEach
 import com.qingning.sweetlime.core.mapping.mathRange
 
+private fun squaredTransform(ch: Char): String? = when {
+    ch in 'A'..'Z' -> codePointToString(0x1F130 + (ch - 'A'))
+    ch in 'a'..'z' -> codePointToString(0x1F130 + (ch - 'a'))
+    else -> null
+}
+
+private fun negativeSquaredTransform(ch: Char): String? = when {
+    ch in 'A'..'Z' -> codePointToString(0x1F170 + (ch - 'A'))
+    ch in 'a'..'z' -> codePointToString(0x1F170 + (ch - 'a'))
+    else -> null
+}
+
 private val SCRIPT_EXCEPTIONS = mapOf(
     'B' to "\u212C", 'E' to "\u2130", 'F' to "\u2131", 'H' to "\u210B",
     'I' to "\u2110", 'L' to "\u2112", 'M' to "\u2133", 'R' to "\u211B",
@@ -140,6 +152,12 @@ internal val latinStyles: List<TextTransform>
     mathStyle("latin_monospace", "等宽体", 0x1D670, 0x1D68A, 0x1D7F6),
     nativeStyle("latin_bold_circled", "粗圆圈", StyleGroup.LATIN) { input ->
         mapEach(input) { boldCircledTransform(it) }
+    },
+    nativeStyle("latin_squared", "方块字母", StyleGroup.LATIN) { input ->
+        mapEach(input) { squaredTransform(it) }
+    },
+    nativeStyle("latin_negative_squared", "黑方块字母", StyleGroup.LATIN) { input ->
+        mapEach(input) { negativeSquaredTransform(it) }
     },
     nativeStyle("latin_upside_down", "倒置字", StyleGroup.LATIN) { input ->
         input.split('\n').joinToString("\n") { line ->

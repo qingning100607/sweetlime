@@ -10,11 +10,8 @@ fun rememberClickHaptic(): () -> Unit {
     val haptic = LocalHapticFeedback.current
     return remember(haptic) {
         {
-
             runCatching {
-                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-            }.onFailure {
-                runCatching { haptic.performHapticFeedback(HapticFeedbackType.VirtualKey) }
+                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
             }
         }
     }
