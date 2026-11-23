@@ -3,10 +3,13 @@
   "url": "https://github.com/qingning100607/sweetlime/releases/tag/v2.9.91",
   "apk": "https://github.com/qingning100607/sweetlime/releases/download/v2.9.91/SweetLime-release.apk",
   "notes": [
-    "关于页「开放源代码」说明文案改为「查看依赖与许可证信息」",
-    "开放源代码页点击卡片时显示灰色按压反馈",
+    "ui细微调整",
+    "设置页移动到底栏tab内",
+    "移除震动反馈",
+    "液态玻璃底栏略微上移",
     "移除收藏页展开分组的震动",
     "英文花体新增「方块字母」「黑方块字母」两个样式",
-    "震动统一为系统 VirtualKey，并去掉重复触发"
+    "优化流光背景切换",
+    "其它细节优化"
   ]
 }
